@@ -1,0 +1,74 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Helpers;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthPlanView.xaml
+    /// </summary>
+    public partial class HealthPlanView : ViewBase
+    {
+        public HealthPlanView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<HealthPlanViewModel>(refreshRequired: true);
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            var ui = UIExtensions.GetChild<Grid>(((Decorator)((ContentControl)sender).Content).Child);
+            ui.Visibility = Visibility.Visible;
+        }
+
+        private RelayCommand<object[]> m_ObjActionCommand;
+
+        public RelayCommand<object[]> ObjActionCommand
+        {
+            get
+            {
+                return m_ObjActionCommand ?? (m_ObjActionCommand = new RelayCommand<object[]>(
+                    ve => OnClick(ve), (t) => true));
+            }
+        }
+
+        private async void OnClick(object[] ve)
+        {
+            if (ve.Length > 2)
+            {
+                string id = ve[0] as string;
+                Grid grid = ve[1] as Grid;
+                bool IsUserObjective = (bool)ve[2];
+                if (IsUserObjective)
+                {
+                    if (grid.Visibility == Visibility.Visible)
+                    {
+                        grid.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        grid.DataContext = await (this.ViewModel as HealthPlanViewModel).GetStrategy(id);
+                        grid.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthPlanQuestionnaireView, true, id);
+                }
+            }
+            else
+            {
+                (ve[0] as Grid).Visibility= Visibility.Collapsed;
+                (ve[1] as ToggleButton).IsChecked = false;
+            }
+        }
+    }
+}

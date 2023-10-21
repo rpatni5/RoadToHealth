@@ -1,0 +1,387 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class QuestionNavigatorViewModel : ViewModelBase
+    {
+        public QuestionNavigatorViewModel()
+        {
+            GetQuestionnaire();
+        }
+
+        private Hashtable GetDependentHasTable(object Gender = null)
+        {
+            Hashtable HasDependency = new Hashtable();
+            ObservableCollection<Question> questions = Questionnaire.GetQuestions(UserDetails);
+            if (Gender == null)
+            {
+                var Dependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question != null select dependentquestion);
+                foreach (var item in Dependency)
+                {
+                    //HasDependency.Add(item.dependency,item)
+                    ArrayList ADependent = new ArrayList();
+                    var DependentQuestion = (from dependentquestion in Dependency where dependentquestion.dependency.dependency_question.Equals(item.dependency.dependency_question) select dependentquestion).ToList();
+                    foreach (var _item in DependentQuestion)
+                    {
+                        ADependent.Add(_item);
+                    }
+                    if (!HasDependency.Contains(item.dependency.dependency_question))
+                    {
+                        HasDependency.Add(item.dependency.dependency_question, ADependent);
+                    }
+                }
+            }
+            else
+            {
+                var Dependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question != null select dependentquestion);
+                foreach (var item in Dependency)
+                {
+                    //HasDependency.Add(item.dependency,item)
+                    ArrayList ADependent = new ArrayList();
+                    Int32 _Gender = Convert.ToInt32(Gender);
+                    var DependentQuestionExceptSex = (from dependentquestion in Dependency where dependentquestion.dependency.dependency_question.Equals(item.dependency.dependency_question) && dependentquestion.gender != _Gender select dependentquestion).ToList();
+                    foreach (var _item in DependentQuestionExceptSex)
+                    {
+                        ADependent.Add(_item);
+                    }
+                    if (!HasDependency.Contains(item.dependency.dependency_question))
+                    {
+                        HasDependency.Add(item.dependency.dependency_question, ADependent);
+                    }
+                }
+            }
+            return HasDependency;
+        }
+
+        private ArrayList GetQuestionWithoutDependency(object Gender = null)
+        {
+            ArrayList AWithoutDependency = new ArrayList();
+            if (Gender == null)
+            {
+
+                ObservableCollection<Question> questions = Questionnaire.GetQuestions(UserDetails);
+                var WithoutDependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question == null select dependentquestion);
+                foreach (var item in WithoutDependency)
+                {
+                    AWithoutDependency.Add(item);
+                }
+            }
+            else
+            {
+                Int32 _Gender = Convert.ToInt32(Gender);
+                ObservableCollection<Question> questions = Questionnaire.GetQuestions(UserDetails);
+                var WithoutDependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question == null && dependentquestion.gender != _Gender select dependentquestion);
+                foreach (var item in WithoutDependency)
+                {
+                    AWithoutDependency.Add(item);
+                }
+                AWithoutDependency.RemoveRange(0, 2);
+            }
+            return AWithoutDependency;
+        }
+
+        void SetHeader()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Visible;
+            GlobalData.Default.HeaderIcon = string.Concat(ConfigurationManagers.ImagePath, Questionnaire.image_logo_grey);
+            GlobalData.Default.HeaderState = true;
+            GlobalData.Default.HeaderColor = Questionnaire.background_colour;
+            GlobalData.Default.HeaderTitle = Questionnaire.title.ToPascal();
+        }
+        private async void GetQuestionnaire()
+        {
+            //if (UserDetails.score_history != null && UserDetails.score_history.Count > 0)
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Questionnaire = QuestionnaireService.GetQuestionnaire(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+                AllQuestions = Questionnaire.GetQuestions(UserDetails);
+                CurrentCategory = Questionnaire.questions.FirstOrDefault().category;
+                CurrentSubCategory = Questionnaire.questions.FirstOrDefault().subcategories.FirstOrDefault();
+                CurrentQuestion = Questionnaire.questions.FirstOrDefault(q => q.category == CurrentCategory).questions.FirstOrDefault();
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                //CurrentQuestion.Category = CurrentCategory;
+                QuestionWithoutDependency = GetQuestionWithoutDependency();
+                DependentQuestion = GetDependentHasTable();
+                SetHeader();
+                GlobalData.Default.LoaderVisibility = false;
+            });
+
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+
+        public ArrayList QuestionWithoutDependency
+        {
+            get { return GetValue(() => QuestionWithoutDependency); }
+            set { SetValue(() => QuestionWithoutDependency, value); }
+        }
+        public Hashtable DependentQuestion
+        {
+            get { return GetValue(() => DependentQuestion); }
+            set { SetValue(() => DependentQuestion, value); }
+        }
+
+        public Category CurrentCategory
+        {
+            get { return GetValue(() => CurrentCategory); }
+            set { SetValue(() => CurrentCategory, value); }
+        }
+        public Subcategory CurrentSubCategory
+        {
+            get { return GetValue(() => CurrentSubCategory); }
+            set { SetValue(() => CurrentSubCategory, value); }
+        }
+        public HRA Questionnaire
+        {
+            get { return GetValue(() => Questionnaire); }
+            set
+            {
+                SetValue(() => Questionnaire, value);
+                HeaderLabel = Questionnaire.title;
+            }
+        }
+
+        public ObservableCollection<Question> AllQuestions
+        {
+            get { return GetValue(() => AllQuestions); }
+            set { SetValue(() => AllQuestions, value); }
+        }
+
+        public void MoveToQuestion(int moveIndex)
+        {
+            ObservableCollection<Question> questions = AllQuestions;
+            CurrentQuestion.ErrorMessage = "";
+            if (moveIndex == 1 && !ValidateAnswer()) return;
+
+            /*Check for Gender*/
+            if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "53876df906836d0800c4aff7")
+            {
+                ArrayList AlMaleQuestion = GetQuestionWithoutDependency(2);
+                QuestionWithoutDependency.RemoveRange(2, QuestionWithoutDependency.Count - 2);
+                QuestionWithoutDependency.InsertRange(2, AlMaleQuestion);
+                DependentQuestion = GetDependentHasTable(2);
+
+            }
+            else if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "53876df906836d0800c4affa")
+            {
+                ArrayList AlFemaleQuestion = GetQuestionWithoutDependency(1);
+                QuestionWithoutDependency.RemoveRange(2, QuestionWithoutDependency.Count - 2);
+                QuestionWithoutDependency.InsertRange(2, AlFemaleQuestion);
+                DependentQuestion = GetDependentHasTable(1);
+            }
+            ArrayList SelectedAnswer = new ArrayList();
+            foreach (var item in CurrentQuestion.SelectedAnswers)
+            {
+                SelectedAnswer.Add(Convert.ToString(item.answer));
+            }
+            //Cheack having dependent Question 
+            ArrayList _questionId = CheckForDependentQuestion(CurrentQuestion, SelectedAnswer);
+            if (_questionId != null && _questionId.Count > 0)
+            {
+                ArrayList GetExistingDependentRecord = CheckForDependentQuestion(CurrentQuestion);
+                foreach (var item in GetExistingDependentRecord)
+                {
+                    QuestionWithoutDependency.Remove(item);
+                }
+                for (int i = 0; i < _questionId.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        if (QuestionWithoutDependency.Contains((Question)_questionId[i - 1]))
+                        {
+                            QuestionWithoutDependency.Insert(QuestionWithoutDependency.IndexOf((Question)_questionId[i - 1]) + 1, _questionId[i]);
+                        }
+                    }
+                    else
+                    {
+                        QuestionWithoutDependency.Insert(QuestionWithoutDependency.IndexOf(CurrentQuestion) + 1, (Question)_questionId[i]);
+                    }
+
+                }
+            }
+            else {
+                ArrayList GetExistingDependentRecord = CheckForDependentQuestion(CurrentQuestion);
+                foreach (var item in GetExistingDependentRecord)
+                {
+                    QuestionWithoutDependency.Remove(item);
+                }
+            }
+
+            CurrentQuestion = (Question)QuestionWithoutDependency[QuestionWithoutDependency.IndexOf(CurrentQuestion) + 1];
+            CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+
+        }
+
+        private ArrayList CheckForDependentQuestion(Question currentQuestion)
+        {
+            var query = from Question num in QuestionWithoutDependency
+                        where num.dependency.dependency_question == currentQuestion._id
+                        select num;
+
+            ArrayList Al = new ArrayList();
+            foreach (var item in query)
+            {
+                Al.Add(item);
+            }
+            return Al;
+        }
+
+        private ArrayList GetAllDependentQuestion(Question currentQuestion)
+        {
+            var DependentQuestionList = (ArrayList)DependentQuestion[currentQuestion._id];
+            var query = from Question num in DependentQuestionList
+                        where num.dependency.dependency_answer == currentQuestion.dependency.dependency_answer
+                        select num;
+
+            ArrayList Al = new ArrayList();
+            foreach (var item in query)
+            {
+                Al.Add(item);
+            }
+
+            return Al;
+        }
+
+        private ArrayList CheckForDependentQuestion(Question currentQuestion, ArrayList selectedAnswer)
+        {
+            ArrayList _QuestionId = null;
+            if (DependentQuestion.Contains(currentQuestion._id))
+            {
+                ArrayList AllDependentQuestion = (ArrayList)DependentQuestion[currentQuestion._id];
+                List<Question> Dependent_Question = new List<Business.Objects.Question>();
+                for (int i = 0; i < AllDependentQuestion.Count; i++)
+                {
+                    Dependent_Question.Add((Question)AllDependentQuestion[i]);
+                }
+                _QuestionId = GetDependentQuestionIdHavingAnswer(selectedAnswer, Dependent_Question);
+            }
+            return _QuestionId;
+        }
+
+        public void MoveToQuestionPrevious(int v)
+        {
+            CurrentQuestion = (Question)QuestionWithoutDependency[QuestionWithoutDependency.IndexOf(CurrentQuestion) - 1];
+            CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+        }
+
+        private ArrayList GetDependentQuestionIdHavingAnswer(ArrayList selectedAnswer, List<Question> getAllDependentQuestion)
+        {
+            var _questionId = (from a in getAllDependentQuestion select a);
+            ArrayList SelectedQuestion = new ArrayList();
+
+            string _QuestionID = null;
+            foreach (var item in _questionId)
+            {
+                var MatchedAnswer = item.dependency.dependency_answer.ToArray().Intersect(selectedAnswer.ToArray()).Any();
+                //!item.dependency.dependency_answer.ToArray().Except(selectedAnswer.ToArray()).Any()
+                //        && !selectedAnswer.ToArray().Except(item.dependency.dependency_answer.ToArray()).Any();
+                if (MatchedAnswer)
+                {
+                    _QuestionID = item._id;
+                    SelectedQuestion.Add(item);
+                    // break;
+                }
+            }
+            return SelectedQuestion;
+        }
+
+        private bool ValidateAnswer()
+        {
+            if (CurrentQuestion.SelectedAnswers == null ||
+                CurrentQuestion.SelectedAnswers.Count <= 0 ||
+                CurrentQuestion.SelectedAnswers[0].answer == null ||
+                string.IsNullOrEmpty(CurrentQuestion.SelectedAnswers[0].answer.ToString()))
+            {
+                if (CurrentQuestion.element_type == 2 ||
+                    CurrentQuestion.element_type == 3 ||
+                    CurrentQuestion.element_type == 4 ||
+                    CurrentQuestion.element_type == 5 ||
+                    CurrentQuestion.element_type == 6)
+                    CurrentQuestion.ErrorMessage = AppMessages.missing_answer;// Display Error Message
+                else CurrentQuestion.ErrorMessage = AppMessages.missing_option;// Display Error Message
+                return false;
+            }
+            return true;
+        }
+
+        public void SubmitQuestionnaire()
+        {
+            ObservableCollection<Question> questions = Questionnaire.GetQuestions(UserDetails);
+            List<Answer> AllQuestionAnswer = new List<Answer>();
+            foreach (var item in questions)
+            {
+
+                AllQuestionAnswer.InsertRange(AllQuestionAnswer.Count, GetQuestionnaireAnswer(item));
+
+            }
+            var a = AllQuestionAnswer;
+            QuestionnairesResponse oQuestionnairesResponse = QuestionnaireService.PutQuestionnaire(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token, a);
+
+        }
+
+        private List<Answer> GetQuestionnaireAnswer(Question item)
+        {
+            List<Answer> SelectedAnswer = new List<Answer>();
+            var _item = item;
+            //if(QuestionWithoutDependency.Contains()
+            if ((from Question s in QuestionWithoutDependency where s._id.Equals(item._id) select s).Any())
+            {
+                var _Answer = (from Question s in QuestionWithoutDependency where s._id.Equals(item._id) select s.SelectedAnswers).FirstOrDefault();
+                if (_Answer.Count == 1)
+                {
+                    _Answer[0].response = _Answer[0].response == null ? "none" : _Answer[0].response;
+                    _Answer[0].response1 = _Answer[0].response1 == null ? "none" : _Answer[0].response1;
+                    _Answer[0].response2 = _Answer[0].response2 == null ? "none" : _Answer[0].response2;
+                    SelectedAnswer.Add(_Answer[0]);
+                }
+                else
+                {
+                    Answer AnsMultiSelect = _Answer[0];
+                    ArrayList MutliSelect = new ArrayList();
+                    
+                    foreach (var MutliSelectAnswer in _Answer)
+                    {
+                        MutliSelect.Add(MutliSelectAnswer.answer);
+                    }
+                    AnsMultiSelect.answer = MutliSelect;
+                    SelectedAnswer.Add(AnsMultiSelect);
+                }
+                return SelectedAnswer;
+            }
+            else
+            {
+                item.SelectedAnswers = new ObservableCollection<Answer>();
+                Answer a = new Answer();
+                a.date = Convert.ToString(DateTime.Now.Ticks);
+                a.key_string = item.key_string;
+                a.element_type = item.element_type;
+                a.question = item._id;
+                a.answer = "none";
+                a.response = a.response == null ? "none" : a.response;
+                a.response1 = a.response1 == null ? "none" : a.response1;
+                a.response2 = a.response2 == null ? "none" : a.response2;
+                item.SelectedAnswers.Add(a);
+                var _UnFilledQuestion = item.SelectedAnswers.FirstOrDefault();
+                SelectedAnswer.Add(_UnFilledQuestion);
+                return SelectedAnswer;
+            }
+        }
+    }
+}

@@ -1,0 +1,65 @@
+﻿using RTH.Windows.Views.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for OffHeader.xaml
+    /// </summary>
+    public partial class OffHeaderView : UserControl
+    {
+        public OffHeaderView()
+        {
+            InitializeComponent();    
+            if(App.SharedValues.WindowMain.CurrentView==Enums.ViewEnum.MotivationView)
+            {
+                this.Background = Brushes.White;
+            }
+        }
+
+
+        public string HeaderData
+        {
+            get { return (string)GetValue(HeaderDataProperty); }
+            set { SetValue(HeaderDataProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for HeaderData.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HeaderDataProperty =
+            DependencyProperty.Register("HeaderData", typeof(string), typeof(OffHeaderView), new PropertyMetadata(null));
+
+
+
+        public string NavigationView
+        {
+            get { return (string)GetValue(NavigationViewProperty); }
+            set { SetValue(NavigationViewProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for NavigationView.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NavigationViewProperty =
+            DependencyProperty.Register("NavigationView", typeof(string), typeof(OffHeaderView), new PropertyMetadata(null));
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var window = ((Grid)sender).FindAncestor<Window>();
+            if (e.LeftButton == MouseButtonState.Pressed && window != null)
+            {
+                window.DragMove();
+            }
+        }
+    }
+}

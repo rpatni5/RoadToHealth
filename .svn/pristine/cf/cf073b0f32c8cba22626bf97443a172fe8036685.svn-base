@@ -1,0 +1,52 @@
+﻿using System.Linq;
+using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System.Collections.Generic;
+using RTH.Business.Objects.JSON;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthPlanViewModel : ViewModelBase
+    {
+        public HealthPlanViewModel()
+        {
+            LoadHealthPlanData();
+        }
+
+        public Dictionary<HealthPlanCategory, IEnumerable<HealthPlanObjective>> HealthPlanObj
+        {
+            get { return GetValue(() => this.HealthPlanObj); }
+            set { SetValue(() => HealthPlanObj, value); }
+        }
+        public string WelcomeMessage
+        {
+            get { return GetValue(() => this.WelcomeMessage); }
+            set { SetValue(() => WelcomeMessage, value); }
+        }
+        public override void Refresh()
+        {
+
+        }
+        public void LoadHealthPlanData()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                WelcomeMessage = ViewModelBase.AppMessages.okay + " " + UserDetails.name + ", " + ViewModelBase.AppMessages.time_build_new_you;
+                var result = HealthPlanServices.GetHealthPlan(UserDetails._id, UserDetails.AuthToken.access_token);
+
+                HealthPlanObj = result.GroupBy(t => new { t.category.category, t.category.color })
+                        .ToDictionary(group => new HealthPlanCategory { category = group.Key.category, color = group.Key.color }, items => items.Select(t => t));
+
+               var a =  GetStrategy(result.FirstOrDefault()._id);
+
+            });
+        }
+
+        public List<Strategy> GetStrategy(string ObjectiveId)
+        {
+            var ObjectiveData = HealthPlanServices.GetHealthPlanObjective(UserDetails._id, ObjectiveId, UserDetails.AuthToken.access_token).data;
+            return ObjectiveData.strategy.Where(m => m.strategy_status.Equals(1)).ToList();
+        }
+    }
+}

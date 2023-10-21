@@ -1,0 +1,71 @@
+﻿using RTH.Windows.Views.Helpers;
+using RTH.Windows.Views.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for DashboardSideMenuView.xaml
+    /// </summary>
+    public partial class DashboardMenu : UserControl
+    {
+        public DashboardMenu()
+        {
+            InitializeComponent();
+            this.DataContext = this;
+            if (!System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
+            {
+                SetMenuItemData();
+                txtVersion.Text=" Version "+ System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
+        }
+
+
+
+        public List<QuealthMenuItem> QuealthMenuItems
+        {
+            get { return (List<QuealthMenuItem>)GetValue(QuealthMenuItemsProperty); }
+            set { SetValue(QuealthMenuItemsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for QuealthMenuItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty QuealthMenuItemsProperty =
+            DependencyProperty.Register("QuealthMenuItems", typeof(List<QuealthMenuItem>), typeof(DashboardMenu), new PropertyMetadata(null));
+
+        private void SetMenuItemData()
+        {
+            List<QuealthMenuItem> lstQMenu = new List<QuealthMenuItem>();
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/dashboardico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/dashboardico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/dashboardico_blu.png", MenuTitle = App.SharedValues.LanguageResource.dashboard, ResultView = Enums.ViewEnum.DashboardView });
+
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/worldhthico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/worldhthico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/worldhthico_blu.png", MenuTitle = App.SharedValues.LanguageResource.mtwh, ResultView = Enums.ViewEnum.MWHealthierView });
+
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/friendsqico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/friendsqico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/friendsqico_blu.png", MenuTitle = App.SharedValues.LanguageResource.friends_of_q, ResultView = Enums.ViewEnum.FriendsOfQView });
+
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/devicesico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/devicesico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/devicesico_blu.png", MenuTitle = App.SharedValues.LanguageResource.devices_services, ResultView = Enums.ViewEnum.DevicesServicesView });
+
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/supportico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/supportico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/supportico_blu.png", MenuTitle = App.SharedValues.LanguageResource.feedback, ResultView = Enums.ViewEnum.SupportView });
+
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/aboutusico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/aboutusico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/aboutusico_blu.png", MenuTitle = App.SharedValues.LanguageResource.about, ResultView = Enums.ViewEnum.AboutUsView });
+
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/settingsico_blk.png", HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/settingsico_wht.png", PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/settingsico_blu.png", MenuTitle = App.SharedValues.LanguageResource.settings, ResultView = Enums.ViewEnum.SettingsView });
+
+            
+            QuealthMenuItems = lstQMenu;
+        }
+
+        
+    }
+}

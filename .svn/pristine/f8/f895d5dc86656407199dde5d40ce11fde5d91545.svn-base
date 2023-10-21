@@ -1,0 +1,186 @@
+﻿using RTH.Windows.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Windows.Views.Helpers;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for us_Dashboard.xaml
+    /// </summary>
+    public partial class DashboardView : UserControl
+    {
+        #region variables
+        string openKeyString = string.Empty;
+        #endregion   
+        public DashboardView()
+        {
+            InitializeComponent();
+        }
+        private void DiseaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            RadioButton button = sender as RadioButton;
+            DiseaseData diseaseData = ConfigurationManagers.ClickedHRA = (DiseaseData)button.DataContext;
+            SummeryContainer.DataContext = button.DataContext;
+            RedoContainer.DataContext = button.DataContext;
+            if (diseaseData.StatusText == "InComplete")
+            {
+                if (openKeyString == string.Empty)
+                {
+                    Animate(MainScore.MaxHeight, 0);
+                    TimeLineContainer.Visibility = Visibility.Collapsed;
+                    SummeryContainer.Visibility = Visibility.Visible;
+                    carousel.Visibility = Visibility.Collapsed;
+                }
+                else if (MainScore.Height > 0 || Double.IsNaN(MainScore.Height))
+                {
+                    Animate(MainScore.MaxHeight, 0);
+                    TimeLineContainer.Visibility = Visibility.Collapsed;
+                    SummeryContainer.Visibility = Visibility.Visible;
+                    carousel.Visibility = Visibility.Collapsed;
+                }
+                else if (openKeyString == diseaseData.KeyString)
+                {
+                    Animate(0, MainScore.MaxHeight);
+                    TimeLineContainer.Visibility = Visibility.Visible;
+                    SummeryContainer.Visibility = Visibility.Collapsed;
+                    carousel.Visibility = Visibility.Visible;
+                }
+                openKeyString = diseaseData.KeyString;
+            }
+            else
+            {
+                if (MainScore.Height > 0 || Double.IsNaN(MainScore.Height))
+                {
+                    double totalWidth = this.ActualWidth;
+                    Point position = Mouse.GetPosition(this);
+                    int calWidth = Convert.ToInt32(totalWidth);
+                    int buttonPosition = Convert.ToInt32(position.X);
+                    if (calWidth < 500)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 2, 3);
+                    else if (calWidth < 800)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 1.5, 6);
+                    else if (calWidth < 1100)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 1.4, 15);
+                    else if (calWidth < 1400)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 1.5, 20);
+
+                    RedoPopup.PlacementTarget = button;
+                    Window w = Window.GetWindow(this);
+                    if (RedoPopup.IsOpen)
+                    {
+                        RedoPopup.IsOpen = false;
+                        w.Opacity = 1;
+                    }
+                    else
+                    {
+                        RedoPopup.IsOpen = true;
+                        w.Opacity = .6;
+                    }
+
+
+
+                }
+                else
+                {
+                    Animate(0, MainScore.MaxHeight);
+                }
+                TimeLineContainer.Visibility = Visibility.Visible;
+                SummeryContainer.Visibility = Visibility.Collapsed;
+                carousel.Visibility = Visibility.Visible;
+            }
+        }
+        private double CalculateOffset(int calWidth, double buttonPosition, int offset)
+        {
+            return (calWidth * offset * 1.0) / buttonPosition;
+        }
+        private void Animate(double from, double to)
+        {
+            DoubleAnimation da = new DoubleAnimation();
+            da.From = from;
+            da.To = to;
+            da.Duration = new Duration(TimeSpan.FromSeconds(.5));
+            MainScore.BeginAnimation(Button.HeightProperty, da);
+        }
+
+        private void RedoPopup_Closed(object sender, EventArgs e)
+        {
+            //Window w = Window.GetWindow(this);
+            //w.Opacity = 1;
+
+        }
+
+        private void Grid_ManipulationStarting(object sender, ManipulationStartingEventArgs e)
+        {
+            e.ManipulationContainer = this;
+            e.Handled = true;
+        }
+
+        private void ScoreContent_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e)
+        {
+
+        }
+
+        double cumulativeDeltaX, cumulativeDeltaY, linearVelocity;
+        private void Grid_ManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+            //store values of horizontal & vertical cumulative translation         
+            cumulativeDeltaX = e.CumulativeManipulation.Translation.X;
+            cumulativeDeltaY = e.CumulativeManipulation.Translation.Y;
+            //store value of linear velocity into horizontal direction  
+            linearVelocity = e.Velocities.LinearVelocity.X;
+        }
+
+        private void Grid_ManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+            MessageBox.Show("Swipe Complete");
+            bool isRightToLeftSwipe = false; //to determine swipe direction
+            if (cumulativeDeltaX < 0)
+            {
+                //moving from right to left
+                isRightToLeftSwipe = true;
+                MessageBox.Show("Swipe detected");
+            }
+
+            //check if this is swipe gesture
+            if (isSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity))
+            {
+                if (isRightToLeftSwipe)
+                {
+                    //show previous Data
+                    MessageBox.Show("Show Previous data");
+                }
+                else
+                {
+                    //show next Data  
+                    MessageBox.Show("show next Data");
+                }
+            }
+        }
+
+
+        double DeltaX = 20, DeltaY = 5, LinearVelocityX = 80;
+        private bool isSwipeGesture(double deltaX, double deltaY, double linearVelocity)
+        {
+            bool result = false;
+            if (deltaY <= DeltaX && deltaX >= DeltaY && linearVelocity >= LinearVelocityX)
+                result = true;
+            return result;
+        }
+    }
+}

@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class DiseaseIconConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (!values.Any(e => e == DependencyProperty.UnsetValue || e == null || string.IsNullOrEmpty(e.ToString())))
+            {
+                if (values.Count() > 1 && values[1].Equals(true))
+                {
+                    return App.SharedValues.DiseasePlainIcons[values[0].ToString()];
+                }
+                return App.SharedValues.DiseaseIcons[values[0].ToString()];
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

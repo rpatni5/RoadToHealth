@@ -1,0 +1,435 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels.Common;
+using RTH.Helpers.Messaging;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using RTH.Helpers;
+//using System.Threading.Tasks;
+
+
+namespace RTH.Windows.ViewModels
+{
+    public class SettingsViewModel : Common.ViewModelBase
+    {
+        private User objUser;
+        private ICommand m_updateFullName;
+        public bool IsLanguageLoaded, IsCountryLoaded = false;
+
+        public ICommand UpdateFullName { get { return m_updateFullName ?? (m_updateFullName = new RelayCommand((o) => UpdateFullNameAction(o), (o) => !string.IsNullOrWhiteSpace(this.updatedname))); } }
+
+        private ICommand m_popupCancel;
+        public ICommand PopupCancel { get { return m_popupCancel ?? (m_popupCancel = new RelayCommand((o) => PopupCancelAction(o), (o) => true)); } }
+
+        private void PopupCancelAction(object o)
+        {
+            this.IsPopupVisible = false;
+        }
+
+        public override void Refresh()
+        {
+
+            this.ErrorMessage = "";
+            GetLoggedInUserData();
+
+        }
+
+        public SettingsViewModel()
+        {
+            HeaderVisibility = false;
+            Init();
+        }
+
+        private void Init()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                LanguageList = RTH.Business.Services.AppService.GetLanguage().Data;
+                CountryList = RTH.Business.Services.AppService.GetCountry().Data;
+                HeaderLabel = AppMessages.settings;
+                GetLoggedInUserData();
+            });
+        }
+
+        private void GetLoggedInUserData()
+        {
+            objUser = (User)ViewModelBase.UserDetails;
+            Language = objUser.language; // ViewModelBase.UserDetails.language; // "en"; ViewModelBase.Lang??"en"; 
+            country1 = objUser.country; // ViewModelBase.UserDetails.country;
+
+            this.name = objUser.name;
+            this.email = objUser.email;
+            this.password = objUser.password;
+
+            this.updatedname = objUser.name;
+            this.updatedemail = objUser.email;
+
+            // if social user then hide password grid else show it.
+            if (objUser.type == Configurations.NORMAL_USER_TYPE)
+                this.blnNotSocialUser = true;
+            else
+                this.blnNotSocialUser = false;
+
+        }
+
+        private async void UpdateFullNameAction(object o)
+        {
+
+            if (await this.UpdateFullNameData())
+            {
+                ViewModelLocator.PerformCleanUp();
+                RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.UpdatedFullName });
+            }
+        }
+
+        public async Task<bool> UpdateFullNameData()
+        {
+
+            bool result = false;
+
+            result = await AsyncCall.Invoke(() =>
+            {
+
+                if (string.IsNullOrWhiteSpace(this.updatedname))
+                {
+
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_name;
+                    result = false;
+                }
+                if (!ExtensionMethod.ValidateName(this.updatedname))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_valid_name;
+                    result = false;
+                }
+                else
+                {
+                    objUser.name = this.updatedname;
+                    RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+                    this.ErrorMessage = Configurations.NAME_UPDATED;
+
+                    this.name = this.updatedname;
+                    result = true;
+                }
+
+                return result;
+
+            });
+
+            return result;
+
+        }
+
+        public async Task<bool> UpdateEmailData()
+        {
+            bool result = false;
+            result = await AsyncCall.Invoke(() =>
+              {
+
+                  objUser.email = this.updatedemail;
+                  RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+                  this.ErrorMessage = Configurations.EMAIL_UPDATED;
+                  this.email = this.updatedemail;
+
+                  return true;
+              });
+
+            RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.UpdatedEmail});
+            return result;
+
+        }
+        
+        public async Task<bool> UpdatePasswordData(string defaultPassword, string strOldPassword, string strNewPassword, string strConfirmNewPassword)
+        {
+
+            bool retVal = false;
+
+            retVal = await AsyncCall.Invoke(() =>
+            {
+               
+                if (defaultPassword != strOldPassword)
+                { this.ErrorMessage = ViewModelBase.AppMessages.wrong_old_password; retVal = false; }
+
+                else if (string.IsNullOrEmpty(strOldPassword))
+                { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_password; retVal = false; }
+
+                else if (string.IsNullOrEmpty(strNewPassword))
+                { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_confirm_password; retVal = false; }
+
+                else if (strNewPassword != strConfirmNewPassword)
+                { this.ErrorMessage = ViewModelBase.AppMessages.password_mismatched; retVal = false; }
+
+                else if (strOldPassword == strNewPassword)
+                { this.ErrorMessage = ViewModelBase.AppMessages.same_password_found; retVal = false; }
+
+                else
+                {
+                    objUser.password = strNewPassword;
+                    RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+                    this.ErrorMessage = Configurations.PASSWORD_UPDATED;
+                    retVal = true;
+
+                }
+
+                return retVal;
+
+            });
+
+            if(retVal)
+            RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.UpdatedPassword });
+
+            return retVal;
+
+        }
+
+        public void UpdateLanguage(string lang)
+        {
+
+            User objUser = (User)ViewModelBase.UserDetails;
+            objUser.language = lang;
+
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+        }
+
+        public void UpdateCountry(string country)
+        {
+
+            User objUser = (User)ViewModelBase.UserDetails;
+            objUser.country = country;
+
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        }
+
+        public void UpdateLanguageAsyn(string lang)
+        {          
+                User objUser = (User)ViewModelBase.UserDetails;
+                objUser.language = lang;
+                RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+        }
+
+        public async Task<bool> UpdateCountryAsyn(string country)
+        {
+            await AsyncCall.Invoke(() =>
+            {
+                User objUser = (User)ViewModelBase.UserDetails;
+                objUser.country = country;
+
+                RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+                return true;
+            });
+
+            return true;
+
+        }
+
+        #region ViewModel Properties
+
+        public String name
+        {
+            get { return GetValue(() => name); }
+            set { SetValue(() => name, value); }
+        }
+
+        public String email
+        {
+            get { return GetValue(() => email); }
+            set
+            {
+                SetValue(() => email, value);
+            }
+        }
+        public String password
+        {
+            get { return GetValue(() => password); }
+            set
+            {
+                SetValue(() => password, value);
+            }
+        }
+        public String confirm
+        {
+            get { return GetValue(() => confirm); }
+            set
+            {
+                SetValue(() => confirm, value);
+            }
+        }
+        public String Language
+        {
+            get { return GetValue(() => Language); }
+            set
+            {
+                SetValue(() => Language, value);
+            }
+        }
+        public String HealthGuidelines
+        {
+            get { return GetValue(() => HealthGuidelines); }
+            set
+            {
+                SetValue(() => HealthGuidelines, value);
+            }
+        }
+
+
+        public String updatedname
+        {
+            get { return GetValue(() => updatedname); }
+            set { SetValue(() => updatedname, value); }
+        }
+
+        public String updatedemail
+        {
+            get { return GetValue(() => updatedemail); }
+            set
+            {
+                SetValue(() => updatedemail, value);
+            }
+        }
+
+        public String newpassword
+        {
+            get { return GetValue(() => newpassword); }
+            set
+            {
+                SetValue(() => newpassword, value);
+            }
+        }
+
+        public String confirmnewpassword
+        {
+            get { return GetValue(() => confirmnewpassword); }
+            set
+            {
+                SetValue(() => confirmnewpassword, value);
+            }
+        }
+
+        public String country1
+        {
+            get { return GetValue(() => country1); }
+            set
+            {
+                SetValue(() => country1, value);
+            }
+        }
+
+        public IEnumerable<Language> LanguageList
+        {
+            get { return GetValue(() => LanguageList); }
+            set
+            {
+                SetValue(() => LanguageList, value);
+            }
+        }
+
+        public IEnumerable<Country> CountryList
+        {
+            get { return GetValue(() => CountryList); }
+            set
+            {
+                SetValue(() => CountryList, value);
+            }
+        }
+
+        public bool IsPopupVisible
+        {
+            get { return GetValue(() => IsPopupVisible); }
+            set
+            {
+                SetValue(() => IsPopupVisible, value);
+            }
+        }
+
+        public Boolean blnNotSocialUser
+        {
+            get { return GetValue(() => blnNotSocialUser); }
+            set
+            {
+                SetValue(() => blnNotSocialUser, value);
+            }
+        }
+
+
+        #endregion
+
+        #region Old Code
+
+        //private ICommand m_updateEmail;
+        //private ICommand m_updatePassword;
+        //private ICommand m_tutorialsStatus;
+
+        //public ICommand UpdateEmail { get { return m_updateEmail ?? (m_updateEmail = new RelayCommand((o) => UpdateEmailAction(o), (o) => true)); } }
+        //public ICommand UpdatePassword { get { return m_updatePassword ?? (m_updatePassword = new RelayCommand((o) => UpdatePasswordAction(o), (o) => true)); } }
+        //public ICommand UpdateTutorialsStatus { get { return m_tutorialsStatus ?? (m_tutorialsStatus = new RelayCommand((o) => UpdateTutorialsAction(o), (o) => true)); } }
+
+        //private void UpdatePasswordAction(object o)
+        //{
+
+        //}
+        //public void UpdateEmailAction(object o)
+        //{
+
+        //    if (string.IsNullOrEmpty(this.updatedemail))
+        //    {
+        //        this.ErrorMessage = ViewModelBase.AppMessages.missing_email;
+        //        GlobalData.Default.LoaderVisibility = false;
+        //    }
+        //    else if (!ExtensionMethod.ValidateEmail(this.updatedemail))
+        //    {
+        //        this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry;
+        //        GlobalData.Default.LoaderVisibility = false;
+        //    }
+        //    else
+        //    {
+        //        objUser.email = this.updatedemail;
+        //        RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+        //    }
+
+        //}
+        //private void UpdateTutorialsAction(object o)
+        //{
+
+
+        //    // objUser = ;
+        //    // RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+
+        //}
+
+        //public void UpdateEmailAction(string email)
+        //{
+        //    objUser.email = email;
+        //    RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        //}
+
+        //public void UpdatePasswordAction(string strPwd)
+        //{
+        //    objUser.password = strPwd;
+        //    RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        //}
+
+        //public void UpdateTutorialsAction(bool isChecked)
+        //{
+
+
+        //    // objUser = ;
+        //    // RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+
+        //}
+
+        #endregion
+
+    }
+}

@@ -1,0 +1,40 @@
+﻿using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+        private RelayCommand m_CategoriesCommand;
+        public RelayCommand CategoriesCommand
+        {
+            get
+            {
+                return m_CategoriesCommand ?? (m_CategoriesCommand = new RelayCommand(
+                    ve => ExecuteCategories(ve), (t) => true));
+            }
+        }
+
+        private void ExecuteCategories(object ve)
+        {
+            ProductInfo productInfo = (ProductInfo)ve;
+            if (string.IsNullOrEmpty(productInfo.ID))
+                LoadView(Views.Enums.ViewEnum.ProductCategoriesView);
+        }
+
+        private RelayCommand m_NavigationCommand;
+        public RelayCommand NavigationCommand
+        {
+            get
+            {
+                return m_NavigationCommand ?? (m_NavigationCommand = new RelayCommand(
+                    ve => OnLoadViewModel(ve), (t) => true));
+            }
+        }    
+    }
+}

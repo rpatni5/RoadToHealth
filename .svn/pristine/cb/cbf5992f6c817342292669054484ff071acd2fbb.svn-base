@@ -1,0 +1,134 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.Views.Helpers;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for MultiSelectUserControl.xaml
+    /// </summary>
+    public partial class MultiSelectUserControl : AnswerBase
+    {
+        public MultiSelectUserControl()
+        {
+            InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            Question q = (Question)e.NewValue;
+            if (q.element_type == 7)
+            {
+                if (q.SelectedAnswers == null)
+                {
+                    q.SelectedAnswers = new ObservableCollection<Answer>();
+                    Answer a = new Answer();
+                    a.date = Convert.ToString(DateTime.Now.Ticks);
+                    a.key_string = q.key_string;
+                    a.element_type = q.element_type;
+                    a.question = q._id;
+                    q.SelectedAnswers.Add(a);
+                }
+            }
+        }
+
+        private async void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox chkMultiSelect = sender as CheckBox;
+            Question q = (DataContext as Question);
+            dynamic _answer = (sender as CheckBox).Tag.ToString();
+            bool _MoveToNextQuestion = false;
+            if (chkMultiSelect.IsChecked == true)
+            {
+                if (q.SelectedAnswers.Any())
+                {
+                    if (q.SelectedAnswers[0].answer == null || (Convert.ToString(q.SelectedAnswers[0].answer) == "none") || (Convert.ToString(q.SelectedAnswers[0].answer) == ""))
+                    {
+                        Answer a = q.SelectedAnswers[0];
+                        q.SelectedAnswers.Remove(a);
+                    }
+                }
+                if (bool.Parse((sender as CheckBox).ToolTip.ToString()))
+                {
+                    q.SelectedAnswers = new ObservableCollection<Answer>();
+                    _MoveToNextQuestion = true;
+                }
+                else
+                {
+                    if (q.SelectedAnswers.Any(m => m.answer_overrider == true))
+                    {
+                        q.SelectedAnswers.Remove((Answer)q.SelectedAnswers.Where(m => m.answer_overrider == true).FirstOrDefault());
+                    }
+                }
+                var _getAnswer = (from _a in q.SelectedAnswers where _a.answer == _answer select _a);
+                if (_getAnswer.Count() == 0)
+                {
+                    Answer a = new Answer();
+                    a.date = null;
+                    a.key_string = q.key_string;
+                    a.element_type = q.element_type;
+                    a.question = q._id;
+                    a.answer = _answer;
+                    a.answer_overrider = bool.Parse((sender as CheckBox).ToolTip.ToString());
+                    q.SelectedAnswers.Add(a);
+                }
+
+            }
+            else
+            {
+                //var _getAnswer = (from _a in q.SelectedAnswers where _a.answer == _answer select _a);
+                foreach (var item in q.SelectedAnswers)
+                {
+                    if (item.answer.ToString() == _answer)
+                    {
+                        q.SelectedAnswers.Remove(item);
+                        break;
+                    }
+                }
+
+            }
+            var ans = q.answers;
+            q.answers = null;
+            q.answers = ans;
+            await Task.Run(() =>
+            {
+                if (_MoveToNextQuestion)
+                {
+                    Thread.Sleep(100);
+                    NavigateToNextQuestion();
+                }
+            });
+        }
+
+
+        private void CheckBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            CheckBox chk = sender as CheckBox;
+            Question q = (Question)DataContext;
+            var Answer = q.SelectedAnswers;
+            //foreach (var item in Answer)
+            //{
+            //    if(Convert.ToString(item.answer) == "none") { q.SelectedAnswers.Remove(item); }
+            //}
+            chk.IsChecked = false;
+            chk.IsChecked = q.SelectedAnswers.Any(a => a.answer != null && a.answer.ToString() == chk.Tag.ToString());
+        }
+
+        private void NavigateToNextQuestion()
+        {
+            Dispatcher.BeginInvoke((Action)(() =>
+            {
+                QuestionNavigatorView questionNavigator = UIHelper.FindParent<QuestionNavigatorView>(this);
+                questionNavigator.ExecuteContinueCommand(questionNavigator.DataContext);
+            }));
+        }
+
+    }
+}

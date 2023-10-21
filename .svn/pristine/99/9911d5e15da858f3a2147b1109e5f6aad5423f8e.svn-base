@@ -1,0 +1,104 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthPlanQuestionnaireView.xaml
+    /// </summary>
+    public partial class HealthPlanQuestionnaireView : ViewBase
+    {
+        public string ObjectiveId { get; set; }
+        public HealthPlanQuestionnaireView()
+        {
+            InitializeComponent();
+        }
+
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<HealthPlanQuestionnaireViewModel>(refreshRequired: true);
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+
+        }
+        public override void OnViewLoaded()
+        {
+            (this.ViewModel as HealthPlanQuestionnaireViewModel).GetHealthPlanQuestion(ObjectiveId);
+        }
+
+        #region Continue button
+        private RelayCommand continueCommand;
+        private RelayCommand m_ShowQuestionHelperCommand;
+        private RelayCommand m_CategoryChangeCommand;
+
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        public void ExecuteContinueCommand(object obj)
+        {
+            HealthPlanQuestionnaireViewModel vm = obj as HealthPlanQuestionnaireViewModel;
+            string QuestionSubmitted = vm.MoveToQuestion(1, Properties.Settings.Default.SecurePwd);
+        }
+
+
+
+        #endregion
+        #region Next Button
+        private RelayCommand nextCommand;
+
+        public RelayCommand NextCommand
+        {
+            get
+            {
+                return nextCommand ?? (nextCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        if (
+                        v != null &&
+                        v.CurrentQuestion != null &&
+                        v.CurrentQuestion.HasErrors)
+                        {
+                            v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+                            return false;
+                        }
+                        return true;
+                    }));
+            }
+        }
+
+        #endregion
+        #region Previous Button
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecutePreviousCommand(object obj)
+        {
+            HealthPlanQuestionnaireViewModel vm = obj as HealthPlanQuestionnaireViewModel;
+           int QuestionIndex =  vm.MoveToQuestionPrevious(-1);
+            if(QuestionIndex==0)
+            {
+                App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthPlanView, param: true);
+            }
+
+        }
+        #endregion
+    }
+}

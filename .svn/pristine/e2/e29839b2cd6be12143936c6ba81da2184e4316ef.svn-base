@@ -1,0 +1,183 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for uc_home.xaml
+    /// </summary>
+    public partial class HomeView : ViewBase
+    {
+        public bool Animate
+        {
+            get { return (bool)GetValue(AnimateProperty); }
+            set { SetValue(AnimateProperty, value); }
+        }
+
+        public static readonly DependencyProperty AnimateProperty =
+            DependencyProperty.Register("Animate", typeof(bool), typeof(HomeView), new PropertyMetadata(false));
+
+        public HomeView()
+        {
+            InitializeComponent();
+            
+            Properties.Settings.Default.Email = string.Empty;
+            Properties.Settings.Default.Password = string.Empty;
+            Properties.Settings.Default.LastVisitedHRAID = string.Empty;
+            ViewModels.Common.ViewModelBase.ClearViewModelSettings();
+            Properties.Settings.Default.Save();
+            ViewModels.Common.GlobalData.Default.LastVisitedDiseaseID = string.Empty;
+            ViewModels.Common.GlobalData.Default.ClickedHRA = null;
+            GlobalData.Default.LastVisitedDiseaseID = string.Empty;
+            this.Loaded += HomeView_Loaded;
+        }
+
+        Storyboard qStoryboard = null;
+        String CurrentArc = null;
+
+        void HomeView_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (this.Animate)
+            {
+                this.Loaded -= HomeView_Loaded;
+                qStoryboard = new Storyboard();
+                this.StartAnimation(arcCardio);
+            }
+            else
+            {
+                gridButtons.SetValue(VisibilityProperty, Visibility.Visible);
+                Canvas.SetTop(gridButtons, 0);
+                Canvas.SetTop(gridIcons, gridIcons.ActualHeight);
+            }
+        }
+
+        private void StartAnimation(Arc arc)
+        {
+            var da = new DoubleAnimation(0, 100, TimeSpan.FromSeconds(0.75));
+            Storyboard.SetTarget(da, arc);
+            Storyboard.SetTargetProperty(da, new PropertyPath("Progress"));
+
+            arc.MarkProgress = true;
+            CurrentArc = arc.Name;
+            qStoryboard.Children.Add(da);
+            qStoryboard.Completed += qStoryboard_Completed;
+
+            qStoryboard.Begin();
+        }
+
+        private void StartImageAnimation(Grid imageGrid, Point current, Point updated)
+        {
+            imageGrid.SetValue(VisibilityProperty, Visibility.Visible);
+
+            var daCanvasTop = new DoubleAnimation(current.Y, updated.Y, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daCanvasTop, imageGrid);
+            Storyboard.SetTargetProperty(daCanvasTop, new PropertyPath("(Canvas.Top)"));
+
+            var daCanvasLeft = new DoubleAnimation(current.X, updated.X, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daCanvasLeft, imageGrid);
+            Storyboard.SetTargetProperty(daCanvasLeft, new PropertyPath("(Canvas.Left)"));
+
+            var daImageWidth= new DoubleAnimation(0, 48, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daImageWidth, imageGrid);
+            Storyboard.SetTargetProperty(daImageWidth, new PropertyPath("Width"));
+
+            var daImageHeight= new DoubleAnimation(0, 48, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daImageHeight, imageGrid);
+            Storyboard.SetTargetProperty(daImageHeight, new PropertyPath("Height"));
+
+            qStoryboard.Children.Add(daCanvasTop);
+            qStoryboard.Children.Add(daCanvasLeft);
+            qStoryboard.Children.Add(daImageWidth);
+            qStoryboard.Children.Add(daImageHeight);
+
+            qStoryboard.Completed += imgStoryboard_Completed;
+
+            qStoryboard.Begin();
+        }
+
+        void imgStoryboard_Completed(object sender, EventArgs e)
+        {
+            qStoryboard.Completed -= imgStoryboard_Completed;
+            qStoryboard.Children.Clear();
+
+            switch (CurrentArc)
+            {
+                case "arcCardio": this.StartAnimation(arcCancer); break;
+                case "arcCancer": this.StartAnimation(arcDiabetes); break;
+                case "arcDiabetes": this.StartAnimation(arcLungs); break;
+                case "arcLungs": this.StartAnimation(arcDementia); break;
+                case "arcDementia": this.AnimateLoginOptions(); this.CurrentArc = null; break;
+            }
+        }
+
+        private void AnimateLoginOptions()
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(0.5);
+            timer.Tick += (o, e) =>
+            {
+                timer.Stop(); 
+                timer = null;
+                this.AnimateLoginOptionsEx();
+            };
+            timer.Start();
+        }
+
+        private void AnimateLoginOptionsEx()
+        {
+            gridButtons.SetValue(VisibilityProperty, Visibility.Visible);
+            var daSetTop = new DoubleAnimation(gridButtons.ActualHeight * -1, 0, TimeSpan.FromSeconds(1));
+            Storyboard.SetTarget(daSetTop, gridButtons);
+            Storyboard.SetTargetProperty(daSetTop, new PropertyPath("(Canvas.Top)"));
+
+            var daSetTop2 = new DoubleAnimation(0, gridIcons.ActualHeight, TimeSpan.FromSeconds(1));
+            Storyboard.SetTarget(daSetTop2, gridIcons);
+            Storyboard.SetTargetProperty(daSetTop2, new PropertyPath("(Canvas.Top)"));
+
+            qStoryboard.Children.Add(daSetTop);
+            qStoryboard.Children.Add(daSetTop2);
+            qStoryboard.Begin();
+        }
+
+        void qStoryboard_Completed(object sender, EventArgs e)
+        {
+            qStoryboard.Completed -= qStoryboard_Completed;
+            qStoryboard.Children.Clear();
+
+            switch (CurrentArc)
+            {
+                case "arcCardio":
+                    this.arcCardio.MarkProgress = false;
+                    this.StartImageAnimation(imgCardio, arcCardio.EndPoint, new Point(176, 400)); break;
+                case "arcCancer":
+                    this.arcCancer.MarkProgress = false;
+                    this.StartImageAnimation(imgCancer, arcCancer.EndPoint, new Point(96, 400)); break;
+                case "arcDiabetes":
+                    this.arcDiabetes.MarkProgress = false;
+                    this.StartImageAnimation(imgDiabetes, arcDiabetes.EndPoint, new Point(16, 400)); break;
+                case "arcLungs":
+                    this.arcLungs.MarkProgress = false;
+                    this.StartImageAnimation(imgLungs, arcLungs.EndPoint, new Point(256, 400)); break;
+                case "arcDementia":
+                    this.arcDementia.MarkProgress = false;
+                    this.StartImageAnimation(imgDementia, arcDementia.EndPoint, new Point(336, 400)); break;
+            }
+        }
+    }
+}

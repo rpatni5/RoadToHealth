@@ -1,0 +1,85 @@
+﻿using Facebook;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.UserControls;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.SocialIntegration
+{
+    /// <summary>
+    /// Interaction logic for FaceBookSharingToWallView.xaml
+    /// </summary>
+
+    public partial class FaceBookSharingToWall : UserControl
+    {
+        private string addressTextBox;
+
+        public FaceBookSharingToWall()
+        {
+            InitializeComponent();
+            this.Loaded += FaceBookAuthenticationView_Loaded;
+            this.Unloaded += FaceBookAuthenticationView_Unloaded;
+        }
+
+        void FaceBookAuthenticationView_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.Unloaded -= FaceBookAuthenticationView_Unloaded;
+            this.browser.Dispose();
+            this.browser = null;
+        }
+
+        void FaceBookAuthenticationView_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                browser.Navigate("https://www.facebook.com/dialog/feed?app_id=1626126174305294&link=https://developers.facebook.com/docs/reference/dialogs/&picture=https://ng-admin-live.roadtohealth.co.uk/img/icon.png&name=Quealth&caption=Quealth%20%E2%80%93%20Life%20Changer!&description=I%E2%80%99ve%20just%20helped%20make%20the%20world%20healthier.%20Find%20out%20more%E2%80%A6&redirect_uri=http://www.quealth.co/&from=1513266492303639&display=popup");
+
+            });
+        }
+
+        public string AccessToken { get; private set; }
+        public FacebookClient FBClient { get; private set; }
+
+        private void browser_Navigated(object sender, System.Windows.Forms.WebBrowserNavigatedEventArgs e)
+        {
+            this.addressTextBox = e.Url.ToString();
+            if (this.addressTextBox.StartsWith("http://www.quealth.co/?post_id="))
+            {
+                MessageBox.Show("Message Posted Successfully.");
+                browser.Navigate("https://www.facebook.com/dialog/feed?app_id=1626126174305294&link=https://developers.facebook.com/docs/reference/dialogs/&picture=https://ng-admin-live.roadtohealth.co.uk/img/icon.png&name=Quealth&caption=Quealth%20%E2%80%93%20Life%20Changer!&description=I%E2%80%99ve%20just%20helped%20make%20the%20world%20healthier.%20Find%20out%20more%E2%80%A6&redirect_uri=http://www.quealth.co/&from=1513266492303639&display=popup");  
+                var parent = VisualTreeHelper.GetParent(this);
+                while (!(parent is MWHealthierView))
+                {
+                    parent = VisualTreeHelper.GetParent(parent);
+                }
+                (parent as MWHealthierView).OnShare(null);
+
+            }
+            else if (this.addressTextBox.StartsWith("http://www.quealth.co/"))
+            {
+                browser.Navigate("https://www.facebook.com/dialog/feed?app_id=1626126174305294&link=https://developers.facebook.com/docs/reference/dialogs/&picture=https://ng-admin-live.roadtohealth.co.uk/img/icon.png&name=Quealth&caption=Quealth%20%E2%80%93%20Life%20Changer!&description=I%E2%80%99ve%20just%20helped%20make%20the%20world%20healthier.%20Find%20out%20more%E2%80%A6&redirect_uri=http://www.quealth.co/&from=1513266492303639&display=popup");
+                var parent = VisualTreeHelper.GetParent(this);
+                while (!(parent is MWHealthierView))
+                {
+                    parent = VisualTreeHelper.GetParent(parent);
+                }
+                (parent as MWHealthierView).OnShare(null);
+
+            }
+
+        }
+    }
+}
+

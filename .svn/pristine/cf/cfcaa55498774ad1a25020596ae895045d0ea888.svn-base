@@ -1,0 +1,165 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Enums;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        HomeViewModel homeViewModel;
+        public MainWindow()
+        {
+            InitializeComponent();
+            this.ViewModel = homeViewModel = new ViewModels.HomeViewModel();           
+            App.SharedValues.oMainWindow = this;
+            GlobalData.Default.HeaderVisibility = Visibility.Collapsed;
+            GlobalData.Default.HeaderIcon = "";
+            GlobalData.Default.HeaderState = false;
+            GlobalData.Default.HeaderColor = "#546856";
+            GlobalData.Default.HeaderTitle = "Diabites";
+        }      
+
+        public MainWindow(ViewEnum defaultView):this()
+        {
+            LoadView(defaultView);
+        }
+        public ViewModelBase ViewModel
+        {
+            get { return (ViewModelBase)GetValue(ViewModelProperty); }
+            set { SetValue(ViewModelProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ViewModelProperty =
+            DependencyProperty.Register("ViewModel", typeof(ViewModelBase), typeof(MainWindow), new PropertyMetadata(null));
+
+        private RelayCommand m_RenderView;
+        private RelayCommand m_SetLanguageCommand;
+        private RelayCommand m_MenuButtonCheckedCommand;
+        private RelayCommand m_MenuButtonUncheckedCommand;
+        public RelayCommand LoadViewModel
+        {
+            get
+            {
+                return m_RenderView ?? (m_RenderView = new RelayCommand(
+                    ve => OnLoadViewModel(ve), (t) => true));
+            }
+        }
+        public RelayCommand SetLanguageCommand
+        {
+            get
+            {
+                return m_SetLanguageCommand ?? (m_SetLanguageCommand = new RelayCommand(
+                    ve => OnSetLanguage(ve), (t) => true));
+            }
+        }
+
+        public RelayCommand MenuButtonCheckedCommand
+        {
+            get
+            {
+                return m_MenuButtonCheckedCommand ?? (m_MenuButtonCheckedCommand = new RelayCommand(
+                    ve => OnMenuButtonChecked(ve), (t) => true));
+            }
+        }
+        public RelayCommand MenuButtonUncheckedCommand
+        {
+            get
+            {
+                return m_MenuButtonUncheckedCommand ?? (m_MenuButtonUncheckedCommand = new RelayCommand(
+                    ve => OnMenuButtonUnchecked(ve), (t) => true));
+            }
+        }
+        /// <summary>
+        /// menu toggle button checked
+        /// </summary>
+        private void OnMenuButtonUnchecked(object ve)
+        {
+            Animate(200, 0);
+        }
+        /// <summary>
+        /// menu toggle button unchecked
+        /// </summary>      
+        private void OnMenuButtonChecked(object ve)
+        {
+            Animate(0, 200);
+        }
+        /// <summary>
+        /// to animate from one position to another
+        /// </summary>
+        /// <param name="from"> starting position</param>
+        /// <param name="to"> ending position</param>
+        private void Animate(double from, double to)
+        {
+            DoubleAnimation da = new DoubleAnimation();
+            da.From = from;
+            da.To = to;
+            da.Duration = new Duration(TimeSpan.FromSeconds(.5));
+            this.GridExpender.BeginAnimation(Button.WidthProperty, da);
+        }
+        private void OnSetLanguage(object param)
+        {
+            var x = homeViewModel.GetLanguageVariables(param as string).data;
+            App.SharedValues.SetLanguage(x);
+            ViewModelBase.AppMessages = x as Variable;
+            ViewModelBase.Lang = param as string;
+        }
+        public void LoadView(ViewEnum view)
+        {
+            switch (view)
+            {
+                case ViewEnum.LoginView:
+                    this.ViewModel = new LoginViewModel(); break;
+                case ViewEnum.UserRegistrationView:
+                    this.ViewModel = new UserRegistrationViewModel(); break;
+                case ViewEnum.ForgotPasswordView:
+                    this.ViewModel = new ForgotPasswordViewModel(); break;
+                case ViewEnum.HomeView:
+                    this.ViewModel = new HomeViewModel(); break;
+                case ViewEnum.InsightsView:
+                    this.ViewModel = new InsightViewModel(); break;
+                case ViewEnum.DashboardView:
+                    this.ViewModel = new DashboardViewModel(); break;
+                case ViewEnum.ResultView:
+                    this.ViewModel = new ResultViewModel(); break;
+                case ViewEnum.FaceBookAuthenticationView:
+                    this.ViewModel = new FaceBookAuthenticationViewModel(); break;
+                case ViewEnum.QuestionNavigatorView:
+                    this.ViewModel = new QuestionNavigatorViewModel(); break;
+
+            }
+        }
+        private void OnLoadViewModel(object param)
+        {
+            var ve = (ViewEnum)Enum.Parse(typeof(ViewEnum), param as string);
+            LoadView(ve);
+        }
+
+        private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+
+        }
+
+    }
+
+}

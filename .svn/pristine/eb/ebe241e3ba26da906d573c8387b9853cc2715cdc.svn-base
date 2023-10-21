@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ResultView.xaml
+    /// </summary>
+    public partial class ResultView : UserControl
+    {
+        public ResultView()
+        {
+            InitializeComponent();
+        }
+    }
+
+    public class ScoreLine : Shape
+    {
+        public double X1, Y1, X2, Y2;
+        public bool IsTextDisplayed;
+        public string Caption;
+        private Point midpoint;
+
+        protected override Geometry DefiningGeometry
+        {
+            get
+            {
+                var geometryGroup = new GeometryGroup();
+
+                if (IsTextDisplayed)
+                {
+                    var midPoint = new Point((X1 + X2) / 2.0, (Y1 + Y2) / 2.0);
+                    // add 'Caption' text in that point
+                }
+                geometryGroup.Children.Add(new LineGeometry(new Point(X1, Y1), new Point(X2, Y2)));
+                FormattedText ft = new FormattedText("Caption",Thread.CurrentThread.CurrentCulture, System.Windows.FlowDirection.LeftToRight,new Typeface("Verdana"), 32, Brushes.Black);
+                Geometry geometry = ft.BuildGeometry(midpoint);
+                geometryGroup.Children.Add(geometry);
+                return geometryGroup;
+            }
+
+        }
+    }
+}

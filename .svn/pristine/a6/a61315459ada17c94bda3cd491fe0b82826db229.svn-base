@@ -1,0 +1,99 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Twitterizer;
+
+namespace RTH.Windows.ViewModels
+{
+    public class TwitterAuthenticationViewModel : ViewModelBase
+    {
+        RelayCommand authenticateCommand;
+        public TwitterAuthenticationViewModel(TwitterCredentials credentials)
+        {
+            Credentials = credentials;
+            GetAuthTokenAndNavigateBrowser();
+        }
+        public Uri NavigateToUri { get { return GetValue(() => NavigateToUri); } set { SetValue(() => NavigateToUri, value); } }
+        private async void GetAuthTokenAndNavigateBrowser()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                string oAuthToken = TwitterService.GetRequestToken(Credentials.ConsumerKey, Credentials.AccessToken);
+                string[] tokens = oAuthToken.Split('&');
+                Credentials.OAuthToken.Token = tokens[0].Split('=')[1];
+                Credentials.OAuthToken.TokenSecret = tokens[1].Split('=')[1];
+                //Credentials.OAuthToken = OAuthUtility.GetRequestToken(Credentials.ConsumerKey, Credentials.ConsumerSecret, "oob");
+                NavigateToUri = new Uri("http://twitter.com/oauth/authenticate?oauth_token=" + Credentials.OAuthToken.Token);
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+
+        public RelayCommand AuthenticateCommand
+        {
+            get
+            {
+                return authenticateCommand ?? (authenticateCommand = new RelayCommand(
+                    (o) =>
+                    {
+                        GetUserDetailsAsync();
+                    },
+                    (o) =>
+                    {
+                        return !string.IsNullOrEmpty(Credentials.Pin) && !string.IsNullOrWhiteSpace(Credentials.Pin);
+                    }));
+            }
+        }
+
+        private async void GetUserDetailsAsync()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Credentials.OAuthToken2 = OAuthUtility.GetAccessToken(Credentials.ConsumerKey, Credentials.ConsumerSecret, Credentials.OAuthToken.Token, Credentials.Pin.Trim());
+                if (Credentials.OAuthToken2 != null)
+                {
+                    Properties.Settings.Default.OAuthToken2 = Credentials.OAuthToken2.Token;
+                    Properties.Settings.Default.OAuthTokenSecret2 = Credentials.OAuthToken2.TokenSecret;
+                    Properties.Settings.Default.Save();
+                    OAuthTokens oOAuthTokens = new OAuthTokens();
+                    oOAuthTokens.AccessToken = Credentials.OAuthToken2.Token;
+                    oOAuthTokens.AccessTokenSecret = Credentials.OAuthToken2.TokenSecret;
+                    oOAuthTokens.ConsumerKey = Credentials.ConsumerSecret;
+                    oOAuthTokens.ConsumerSecret = Credentials.ConsumerKey;
+                    dynamic Twiteruser = TwitterAccount.VerifyCredentials(Credentials.Token, new VerifyCredentialsOptions() { UseSSL = true, APIBaseAddress = "https://api.twitter.com/1.1/" });
+                    User oUser = new User();
+                    oUser.name = Credentials.OAuthToken2.ScreenName;
+                    //oUser.email = (string)me.email;
+                    oUser._id = Convert.ToString(Credentials.OAuthToken2.UserId);
+                    oUser.type = "Twitter";
+                    ViewModelBase.UserDetails = oUser;
+                    oUser = this.ValidateSocialLogin(oUser);
+                    //if (oUser.message == "Failed to load User")
+                    //{ App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.FBUserRegistrationView); }
+                    //else
+                    //{
+                    //    ViewModelBase.UserDetails = oUser;
+                    //    App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.DashboardView);
+                    //}
+                    //TwitterAccount..(oOAuthTokens); //TwitterTimeline.UserTimeline(oOAuthTokens);
+
+
+
+                }
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+
+
+        public TwitterCredentials Credentials { get { return GetValue(() => Credentials); } set { SetValue(() => Credentials, value); } }
+
+
+    }
+}

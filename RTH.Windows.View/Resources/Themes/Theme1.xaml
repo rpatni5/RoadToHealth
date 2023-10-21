@@ -1,0 +1,28 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <LinearGradientBrush x:Key="DashboardStartColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#64c2d0" Offset="1.0" />        
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="DashboardBGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#64c2d0" Offset="0.0" />
+        <GradientStop Color="#967fb5" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="InsightBGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#ea5561" Offset="0.0" />
+        <GradientStop Color="#967fb5" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ResultBGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#3bb291" Offset="0.0" />
+        <GradientStop Color="#967fb5" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PHABGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#967fb5" Offset="0.0" />
+        <GradientStop Color="#64c2d0" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="CoachBGColor" StartPoint="1,0" EndPoint="0,1">
+        <GradientStop Color="#00a285" Offset="0.0" />
+        <GradientStop Color="#28abe3" Offset="1.0" />
+    </LinearGradientBrush>
+    
+</ResourceDictionary>

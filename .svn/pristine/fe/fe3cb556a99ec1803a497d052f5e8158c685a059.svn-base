@@ -1,0 +1,264 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.NavigationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+             xmlns:ve="RTH.Windows.Views.Enums" 
+             Width="800"
+             xmlns:GD="clr-namespace:RTH.Windows.ViewModels.Common;assembly=RTH.Windows.ViewModels"
+             xmlns:Root="clr-namespace:RTH.Windows.Views" Background="#FF7F7F7F"
+             DataContext="{Binding Source={x:Static GD:GlobalData.Default}, Path=ClickedHRA}">
+    <UserControl.Resources>
+        <converters:ObjectToEnableConverter x:Key="objToEnableConverter"/>
+        <Style TargetType="RadioButton" x:Key="navButton">
+            <Setter Property="GroupName" Value="NavGroup"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid>
+                            <Border Padding="4">
+                                <Border.Background>
+                                    <SolidColorBrush Color="Black" Opacity="0.4" />
+                                </Border.Background>
+                                <Label Name="content" 
+                                       Content="{TemplateBinding Content}" 
+                                       Foreground="{TemplateBinding Foreground}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Padding="0" Opacity="0.7" />
+                            </Border>
+                            <Rectangle Height="3" Name="Nav" VerticalAlignment="Bottom" Visibility="Collapsed" Fill="Transparent" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Nav" Property="Fill" Value="White" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter TargetName="content" Property="Opacity" Value="1" />
+                                <Setter Property="IsEnabled" Value="False" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Nav" Property="Fill" Value="White" />
+                                <Setter TargetName="Nav" Property="Opacity" Value="0.8" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter TargetName="content" Property="Opacity" Value="1" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Storyboard x:Key="OnInsightsChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="160,0,480,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnAdviceChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="320,0,320,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnResultsChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="480,0,160,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnDashboardChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="0,0,640,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnMoreChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="640,0,0,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+    </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoRight">
+            <BeginStoryboard Storyboard="{StaticResource OnInsightsChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoMiddle">
+            <BeginStoryboard Storyboard="{StaticResource OnAdviceChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoLeft">
+            <BeginStoryboard Storyboard="{StaticResource OnResultsChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoHome">
+            <BeginStoryboard Storyboard="{StaticResource OnDashboardChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoMore">
+            <BeginStoryboard Storyboard="{StaticResource OnMoreChecked}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
+    <Grid Height="55" >
+        <UniformGrid Rows="1" >
+            <RadioButton x:Name="rdoHome" IsChecked="True"
+                     Command="{Binding NavigationCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" CommandParameter="DashboardView">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Image  SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       Stretch="None" Source="/RTH.Windows.Views;component/Assets/DashboardMenu/home.png" />
+                    <TextBlock   Grid.Row="1"
+                                       Text="Me" FontSize="14"
+                                       Foreground="White" 
+                                       HorizontalAlignment="Center"                                       
+                                        />
+                </Grid>
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource navButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="DashboardView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+            <RadioButton  x:Name="rdoRight" 
+                          Command="{Binding NavigationCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" CommandParameter="HealthPlanView" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Image  Stretch="None" Grid.Row="0" 
+                                           Source="/RTH.Windows.Views;component/Assets/DashboardMenu/plan.png" />
+                    <TextBlock   Grid.Row="1"
+                                       Text="Plan" FontSize="14"
+                                       Foreground="White" 
+                                       HorizontalAlignment="Center"                                       
+                                        />
+                </Grid>
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource navButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="HealthPlanView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+            <RadioButton  x:Name="rdoMiddle"             	             	
+                          IsEnabled="False">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Image  Stretch="None" Grid.Row="0" 
+                                           Source="/RTH.Windows.Views;component/Assets/DashboardMenu/coach.png" />
+                    <TextBlock   Grid.Row="1"
+                                       Text="Coach" FontSize="14"
+                                       Foreground="White" 
+                                       HorizontalAlignment="Center"                                       
+                                        />
+                </Grid>
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource navButton}">
+                        <Style.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+
+            <RadioButton x:Name="rdoLeft" 
+                         Command="{Binding ViewResultCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}"                          IsEnabled="{Binding Path=LastVisitedDiseaseID, Source={x:Static GD:GlobalData.Default}, Converter={StaticResource objToEnableConverter}}" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Image  Stretch="None" Grid.Row="0" 
+                                           Source="/RTH.Windows.Views;component/Assets/DashboardMenu/quealthMenu.png" />
+
+                    <TextBlock   Grid.Row="1"
+                                       Text="Score" FontSize="14"
+                                       Foreground="White" 
+                                       HorizontalAlignment="Center"                                       
+                                        />
+                </Grid>
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource navButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="ResultView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+            <RadioButton x:Name="rdoMore" 
+                         Command="{Binding NavigationCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" 
+                         CommandParameter="MoreView"                           
+                         IsEnabled="{Binding Path=LastVisitedDiseaseID, Source={x:Static GD:GlobalData.Default}, Converter={StaticResource objToEnableConverter}}" >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Image   Stretch="None" Grid.Row="0" 
+                                           Source="/RTH.Windows.Views;component/Assets/DashboardMenu/more.png" />
+
+                    <TextBlock  Grid.Row="1"
+                                       Text="More" FontSize="14"
+                                       Foreground="White" 
+                                       HorizontalAlignment="Center"                                       
+                                        />
+
+                </Grid>
+                <RadioButton.Style>
+                    <Style TargetType="RadioButton" BasedOn="{StaticResource navButton}">
+                        <Style.Triggers>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="MoreView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="SettingsView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="AboutUsView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="DevicesServicesView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding CurrentView,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=Window}}" Value="ContactUsView">
+                                <Setter     Property="IsChecked" Value="True" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RadioButton.Style>
+            </RadioButton>
+        </UniformGrid>
+        <Grid VerticalAlignment="Bottom">
+            <Rectangle VerticalAlignment="Bottom" Margin="0,0,640,0" HorizontalAlignment="Stretch" Height="3" Fill="White" Name="rectNav"/>
+        </Grid>
+    </Grid>
+</UserControl>

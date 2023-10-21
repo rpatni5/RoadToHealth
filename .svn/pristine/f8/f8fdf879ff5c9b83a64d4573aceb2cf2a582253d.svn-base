@@ -1,0 +1,147 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using System.Windows;
+using RTH.Windows.ViewModels.Objects;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthAreasViewModel : ViewModels.Common.ViewModelBase
+    {
+        private RelayCommand _showSummaryCommand;
+        private RelayCommand _filterPHAsCommand;
+        public HealthAreasViewModel()
+        {
+            SelectedDisease = GlobalData.Default.ClickedHRA;
+            LoadHealthAreasAsync();
+
+        }
+
+        public IEnumerable<HealthArea> HealthAreas
+        {
+            get { return GetValue(() => HealthAreas); }
+            set { SetValue(() => HealthAreas, value); }
+        }
+        private void LoadHealthAreasAsync()
+        {
+            AsyncCall.Invoke(() =>
+           {
+               SetHeader();
+               Summary = ResultService.GetSummaries(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token).data;
+               if (Summary != null && Summary.Any()) Overview = new HealthArea { health_area = AppMessages.overview, summary = Summary[0].content + Summary[1].content };
+               PHADetails = HealthAreasService.GetPHA(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token);
+               HealthAreas = PHADetails.health_areas;
+               if (SelectedDisease.ID == ConfigurationManagers.CancerId)
+               {
+                   Disease = new SubDisease();
+                   Disease.id = ConfigurationManagers.CancerId;
+                   Disease.UploadUrl = ConfigurationManagers.CancerImagePath;
+               }
+               if (PHADetails.sub_diseases.Any())
+               {
+                   foreach (SubDisease s in PHADetails.sub_diseases)
+                   {
+                       s.UploadUrl = string.Concat(ConfigurationManagers.UploadUrlPath, s.icon);
+                   }
+               }
+               ObservableCollection<ScoreSummary> sc = ResultService.GetScoreSummaryDetails(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token);
+               if (sc != null && sc.Any())
+                   LatestScoreSummary = sc[0];
+           });
+        }
+        void SetHeader()
+        {
+            HeaderVisibility = true;
+            HeaderTitle = SelectedDisease.Title;
+            HeaderColor = SelectedDisease.BgColor;
+            KeyString = SelectedDisease.KeyString;
+            HeaderState = false;
+            GlobalData.Default.LastVisitedDiseaseID = SelectedDisease.ID;
+            FooterVisibility = true;
+        }
+        public ObservableCollection<QSummaries> Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+
+        public HealthArea Overview
+        {
+            get { return GetValue(() => Overview); }
+            set { SetValue(() => Overview, value); }
+        }
+        public SubDisease Disease
+        {
+            get { return GetValue(() => Disease); }
+            set { SetValue(() => Disease, value); }
+        }
+        public PHA PHADetails
+        {
+            get { return GetValue(() => PHADetails); }
+            set { SetValue(() => PHADetails, value); }
+        }
+
+        public HealthArea CurrentHealthArea
+        {
+            get { return GetValue(() => CurrentHealthArea); }
+            set { SetValue(() => CurrentHealthArea, value); }
+        }
+        public HealthArea SubDisease
+        {
+            get { return GetValue(() => SubDisease); }
+            set { SetValue(() => SubDisease, value); }
+        }
+
+
+        public RelayCommand ShowSummaryCommand
+        {
+            get
+            {
+                return _showSummaryCommand ?? (_showSummaryCommand = new RelayCommand(vm =>
+                {
+                    CurrentHealthArea = vm as HealthArea;
+                },
+                vm => { return true; }));
+            }
+        }
+
+        public RelayCommand FilterPHAsCommand
+        {
+            get
+            {
+                return _filterPHAsCommand ?? (_filterPHAsCommand = new RelayCommand((p) =>
+                {
+                    string id = p as string;
+                    if (string.IsNullOrEmpty(id)) return;
+                    SubDisease d = PHADetails.sub_diseases.FirstOrDefault(sd => sd.id == id);
+                    if (d == null)
+                    {
+                        HealthAreas = PHADetails.health_areas;
+                        Overview = new HealthArea { health_area = AppMessages.overview, summary = Summary[0].content + Summary[1].content };
+                    }
+                    else
+                    {
+                        HealthAreas = PHADetails.health_areas.Where(ha => d.health_areas.Contains(ha.id));
+                        Overview = new HealthArea { health_area = d.disease, summary = Summary[0].content + Summary[1].content };
+                    }
+                },
+                (v) => { return true; }));
+            }
+
+        }
+
+        public ScoreSummary LatestScoreSummary
+        {
+            get { return GetValue(() => LatestScoreSummary); }
+            set { SetValue(() => LatestScoreSummary, value); }
+        }
+    }
+
+
+}

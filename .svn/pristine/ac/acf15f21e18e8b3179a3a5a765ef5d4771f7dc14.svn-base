@@ -1,0 +1,85 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using TheArtOfDev.HtmlRenderer.WPF;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuestionNavigatorView.xaml
+    /// </summary>
+    public partial class QuestionNavigatorView : UserControl
+    {
+        public QuestionNavigatorView()
+        {
+            InitializeComponent();
+            Loaded += OnViewLoaded;
+        }
+
+        private void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            App.Current.MainWindow.Opacity = 1;
+        }
+
+        private RelayCommand m_ShowQuestionHelperCommand;
+
+        public RelayCommand ShowQuestionHelperCommand
+        {
+            get
+            {
+                return m_ShowQuestionHelperCommand ?? (m_ShowQuestionHelperCommand = new RelayCommand(
+                    ve => ShowQuestionHelper(ve), (t) => true));
+            }
+        }
+
+        private void ShowQuestionHelper(object ve)
+        {
+            var question = ve as Question;
+            transition.LoadControl(new HtmlPanel
+            {
+                Text = question.summary,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            });
+        }
+
+
+        public T FindElementByName<T>(FrameworkElement element, string sChildName) where T : FrameworkElement
+        {
+            T childElement = null;
+            var nChildCount = VisualTreeHelper.GetChildrenCount(element);
+            for (int i = 0; i < nChildCount; i++)
+            {
+                FrameworkElement child = VisualTreeHelper.GetChild(element, i) as FrameworkElement;
+
+                if (child == null)
+                    continue;
+
+                if (child is T && child.Name.Equals(sChildName))
+                {
+                    childElement = (T)child;
+                    break;
+                }
+
+                childElement = FindElementByName<T>(child, sChildName);
+
+                if (childElement != null)
+                    break;
+            }
+            return childElement;
+        }
+    }
+}

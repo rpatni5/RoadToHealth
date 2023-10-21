@@ -1,0 +1,49 @@
+﻿using RTH.Helpers;
+using RTH.Helpers.Messaging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.UserControls
+{
+    public class ViewBase : UserControl, IMessagingTarget
+    {
+        public ViewBase()
+        {
+            Token = Guid.NewGuid();
+            this.Loaded += ViewBase_Loaded;
+            this.Unloaded += ViewBase_Unloaded;
+        }
+
+        public virtual void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.Message)
+            {
+                MessageBox.Show(e.Data as String);
+            }
+        }
+
+        #region properties
+        public Guid Token { get; private set; }
+
+        #endregion properties
+        private void ViewBase_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            (this.DataContext as ViewModels.Common.ViewModelBase).ViewToken = this.Token;
+            AppMessages.Register(this, this.Token);
+        }
+
+        private void ViewBase_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            AppMessages.Unregister(this.Token);
+        }
+        public void ReceiveMessage(Message msg)
+        {
+            this.OnMessage(msg);
+        }
+    }
+}

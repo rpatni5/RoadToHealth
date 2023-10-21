@@ -1,0 +1,313 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="800" 
+                 xmlns:ctrls="clr-namespace:RTH.Windows.Views.Controls"
+             xmlns:con="clr-namespace:RTH.Windows.Views.Converters"
+             RenderOptions.BitmapScalingMode="HighQuality"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             xmlns:vmc="clr-namespace:RTH.Windows.ViewModels.Common;assembly=RTH.Windows.ViewModels">
+    <UserControl.Resources>
+        <con:StackPanelItemWidthConverter x:Key="StackPanelItemWidth" />
+        <con:BooleanToVisibilityReverseConverter x:Key="VisibilityReverseConverter" />
+        <con:NullStringToVisibilityConverter x:Key="NullStringToVisibility" />
+        <DataTemplate x:Key="tutorialTemplate" DataType="{x:Type local:Tutorials}">
+            <Grid Margin="30,0" VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button IsEnabled="True"  Margin="10,0"  Grid.Column="0" 
+                        Visibility="{Binding PreviousButtonVisibility,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor},Converter={StaticResource ReverseBooleanToVisibilityConverter},ConverterParameter=hiddenReverse}"
+                             VerticalAlignment="Center" VerticalContentAlignment="Center"
+                            Style="{StaticResource SystemCommandButtonKey2}" HorizontalAlignment="Left"  
+                         Name="Btn_previes" Click="Btn_previes_Click">
+                    <Path  HorizontalAlignment="Center" Width="16" Height="16" Data="M12,1 L4,8 12,16" StrokeThickness="2" 
+                          Stroke="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}, Path=Foreground}" />
+                </Button>
+
+                <StackPanel Height="Auto" VerticalAlignment="Center"  Grid.Column="1">
+                    <TextBlock Text="{Binding Header}" FontSize="{StaticResource ExtraLargeFontSize}" Margin="0,20,0,0" 
+                           HorizontalAlignment="Center" Foreground="Gray" />
+
+                    <StackPanel  VerticalAlignment="Center" HorizontalAlignment="Center"
+                             Visibility="{Binding ImagePath,Converter={StaticResource NullStringToVisibility}}">
+                        <Image  Style="{StaticResource HeaderOffImages}" Margin="0,10"
+                   Stretch="None"
+                   Source="/Assets/ic_off_page_header.png"
+                   HorizontalAlignment="Center" OpacityMask="Black" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Content}" 
+                               FontSize="{StaticResource MediumFontSize}"
+                               Margin="0,10" 
+                               TextAlignment="Center" Grid.Column="1" VerticalAlignment="Center"
+                               HorizontalAlignment="Center" Foreground="Gray" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Button IsEnabled="True"  Margin="10,0" 
+                            VerticalAlignment="Center" VerticalContentAlignment="Center"
+                            Grid.Column="2"  
+                        Visibility="{Binding IsGetStarted,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor},Converter={StaticResource ReverseBooleanToVisibilityConverter},ConverterParameter=hidden}"
+                           Style="{StaticResource SystemCommandButtonKey2}" HorizontalAlignment="Right"  Name="Btn_next" Click="Btn_next_Click"   >
+                    <Path  Width="16" Height="16" HorizontalAlignment="Center" Data="M4,1 L12,8 4,16" StrokeThickness="2" 
+                          Stroke="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}, Path=Foreground}" />
+                </Button>
+
+            </Grid>
+           
+        </DataTemplate>
+        <ControlTemplate x:Key="AnimatedTemplate"  TargetType="{x:Type ctrls:AnimatedContentControl}" >
+            <Grid Focusable="False">
+                <ContentPresenter x:Name="PART_MainContent" Focusable="False"
+                                  Content="{TemplateBinding Content}" Height="200"
+                                  ContentTemplate="{StaticResource tutorialTemplate}"/>
+                <Rectangle x:Name="PART_PaintArea"/>
+            </Grid>
+        </ControlTemplate>
+        <ControlTemplate TargetType="{x:Type RadioButton}" x:Key="rdoBtnTemplate">
+            <Grid>
+                <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}"
+				Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}"
+				VerticalAlignment="{TemplateBinding VerticalAlignment}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+				Padding="{TemplateBinding Padding}">
+                    <Grid>
+                        <Ellipse Name="ellipse" Height="15" Width="15" Stroke="Transparent" StrokeThickness="1" Fill="LightGray" />
+                        <TextBlock Name="txt" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF31AAE1" FontSize="16" Text="" />
+                    </Grid>
+                </Border>
+                <Rectangle x:Name="Highlighter" Fill="Transparent"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Highlighter" Property="Fill" >
+                        <Setter.Value>
+                            <SolidColorBrush Color="White" Opacity="0.1"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="ellipse" Property="Fill" Value="#FF31AAE1" />
+                    <!--<Setter TargetName="txt" Property="Foreground" Value="White" />-->
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+    </UserControl.Resources>
+    <Canvas Name="canvasHome" Margin="0,-10,0,0" >
+        <Grid  Visibility="Hidden"
+              Width="{Binding ElementName=canvasHome, Path=ActualWidth}"
+              Height="{Binding ElementName=canvasHome, Path=ActualHeight}">
+            <Grid.Background>
+                <ImageBrush ImageSource="/Assets/home.png"  />
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" Height="Auto" Orientation="Vertical">
+                <Image Style="{StaticResource HeaderOffImages}" HorizontalAlignment="Center" Margin="0,60,20,0" />
+                <!--<Label Style="{StaticResource LabelHeaderOffText}" Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.app_quote}"/>-->
+            </StackPanel>
+            <Grid Grid.Row="1" Width="300" Margin="0,0,0,50" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Margin="2,10" Foreground="White" Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.Also_available_on}" />
+                <StackPanel Orientation="Horizontal" Grid.Row="1" Background="Transparent">
+                    <Image Margin="3" Source="/Assets/mainimages/gplay.png"  Stretch="None" Cursor="Hand" >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding NavigateToUrlCommand,RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" 
+                                                   CommandParameter="{x:Static vmc:Configurations.AndroidQuealthUrl}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Image>
+                    <Image Margin="3" Source="/Assets/mainimages/applestore.png"    Stretch="None" Cursor="Hand">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding NavigateToUrlCommand,RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" 
+                                                   CommandParameter="{x:Static vmc:Configurations.IosQuealthUrl}"  />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Image>
+                </StackPanel>
+            </Grid>
+            <UniformGrid VerticalAlignment="Bottom" Grid.Row="2" Rows="1">
+                <Button Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.log_in}" Style="{StaticResource ButtonDashboardLogin}" 
+                    Command="{Binding Path=LoadViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                    CommandParameter="LoginView"/>
+                <Button Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.create_account}" Style="{StaticResource ButtonDashboardSignup}" 
+                    Command="{Binding Path=LoadViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                    CommandParameter="UserRegistrationView"/>
+            </UniformGrid>
+        </Grid>
+
+        <Grid Width="{Binding ElementName=canvasHome, Path=ActualWidth}" Name="gridIcons"
+              Height="{Binding ElementName=canvasHome, Path=ActualHeight}">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Canvas Width="400" Height="450" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Canvas.Resources>
+                    <Style TargetType="Image">
+                        <Setter Property="Height" Value="Auto" />
+                        <Setter Property="Width" Value="Auto" />
+                        <Setter Property="RenderOptions.BitmapScalingMode" Value="Unspecified" />
+                    </Style>
+                    <Style TargetType="Grid" x:Key="gdIcon">
+                        <Setter Property="Height" Value="48" />
+                        <Setter Property="Width" Value="48" />
+                        <Setter Property="Canvas.Top" Value="200" />
+                        <Setter Property="Visibility" Value="Hidden" />
+                        <Setter Property="RenderOptions.BitmapScalingMode" Value="Unspecified" />
+                    </Style>
+                    <Style TargetType="{x:Type local:Arc}">
+                        <Setter Property="StrokeThickness" Value="18" />
+                        <Setter Property="StrokeStartLineCap" Value="Round" />
+                        <Setter Property="StrokeEndLineCap" Value="Round" />
+                        <Setter Property="MarkProgress" Value="False" />
+                        <Setter Property="Radius" Value="120" />
+                    </Style>
+                    <Style TargetType="{x:Type Ellipse}" x:Key="iconGlow">
+                        <Setter Property="StrokeThickness" Value="2" />
+                        <Setter Property="Margin" Value="-4" />
+                        <Setter Property="Stroke">
+                            <Setter.Value>
+                                <SolidColorBrush Color="White" Opacity="0.4" />
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Canvas.Resources>
+
+                <Grid Canvas.Left="16" Name="imgDiabetes" Style="{StaticResource gdIcon}">
+                    <Image Source="{Binding Source={x:Static Root:App.SharedValues}, Path=DiseaseIcons[diabetes], FallbackValue='\Assets\1.png'}" />
+                    <Ellipse Style="{StaticResource iconGlow}"/>
+                </Grid>
+                <Grid Canvas.Left="96" Name="imgCancer" Style="{StaticResource gdIcon}">
+                    <Image Source="{Binding Source={x:Static Root:App.SharedValues}, Path=DiseaseIcons[cancer], FallbackValue='\Assets\2.png'}" />
+                    <Ellipse Style="{StaticResource iconGlow}"/>
+                </Grid>
+                <Grid Canvas.Left="176" Name="imgCardio" Style="{StaticResource gdIcon}">
+                    <Image Source="{Binding Source={x:Static Root:App.SharedValues}, Path=DiseaseIcons[cardiovascular], FallbackValue='\Assets\3.png'}" />
+                    <Ellipse Style="{StaticResource iconGlow}"/>
+                </Grid>
+                <Grid Canvas.Left="256" Name="imgLungs" Style="{StaticResource gdIcon}">
+                    <Image Source="{Binding Source={x:Static Root:App.SharedValues}, Path=DiseaseIcons[lung], FallbackValue='\Assets\5.png'}" />
+                    <Ellipse Style="{StaticResource iconGlow}"/>
+                </Grid>
+                <Grid Canvas.Left="336" Name="imgDementia" Style="{StaticResource gdIcon}">
+                    <Image Source="{Binding Source={x:Static Root:App.SharedValues}, Path=DiseaseIcons[dementia], FallbackValue='\Assets\4.png'}" />
+                    <Ellipse Style="{StaticResource iconGlow}"/>
+                </Grid>
+
+                <Grid Height="300" Width="400" x:Name="hraView">
+                    <local:Arc Progress="100" StartAngle="-25" EndAngle="-85" Stroke="#FFEEEFEF" />
+                    <local:Arc Progress="100" StartAngle="-97" EndAngle="-156" Stroke="#FFEEEFEF" />
+                    <local:Arc Progress="100" StartAngle="-168" EndAngle="-228" Stroke="#FFEEEFEF" />
+                    <local:Arc Progress="100" StartAngle="-313" EndAngle="-373" Stroke="#FFEEEFEF" />
+                    <local:Arc Progress="100" StartAngle="-240" EndAngle="-300" Stroke="#FFEEEFEF" ExpandsOut="True" />
+
+                    <local:Arc x:Name="arcLungs" StartAngle="-97" EndAngle="-156" Stroke="{StaticResource LungColor}"/>
+                    <local:Arc x:Name="arcDementia" StartAngle="-168" EndAngle="-228" Stroke="{StaticResource DementiaColor}"/>
+                    <local:Arc x:Name="arcCancer" StartAngle="-313" EndAngle="-373" Stroke="{StaticResource CancerColor}"/>
+                    <local:Arc x:Name="arcDiabetes" StartAngle="-25" EndAngle="-85" Stroke="{StaticResource DiabetesColor}"/>
+                    <local:Arc x:Name="arcCardio" StartAngle="-240" EndAngle="-300" Stroke="{StaticResource CardioColor}" ExpandsOut="True"/>
+                </Grid>
+            </Canvas>
+            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0,0,30">
+                <TextBlock Margin="0,20,0,10" Name="diseaseTitle"  Text="" FontSize="28" HorizontalAlignment="Center" TextAlignment="Center" Foreground="#FFAC3054"/>               
+            </StackPanel>
+        </Grid>
+
+        <Grid Name="gridButtons" Visibility="Hidden" Margin="0,-30,0,0"
+              Width="{Binding ElementName=canvasHome, Path=ActualWidth}"
+              Height="{Binding ElementName=canvasHome, Path=ActualHeight}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="90" />
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+               
+
+                <Button HorizontalAlignment="Right" Margin="0,40,38,0" VerticalAlignment="Top" Grid.Column="1"
+                        Visibility="{Binding IsGetStarted,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor},Converter={StaticResource VisibilityReverseConverter}}"
+                        BorderThickness="0" BorderBrush="#FF31AAE1" Height="50" Width="200" HorizontalContentAlignment="Right"
+                        Style="{StaticResource ButtonDefaultStyle}" Background="Transparent"
+                        FontSize="16" Foreground="#FF1D769E" Click="Button_Click"
+                        Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.skip}" />
+            </Grid>
+
+            <Grid  VerticalAlignment="Center" Grid.RowSpan="7">
+                <ctrls:AnimatedContentControl x:Name="transition" Focusable="False"                                       
+                                          SlideTime="0.7"
+                                          Content="{Binding CurrentTutorial,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor}}" 
+                                          Transition="Fade"
+                                          AllowTransitions="True" 
+                                          ClipToBounds="True" 
+                                          Template="{DynamicResource AnimatedTemplate}" />
+            </Grid>
+
+           
+
+            <Button Name="btnGetStarted" Grid.Row="4"   VerticalAlignment="Bottom"
+                    Visibility="{Binding IsGetStarted,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor},Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,30,0,0"
+                        BorderThickness="0"  Width="200" Height="40"
+                        Style="{StaticResource ButtonDefaultStyle}" 
+                        Command="{Binding Path=LoadViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                        CommandParameter="TermsAndConditionsView"
+                        FontSize="16" Foreground="White" 
+                    Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.get_started}"
+                      Background="#FF31AAE1" />
+
+            <Button  VerticalAlignment="Center" Margin="0,20,0,20" HorizontalAlignment="Center" Grid.Row="5"
+                        Visibility="{Binding IsGetStarted,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor},Converter={StaticResource BooleanToVisibilityConverter}}" Background="LightGray"
+                        BorderThickness="0" BorderBrush="#FF31AAE1" Height="40" Width="250"
+                        Style="{StaticResource ButtonDefaultStyle}"
+                        Command="{Binding Path=LoadViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                        CommandParameter="LoginView"
+                        FontSize="16" Foreground="Black"
+                        Content="Already have an account?" />
+
+            <StackPanel  Grid.Row="6" VerticalAlignment="Bottom">
+                <ItemsControl Name="itemsCtrl"
+                    ItemsSource="{Binding Tutorials,RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" 
+                    HorizontalAlignment="Center" BorderThickness="0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <RadioButton Margin="6,0" 
+                                         GroupName="tutorials"
+                                         Template="{StaticResource rdoBtnTemplate}" IsChecked="{Binding IsChecked}" 
+                                         Click="RadioButton_Click" BorderThickness="0"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+
+        </Grid>
+
+
+    </Canvas>
+</local:ViewBase>

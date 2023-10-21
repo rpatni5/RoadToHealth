@@ -1,0 +1,237 @@
+﻿using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Controls;
+using RTH.Windows.Views.Helpers;
+using RTH.Windows.Views.Objects;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Windows;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthPlanQuestionnaireView.xaml
+    /// </summary>
+    public partial class HealthPlanQuestionnaireView : ViewBase, ITutorialHost
+    {
+        public string ObjectiveId { get; set; }
+        public HealthPlanQuestionnaireView()
+        {
+            InitializeComponent();
+        }
+        public override void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.HealthQuestionaire)
+            {
+                submitted = true;
+                this.ContinueCommand.Execute(this.DataContext);
+            }
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.GetNew<HealthPlanQuestionnaireViewModel>();
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+
+        }
+        public override void OnViewLoaded()
+        {
+            submitted = false;
+            (this.ViewModel as HealthPlanQuestionnaireViewModel).GetHealthPlanQuestion(ObjectiveId);
+            InitializeTutorials();
+        }
+
+        private bool submitted = false;
+        public override bool CanUnload()
+        {
+            if (!submitted && App.IsOnline())
+            {
+                MessageBoxResult result = QuealthMessageBox.ShowWarning(
+                    App.SharedValues.LanguageResource.hra_warning_message,
+                    "",
+                    showCancel: true, options: MessageBoxOptions.None);
+                //App.SharedValues.LanguageResource.warning
+                if (result == MessageBoxResult.Cancel)
+                {
+                    return false;
+                }
+                App.SharedValues.WindowMain.UnloadHealthPlan();
+            }
+            return true;
+        }
+
+        #region Continue button
+        private RelayCommand continueCommand;
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        public async void ExecuteContinueCommand(object obj)
+        {
+            Dispatcher.Invoke(() => { transition.Transition = Transition.LeftWithFade; });
+            HealthPlanQuestionnaireViewModel vm = obj as HealthPlanQuestionnaireViewModel;
+            HRASubmit a = await vm.MoveToQuestion(1, Properties.Settings.Default.SecurePwd).ConfigureAwait(false);
+            Dispatcher.Invoke(() =>
+            {
+                transition.Transition = Transition.Fade;
+            });
+            if (a == HRASubmit.Completed)
+            {
+                submitted = true;
+                Dispatcher.Invoke(() => { App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.StrategyView, param: ObjectiveId); });
+            }
+        }
+
+
+
+        #endregion
+        #region Next Button
+        private RelayCommand nextCommand;
+
+        public RelayCommand NextCommand
+        {
+            get
+            {
+                return nextCommand ?? (nextCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        if (
+                        v != null &&
+                        v.CurrentQuestion != null &&
+                        v.CurrentQuestion.HasErrors)
+                        {
+                            v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+                            return false;
+                        }
+                        return true;
+                    }));
+            }
+        }
+
+        #endregion
+        #region Previous Button
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecutePreviousCommand(object obj)
+        {
+            transition.Transition = Transition.RightWithFade;
+            HealthPlanQuestionnaireViewModel vm = obj as HealthPlanQuestionnaireViewModel;
+            int QuestionIndex = vm.MoveToQuestionPrevious(-1);
+            if (QuestionIndex == 0)
+            {
+                submitted = true;
+                App.SharedValues.WindowMain.BackCommand.Execute(null);
+            }
+            transition.Transition = Transition.Fade;
+        }
+        #endregion
+
+        private void tutorialHPQ_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            Rectangle r = (Rectangle)sender;
+            AddTutorialToList(TutorialHelper.HPSetTaregetIcon, r);
+            AsyncCall.Invoke(() =>
+            {
+                Thread.Sleep(1000);
+                Dispatcher.Invoke(() => { if (HasShowTutorials()) ShowTutorial = true; });
+            });
+        }
+
+        #region Tutorials
+
+        Dictionary<int, Tuple<string, FrameworkElement>> tutorialObjects;
+        public void InitializeTutorials()
+        {
+            tutorialObjects = new Dictionary<int, Tuple<string, FrameworkElement>>();
+        }
+        private bool HasStarategy()
+        {
+            return ((this.ViewModel as StrategyViewModel).HealthplanQuestionnaire.strategies != null &&
+                (this.ViewModel as StrategyViewModel).HealthplanQuestionnaire.strategies.Count > 0) ? true : false;
+        }
+        int currentTutIndex = 0;
+        public override TutorialContent GetTutorials()
+        {
+            if (currentTutIndex >= this.MaxTutorials)
+            {
+                currentTutIndex = 0;
+                tutorialObjects.Clear();
+                ShowTutorial = false;
+                return null;
+            }
+            var tuple = tutorialObjects[currentTutIndex++];
+            if (tuple.Item1.ShowTutorial())
+            {
+                tuple.Item1.TutorialComplete();
+                return tuple.Item2.GetTutorial(this, tuple.Item1, true);
+            }
+            ShowTutorial = false;
+            return null;
+        }
+        public int MaxTutorials
+        {
+            get
+            {
+                return tutorialObjects.Count;
+            }
+        }
+
+        public int GetTutorialIndex()
+        {
+            return currentTutIndex;
+        }
+        public string GetTutorialText(string keyString)
+        {
+            if (App.SharedValues.LanguageResource.GetType().GetProperty(keyString) != null)
+            {
+                return App.SharedValues.LanguageResource.GetType().GetProperty(keyString).GetValue(App.SharedValues.LanguageResource).ToString();
+            }
+            return string.Empty;
+        }
+
+        private bool HasShowTutorials()
+        {
+            return Properties.Settings.Default.Tutorials;
+        }
+        private bool AddTutorialToList(string keyString, FrameworkElement element)
+        {
+            if (TutorialHelper.ShowTutorial(keyString))
+            {
+                tutorialObjects.Add(tutorialObjects.Count, new Tuple<string, FrameworkElement>(keyString, element));
+                return true;
+            }
+            return false;
+        }
+        public override void SkipTutorials()
+        {
+            string[] keys = new string[] { TutorialHelper.HPSetTaregetIcon };
+            TutorialHelper.SkipTutorials(keys);
+            this.SetValue(ShowTutorialProperty, false);
+        }
+
+        #endregion Tutorials
+
+
+    }
+}

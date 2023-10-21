@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels;
+using RTH.Business.Objects;
+using System.Collections.ObjectModel;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+        private RelayCommand continueCommand;
+
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecuteContinueCommand(object obj)
+        {
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            ObservableCollection<Question> questions = vm.Questionnaire.GetQuestions();
+        }
+    }
+}

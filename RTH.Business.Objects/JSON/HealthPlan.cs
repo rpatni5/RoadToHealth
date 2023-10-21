@@ -1,0 +1,37 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    
+    public class HealthPlan
+    {
+        public int status { get; set; }        
+        public string message { get; set; }        
+        public List<HealthPlanObjective> data { get; set; }
+    }
+    public class HealthPlanCategory
+    {
+        public string category { get; set; }
+        public string color { get; set; }
+    }
+    public class HealthPlanObjective
+    {
+        public string _id { get; set; }        
+        public string background_image { get; set; }        
+        public HealthPlanCategory category { get; set; }
+        public string key_string { get; set; }
+        public string objective_prompt { get; set; }
+        public string objective_title { get; set; }
+        public bool questionnaire_overrider { get; set; }
+        public double sequence_number { get; set; }
+        public string rag { get; set; }    
+        public bool isUserObjective { get; set; }
+        public string questionnaire { get; set; }        
+    }
+}

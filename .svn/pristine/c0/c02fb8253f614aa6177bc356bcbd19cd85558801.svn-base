@@ -1,0 +1,70 @@
+﻿using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for uc_UserRegistration.xaml
+    /// </summary>
+    public partial class UserRegistrationView : UserControl
+    {
+        public UserRegistrationView()
+        {
+            InitializeComponent();
+        }
+        private RelayCommand<object[]> m_ControlClearCommand;
+        public RelayCommand<object[]> ControlClearCommand
+        {
+            get
+            {
+                return m_ControlClearCommand ?? (m_ControlClearCommand = new RelayCommand<object[]>(
+                    ve => ControlClear(ve), (t) => (t) != null));
+            }
+        }
+
+        private void ControlClear(object[] ve)
+        {
+            if (ve[0] is PasswordBox)
+            {
+                PasswordBox control = ve[0] as PasswordBox;
+                control.Clear();
+                if (ve[1] is Button)
+                {
+                    Button btn = ve[1] as Button;
+                    btn.Visibility = Visibility.Hidden;
+                }
+            }
+            else if (ve[0] is TextBox)
+            {
+                TextBox control = ve[0] as TextBox;
+                control.Clear();
+            }
+
+        }
+
+        private void passwordBox_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (password.SecurePassword.Length > 0)
+                PasswordClear.Visibility = Visibility.Visible;
+        }
+
+        private void confirm_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (confirm.SecurePassword.Length > 0)
+                ConfirmPasswordClear.Visibility = Visibility.Visible;
+        }
+    }
+}

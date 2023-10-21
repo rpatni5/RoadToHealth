@@ -1,0 +1,26 @@
+﻿using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class LifeStyleQuestionnaireViewModel : ViewModelBase
+    {
+        public LifeStyleQuestionnaireViewModel()
+        {
+
+        }
+
+        void SetHeader()
+        {
+            HeaderVisibility = true;
+            KeyString = GlobalData.Default.ClickedHRA.KeyString;
+            HeaderState = false;
+            //HeaderColor = Questionnaire.background_colour;
+            //HeaderTitle = Questionnaire.title;
+        }
+    }
+}

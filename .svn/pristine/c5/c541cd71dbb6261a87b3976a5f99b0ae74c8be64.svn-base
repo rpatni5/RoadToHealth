@@ -1,0 +1,170 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    //public class HealthQuestionnaireCategory : NotifyBase
+    //{
+    //    public string name { get; set; }
+    //    public string icon { get; set; }
+    //    public string color { get; set; }
+    //}
+    //public class HealthQuestion : NotifyBase
+    //{
+    //    public string _id
+    //    {
+    //        get { return GetValue(() => _id); }
+    //        set { SetValue(() => _id, value); }
+    //    }
+    //    public string question
+    //    {
+    //        get { return GetValue(() => question); }
+    //        set { SetValue(() => question, value); }
+    //    }
+
+    //    public string question_alias
+    //    {
+    //        get { return GetValue(() => question_alias); }
+    //        set { SetValue(() => question_alias, value); }
+    //    }
+
+    //    public Dependency dependency
+    //    {
+    //        get { return GetValue(() => dependency); }
+    //        set { SetValue(() => dependency, value); }
+    //    }
+    //    public Category category
+    //    {
+    //        get { return GetValue(() => category); }
+    //        set { SetValue(() => category, value); }
+    //    }
+    //    public Category subCategory
+    //    {
+    //        get { return GetValue(() => subCategory); }
+    //        set { SetValue(() => subCategory, value); }
+    //    }
+    //    public int element_type
+    //    {
+    //        get { return GetValue(() => element_type); }
+    //        set { SetValue(() => element_type, value); }
+    //    }
+    //    public bool decimals
+    //    {
+    //        get { return GetValue(() => decimals); }
+    //        set { SetValue(() => decimals, value); }
+    //    }
+
+    //    public string decimal_places
+    //    {
+    //        get { return GetValue(() => decimal_places); }
+    //        set { SetValue(() => decimal_places, value); }
+    //    }
+    //    public List<object> ranges
+    //    {
+    //        get { return GetValue(() => ranges); }
+    //        set { SetValue(() => ranges, value); }
+    //    }
+    //    public string summary
+    //    {
+    //        get { return GetValue(() => summary); }
+    //        set { SetValue(() => summary, value); }
+    //    }
+    //    public string helper_title
+    //    {
+    //        get { return GetValue(() => helper_title); }
+    //        set { SetValue(() => helper_title, value); }
+    //    }
+    //    public string helper_image
+    //    {
+    //        get { return GetValue(() => helper_image); }
+    //        set { SetValue(() => helper_image, value); }
+    //    }
+    //    public string gender
+    //    {
+    //        get { return GetValue(() => gender); }
+    //        set { SetValue(() => gender, value); }
+    //    }
+    //    public string key_string
+    //    {
+    //        get { return GetValue(() => key_string); }
+    //        set { SetValue(() => key_string, value); }
+    //    }
+    //    public List<Answer> answers
+    //    {
+    //        get { return GetValue(() => answers); }
+    //        set { SetValue(() => answers, value); }
+    //    }
+
+    //    public int roundVal
+    //    {
+    //        get { return GetValue(() => roundVal); }
+    //        set { SetValue(() => roundVal, value); }
+    //    }
+    //    public List<object> limit
+    //    {
+    //        get { return GetValue(() => limit); }
+    //        set { SetValue(() => limit, value); }
+    //    }
+    //    public bool is_skipped_in_health_plan
+    //    {
+    //        get { return GetValue(() => is_skipped_in_health_plan); }
+    //        set { SetValue(() => is_skipped_in_health_plan, value); }
+    //    }
+    //    public bool is_restricted
+    //    {
+    //        get { return GetValue(() => is_restricted); }
+    //        set { SetValue(() => is_restricted, value); }
+    //    }
+
+    //    public ObservableCollection<Answer> SelectedAnswers { get { return GetValue(() => SelectedAnswers); } set { SetValue(() => SelectedAnswers, value); } }
+    //}
+    //public class HealthQuestionsAnswer : NotifyBase
+    //{
+    //    public string answer_text { get; set; }
+    //    public string answer_label { get; set; }
+    //    public object answer_value { get; set; }
+    //    public string _id { get; set; }
+    //    public bool answer_overrider { get; set; }
+    //}
+    public class HealthPlanQuestionnaire : NotifyBase
+    {
+        public Category category { get; set; }
+        public List<Question> questions { get; set; }
+        public List<HealthQuestionnaireSubcategory> subcategories { get; set; }
+    }
+    public class HealthQuestionnaireSubcategory : NotifyBase
+    {
+        public Category subcategory { get; set; }
+        public List<Question> questions { get; set; }
+    }
+    public class Questionnaire : NotifyBase
+    {
+        public string _id { get; set; }
+        public string image_name { get; set; }
+    }
+    public class HealthPlanQuestionnaireData : NotifyBase
+    {
+        public string _id { get; set; }
+        public string key_string { get; set; }
+        public Category category { get; set; }
+        public string objective_title { get; set; }
+        public string objective_prompt { get; set; }
+        public string updated { get; set; }
+        public ObservableCollection<HealthPlanQuestionnaire> questions { get; set; }
+        public string image_name { get; set; }
+        public ObservableCollection<Strategy> strategies { get; set; }
+        public ObservableCollection<Questionnaire> questionnaires { get; set; }
+    }
+    public class HealthQuestionnaire : NotifyBase
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+        public HealthPlanQuestionnaireData data { get; set; }
+    }
+    
+}

@@ -1,0 +1,128 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+        private RelayCommand m_UserLogin;
+        private RelayCommand m_UserRegistration;
+        private RelayCommand m_RequestAnAccessCode;
+        private RelayCommand m_ChangePassword;
+        public RelayCommand UserLoginCommand
+        {
+            get
+            {
+                return m_UserLogin ?? (m_UserLogin = new RelayCommand(
+                    ve => ExecuteUserLogin(ve), (t) => true));
+            }
+        }
+        public RelayCommand UserRegistrationCommand
+        {
+            get
+            {
+                return m_UserRegistration ?? (m_UserRegistration = new RelayCommand(
+                    ve => ExecuteUserRegistration (ve), (t) => true));
+            }
+        }
+        public RelayCommand RequestAnAccessCodeCommand
+        {
+            get
+            {
+                return m_RequestAnAccessCode ?? (m_RequestAnAccessCode = new RelayCommand(
+                    ve => ExecuteRequestAnAccessCode(ve), (t) => true));
+            }
+        }
+        public RelayCommand ChangePasswordCommand
+        {
+            get
+            {
+                return m_ChangePassword ?? (m_ChangePassword = new RelayCommand(
+                    ve => ExecuteChangePassword(ve), (t) => true));
+            }
+        }
+
+        private void ExecuteChangePassword(object ve)
+        {
+            var ForgotPasswordViewModel = this.ViewModel as ForgotPasswordViewModel;
+
+            var passwords = (Array)ve;
+
+            PasswordBox PasswordObj = passwords.GetValue(0) as PasswordBox;
+            PasswordBox confPasswordObj = passwords.GetValue(1) as PasswordBox;
+
+            ForgotPasswordViewModel.Password = PasswordObj.Password;
+            ForgotPasswordViewModel.Confirm = confPasswordObj.Password;
+            User oUser = ForgotPasswordViewModel.ChangePassword();
+            if (oUser != null)
+                ForgotPasswordViewModel.ErrorMessage = oUser.message;
+      
+        }
+        private void ExecuteRequestAnAccessCode(object ve)
+        {
+            var ForgotPasswordViewModel = this.ViewModel as ForgotPasswordViewModel;
+            User oUser =  ForgotPasswordViewModel.RequestAnAccessCode();
+            if(oUser!=null)
+            ForgotPasswordViewModel.ErrorMessage = oUser.message; 
+        }
+
+        private void ExecuteUserRegistration(object ve)
+        {
+            var UserRegistrationViewModel = this.ViewModel as UserRegistrationViewModel;
+            UserRegistrationViewModel.ErrorMessage = "";
+            var passwords = (Array)ve;
+            PasswordBox PasswordObj = passwords.GetValue(0) as PasswordBox;
+            PasswordBox confPasswordObj = passwords.GetValue(1) as PasswordBox;
+            UserRegistrationViewModel.password = PasswordObj.Password;
+            UserRegistrationViewModel.confirm = confPasswordObj.Password;
+            User oUser = UserRegistrationViewModel.UserRegistration();
+            
+            if (oUser != null)
+            {
+                if (oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    SaveCredentials(oUser);
+                    this.LoadViewModel.Execute("DashboardView");
+                }
+                else { UserRegistrationViewModel.ErrorMessage = oUser.message; }
+            }
+        }
+
+        private void SaveCredentials(User oUser)
+        {
+            Properties.Settings.Default.Email = oUser.email;
+            Properties.Settings.Default.Password = oUser.password;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ExecuteUserLogin(object ve)
+        {
+            var LoginViewModel = this.ViewModel as LoginViewModel;
+            LoginViewModel.ErrorMessage = "";
+            PasswordBox PasswordObj = ve as PasswordBox;
+            LoginViewModel.Password = PasswordObj.Password;
+            LoginViewModel.Email = LoginViewModel.Email;
+            User oUser = LoginViewModel.UserLogin();
+            if (oUser != null)
+            {
+                if (oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    SaveCredentials(oUser);
+                    this.LoadViewModel.Execute("ResultView");
+                    this.LoadView(ViewModels.Enums.ViewEnum.DashboardView);
+                }
+                else { LoginViewModel.ErrorMessage = oUser.message; }
+            }
+            
+        }
+    }
+}

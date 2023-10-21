@@ -1,0 +1,77 @@
+﻿using System.Linq;
+using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using RTH.Helpers.Messaging;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthPlanViewModel : ViewModelBase
+    {
+        public HealthPlanViewModel()
+        {
+            FooterVisibility = true;
+            LoadHealthPlanData();
+            HealthStrategyRequest = new HealthQuestionnaireRequest();
+        }
+
+        public Dictionary<HealthPlanCategory, IEnumerable<HealthPlanObjective>> HealthPlanObj
+        {
+            get { return GetValue(() => this.HealthPlanObj); }
+            set { SetValue(() => HealthPlanObj, value); }
+        }
+        public string WelcomeMessage
+        {
+            get { return GetValue(() => this.WelcomeMessage); }
+            set { SetValue(() => WelcomeMessage, value); }
+        }
+        public override void Refresh()
+        {
+            LoadHealthPlanData();
+        }
+
+
+        public async void LoadHealthPlanData()
+        {
+            await AsyncCall.Invoke(() =>
+             {
+                 WelcomeMessage = ViewModelBase.AppMessages.okay + " " + UserDetails.name + ", " + ViewModelBase.AppMessages.time_build_new_you;
+                 var result = HealthPlanServices.GetHealthPlan(UserDetails._id, UserDetails.AuthToken.access_token);
+
+                 HealthPlanObj = result.GroupBy(t => new { t.category.category, t.category.color })
+                         .ToDictionary(group => new HealthPlanCategory { category = group.Key.category, color = group.Key.color }, items => items.Select(t => t));
+                 return true;
+             }).ConfigureAwait(false);
+            Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.HealthPlanLoaded });
+        }
+        public async Task<HealthTarget> GetStrategy(string ObjectiveId,object keyColor)
+        {
+            HealthTarget oHealthTarget = new HealthTarget();
+            return await AsyncCall.Invoke(() =>
+              {
+                  var ObjectiveData = HealthPlanServices.GetHealthPlanObjective(UserDetails._id, ObjectiveId, UserDetails.AuthToken.access_token).data;
+                  oHealthTarget.Strategies = ObjectiveData.strategy.Where(m => m.strategy_status.Equals(1)).ToList();
+                  oHealthTarget.KeyColor = keyColor;
+                  if (oHealthTarget.Strategies.Count > 0)
+                  {
+                      oHealthTarget.StrategyText = "STRATEGIES";
+                  }
+                  oHealthTarget.Targets = ObjectiveData.questions;
+                  if (oHealthTarget.Targets.Count > 0)
+                  {
+                      oHealthTarget.TargetText = "TARGETS";
+                  }
+                  return oHealthTarget;
+              });
+        }
+        public void DeleteObjective(string id)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                HealthPlanServices.DeleteHealthPlan(UserDetails._id, id, UserDetails.AuthToken.access_token);
+            });
+        }
+    }
+}

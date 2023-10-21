@@ -1,0 +1,176 @@
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+
+namespace RTH.Windows.Views.Controls
+{
+    /// <summary>
+    /// Interaction logic for ScoreArcUserControl.xaml
+    /// </summary>
+    public partial class ScoreArcUserControl : UserControl
+    {
+        public ScoreArcUserControl()
+        {
+            InitializeComponent();
+            this.hraView.DataContext = this;
+            this.Loaded += ScoreArcUserControl_Loaded; ;
+        }
+
+        private void ScoreArcUserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            StartQAnimation();
+        }
+
+        public double TotalScore
+        {
+            get { return (double)GetValue(TotalScoreProperty); }
+            set { SetValue(TotalScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TotalScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TotalScoreProperty =
+            DependencyProperty.Register("TotalScore", typeof(double), typeof(ScoreArcUserControl), new PropertyMetadata(0.0));
+
+
+
+
+        public double TotalOptimumScore
+        {
+            get { return (double)GetValue(TotalOptimumScoreProperty); }
+            set { SetValue(TotalOptimumScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TotalOptimumScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TotalOptimumScoreProperty =
+            DependencyProperty.Register("TotalOptimumScore", typeof(double), typeof(ScoreArcUserControl), new PropertyMetadata(0.0));
+
+
+
+        public void StartQAnimation()
+        {
+            SetAnimationDefaultValues();
+            Storyboard qStoryboard = new Storyboard();
+            int multiplier = 0;
+            double AnimationTime = 1.5;
+
+            double quealthScore = TotalScore;
+
+            if (quealthScore > 0)
+            {
+                double highRiskScore = (quealthScore - 20) >= 0 ? 20 : quealthScore;
+                var hRP = (highRiskScore / 20) * 100;
+
+                qStoryboard.Children.Add(SetAnimationObject(0, hRP, AnimationTime, AnimationTime * multiplier, "Progress", arcFirst));
+
+                qStoryboard.Children.Add(SetAnimationObject(0, hRP, AnimationTime, AnimationTime * multiplier, "Progress", pathFirst));
+
+                qStoryboard.Children.Add(SetAnimationObject(0, highRiskScore, AnimationTime, AnimationTime * multiplier++, "Opacity", txtTotalScore));
+            }
+            if (quealthScore > 20)
+            {
+                double mediumRiskScore = (quealthScore - 60) >= 0 ? 40 : quealthScore - 20;
+                var mRP = (mediumRiskScore / 40) * 100;
+
+                qStoryboard.Children.Add(SetAnimationObject(0, mRP, AnimationTime, AnimationTime * multiplier, "Progress", arcSecond));
+
+                qStoryboard.Children.Add(SetAnimationObject(0, mRP, AnimationTime, AnimationTime * multiplier, "Progress", pathSecond));
+
+                qStoryboard.Children.Add(SetAnimationObject(21, mediumRiskScore + 20, AnimationTime, AnimationTime * multiplier++, "Opacity", txtTotalScore));
+            }
+
+            if (quealthScore > 60)
+            {
+                double lowRiskScore = (quealthScore - 100) == 0 ? 40 : quealthScore - 60;
+                var lRP = (lowRiskScore / 40) * 100;
+
+                qStoryboard.Children.Add(SetAnimationObject(0, lRP, AnimationTime, AnimationTime * multiplier, "Progress", arcThird));
+
+                qStoryboard.Children.Add(SetAnimationObject(0, lRP, AnimationTime, AnimationTime * multiplier, "Progress", pathThird));
+
+                qStoryboard.Children.Add(SetAnimationObject(61, lowRiskScore + 60, AnimationTime, AnimationTime * multiplier++, "Opacity", txtTotalScore));
+            }
+
+
+            double quealthOptScore = TotalOptimumScore;
+            double optMultiplier = (AnimationTime * multiplier) / 4;
+
+
+            if (quealthOptScore > 0)
+            {
+                double highRiskScore = (quealthOptScore - 20) >= 0 ? 20 : quealthOptScore;
+                var hRP = (highRiskScore / 20) * 100;
+
+
+                qStoryboard.Children.Add(SetAnimationObject(0, hRP, AnimationTime, AnimationTime * optMultiplier, "Progress", pathOptFirst));
+
+                qStoryboard.Children.Add(SetAnimationObject(0, highRiskScore, AnimationTime, AnimationTime * optMultiplier++, "Opacity", txtTotalOptScore));
+            }
+            if (quealthOptScore > 20)
+            {
+                double mediumRiskScore = (quealthOptScore - 60) >= 0 ? 40 : quealthOptScore - 20;
+                var mRP = (mediumRiskScore / 40) * 100;
+
+                qStoryboard.Children.Add(SetAnimationObject(0, mRP, AnimationTime, AnimationTime * optMultiplier, "Progress", pathOptSecond));
+
+                qStoryboard.Children.Add(SetAnimationObject(21, mediumRiskScore + 20, AnimationTime, AnimationTime * optMultiplier++, "Opacity", txtTotalOptScore));
+            }
+
+
+            if (quealthOptScore > 60)
+            {
+                double lowRiskScore = (quealthOptScore - 100) == 0 ? 40 : quealthOptScore - 60;
+                var lRP = (lowRiskScore / 40) * 100;
+
+
+
+                qStoryboard.Children.Add(SetAnimationObject(0, lRP, AnimationTime, AnimationTime * optMultiplier, "Progress", pathOptThird));
+
+                qStoryboard.Children.Add(SetAnimationObject(61, lowRiskScore + 60, AnimationTime, AnimationTime * optMultiplier++, "Opacity", txtTotalOptScore));
+            }
+
+
+
+            if (multiplier > 0)
+            {
+                qStoryboard.Begin();
+            }
+
+        }
+
+        private void SetAnimationDefaultValues()
+        {
+            arcFirst.BeginAnimation(ArcScore.ProgressProperty, null);
+            arcSecond.BeginAnimation(ArcScore.ProgressProperty, null);
+            arcThird.BeginAnimation(ArcScore.ProgressProperty, null);
+            pathFirst.BeginAnimation(ArcScore.ProgressProperty, null);
+            pathSecond.BeginAnimation(ArcScore.ProgressProperty, null);
+            pathThird.BeginAnimation(ArcScore.ProgressProperty, null);
+            pathOptFirst.BeginAnimation(ArcScore.ProgressProperty, null);
+            pathOptSecond.BeginAnimation(ArcScore.ProgressProperty, null);
+            pathOptThird.BeginAnimation(ArcScore.ProgressProperty, null);
+
+
+            arcFirst.SetValue(ArcScore.ProgressProperty, 0.0);
+            arcSecond.SetValue(ArcScore.ProgressProperty, 0.0);
+            arcThird.SetValue(ArcScore.ProgressProperty, 0.0);
+            pathFirst.SetValue(ArcScore.ProgressProperty, 0.0);
+            pathSecond.SetValue(ArcScore.ProgressProperty, 0.0);
+            pathThird.SetValue(ArcScore.ProgressProperty, 0.0);
+            pathOptFirst.SetValue(ArcScore.ProgressProperty, 0.0);
+            pathOptSecond.SetValue(ArcScore.ProgressProperty, 0.0);
+            pathOptThird.SetValue(ArcScore.ProgressProperty, 0.0);
+
+        }
+
+
+        private DoubleAnimation SetAnimationObject(double from, double to, double duration, double beginTime, string property, UIElement element)
+        {
+            var daObj = new DoubleAnimation(from, to, TimeSpan.FromSeconds(duration));
+            daObj.BeginTime = TimeSpan.FromSeconds(beginTime);
+            Storyboard.SetTarget(daObj, element);
+            Storyboard.SetTargetProperty(daObj, new PropertyPath(property));
+            return daObj;
+        }
+    }
+}

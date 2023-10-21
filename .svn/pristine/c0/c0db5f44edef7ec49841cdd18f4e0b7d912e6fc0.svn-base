@@ -1,0 +1,85 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+
+namespace RTH.Windows.Views
+{
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+    public partial class App : Application
+    {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            SetApplicationTheme();
+        }
+
+        private void SetApplicationTheme()
+        {
+            ResourceDictionary theme = new ResourceDictionary
+            {
+                Source = new Uri(GetThemeSource(), UriKind.RelativeOrAbsolute)
+            };
+            int count = this.Resources.MergedDictionaries.Count;
+            this.Resources.MergedDictionaries.RemoveAt(count - 1);
+            Application.Current.Resources.MergedDictionaries.Add(theme);
+        }
+
+        private string GetThemeSource()
+        {
+            int themeNo;
+            do
+            {
+                Random random = new Random();
+                themeNo = random.Next(1, 5);
+            } while (RTH.Windows.Views.Properties.Settings.Default.LastTheme == themeNo);
+            RTH.Windows.Views.Properties.Settings.Default.LastTheme = themeNo;
+            RTH.Windows.Views.Properties.Settings.Default.Save();
+            return string.Format("/Resources/Themes/Theme{0}.xaml", themeNo);
+        }
+
+        public class SharedGlobals : INotifyPropertyChanged
+        {
+            public readonly String Language = "en";
+            public event PropertyChangedEventHandler PropertyChanged;
+            private Variable mLanguageResource = null;
+            public MainWindow WindowMain { get; set; }
+
+            public Variable LanguageResource
+            {
+                get { return mLanguageResource; }
+                set
+                {
+                    mLanguageResource = value;
+                    var propChange = PropertyChanged;
+                    if (propChange != null)
+                    {
+                        propChange.Invoke(null, new PropertyChangedEventArgs("LanguageResource"));
+                    }
+                }
+            }
+            public void SetLanguage(Variable language)
+            {
+                (from x in language.GetType().GetProperties() select x).ToList().ForEach(propInfo =>
+                {
+                    propInfo.SetValue(LanguageResource, propInfo.GetValue(language));
+                });
+            }
+        }
+        public static SharedGlobals SharedValues = new SharedGlobals();
+
+        /*get Default En Variable */
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            if (e.Exception is RTH.Helpers.Exceptions.LoginException)
+            {
+                e.Handled = true;
+            }
+
+            MessageBox.Show(e.Exception.Message);
+        }
+    }
+}

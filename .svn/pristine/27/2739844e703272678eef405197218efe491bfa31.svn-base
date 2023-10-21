@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class TutorialArrowConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values != null && values.Count() > 0 && parameter != null && values[0]!=null)
+            {
+                var dictionary = values[1] as Dictionary<string, Point>;
+                if (dictionary != null)
+                {
+                    var d = (Dictionary<string, Point>)values[1];
+                    if (d.Count > 0)
+                    {
+                        if (parameter.Equals("Top"))
+                        {
+                            return d[values[0] as string].Y;
+                        }
+                        else
+                        {
+                            return d[values[0] as string].X;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

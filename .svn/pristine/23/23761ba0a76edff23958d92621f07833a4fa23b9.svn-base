@@ -1,0 +1,151 @@
+﻿using System;
+using System.Windows.Input;
+
+using RTH.Helpers;
+using RTH.Business.Objects;
+using System.Configuration;
+using RTH.Windows.ViewModels.Objects;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public abstract class ViewModelBase : NotifyBase
+    {
+        public virtual void Refresh()
+        {
+        }
+
+        public Guid ViewToken
+        {
+            get { return GetValue(() => ViewToken); }
+            set { SetValue(() => ViewToken, value); }
+        }
+        public bool HeaderVisibility
+        {
+            get { return GetValue(() => HeaderVisibility); }
+            set { SetValue(() => HeaderVisibility, value); }
+        }
+        public string HeaderTitle
+        {
+            get { return GetValue(() => this.HeaderTitle); }
+            set { SetValue(() => HeaderTitle, value); }
+        }
+        public bool HeaderState
+        {
+            get { return GetValue(() => this.HeaderState); }
+            set { SetValue(() => HeaderState, value); }
+        }
+        public string HeaderColor
+        {
+            get { return GetValue(() => this.HeaderColor); }
+            set { SetValue(() => HeaderColor, value); }
+        }
+        public string KeyString
+        {
+            get { return GetValue(() => this.KeyString); }
+            set { SetValue(() => KeyString, value); }
+        }
+        public bool FooterVisibility
+        {
+            get { return GetValue(() => this.FooterVisibility); }
+            set { SetValue(() => FooterVisibility, value); }
+        }
+        public string LastVisitedDiseaseID
+        {
+            get { return GetValue(() => LastVisitedDiseaseID); }
+            set
+            {
+                SetValue(() => LastVisitedDiseaseID, value);
+            }
+        }
+
+        public String ErrorMessage
+        {
+            get { return GetValue(() => ErrorMessage); }
+            set
+            {
+                SetValue(() => ErrorMessage, value);
+            }
+        }
+
+        public String ErrorMessage2
+        {
+            get { return GetValue(() => ErrorMessage2); }
+            set
+            {
+                SetValue(() => ErrorMessage2, value);
+            }
+        }
+        public static String Lang
+        {
+            get; set;
+        }
+        public static String Country
+        {
+            get; set;
+        }
+        public static Variable AppMessages
+        {
+            get; set;
+        }
+        public static User UserDetails
+        {
+            get; set;
+        }
+        public String HeaderLabel
+        {
+            get { return GetValue(() => HeaderLabel); }
+            set
+            {
+                SetValue(() => HeaderLabel, value);
+            }
+        }
+
+        public static IDictionary<string, string> GetViewModelSettings()
+        {
+            IDictionary<string, string> dict = new Dictionary<string, string>();
+            foreach (SettingsProperty sp in Properties.Settings.Default.Properties)
+            {
+                dict.Add(sp.Name, Properties.Settings.Default.GetPropValue(sp.Name).ToString());
+            }
+            return dict;
+        }
+
+        public static bool ClearViewModelSettings()
+        {
+            Properties.Settings.Default.SocialUserId =
+                Properties.Settings.Default.SocialType =
+                Properties.Settings.Default.TwitterToken =
+                Properties.Settings.Default.TwitterToken2 =
+                Properties.Settings.Default.TwitterTokenSecret =
+                Properties.Settings.Default.TwitterTokenSecret2 =
+                Properties.Settings.Default.TwitterScreenName = string.Empty;
+            Properties.Settings.Default.Save();
+            return true;
+        }
+        public static bool SaveViewModelSettings(string SocialUserId, string SocialType)
+        {
+            Properties.Settings.Default.SocialUserId = SocialUserId;
+            Properties.Settings.Default.SocialType = SocialType;
+            Properties.Settings.Default.Save();
+            return true;
+        }
+        public User ValidateSocialLogin(string userId, string type)
+        {
+            return RTH.Business.Services.UserService.ValidateSocialLogin(userId, type, ConfigurationManagers.DefaultPassword);
+        }
+        public DiseaseData SelectedDisease
+        {
+            get { return GetValue(() => SelectedDisease); }
+            set { SetValue(() => SelectedDisease, value); }
+        }
+
+
+        public async Task<object> ExecuteHttp(string stringUrl)
+        {
+            return await RTH.Business.Services.Http.GetAsync(stringUrl);
+        }
+    }
+}

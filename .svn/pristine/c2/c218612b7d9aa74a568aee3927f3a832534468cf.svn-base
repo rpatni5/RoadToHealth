@@ -1,0 +1,82 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ShowCoaches.xaml
+    /// </summary>
+    public partial class ShowCoaches :  ViewBase
+    {
+
+        public ShowCoaches()
+        {
+            InitializeComponent();
+            ctrlTransistion.Transition = Controls.Transition.Left;
+        }
+        #region CommandDeclartion
+        private RelayCommand m_MoveToPreviousCommand;
+        public RelayCommand MoveToPreviousCommand
+        {
+            get
+            {
+                return m_MoveToPreviousCommand ?? (m_MoveToPreviousCommand = new RelayCommand(
+                    ve => ExecuteMove(-1), (t) => true));
+            }
+        }
+        private RelayCommand m_MoveToNextCommand;
+        public RelayCommand MoveToNextCommand
+        {
+            get
+            {
+                return m_MoveToNextCommand ?? (m_MoveToNextCommand = new RelayCommand(
+                    ve => ExecuteMove(1), (t) => true));
+            }
+        }
+        private void ExecuteMove(object ve)
+        {
+            ShowCoachViewModel oShowCoachViewModel = this.ViewModel as ShowCoachViewModel;
+            oShowCoachViewModel.ExecuteMove(ve);
+            if(Convert.ToInt32(ve) ==1)
+            {
+                ctrlTransistion.Transition = Controls.Transition.Left;
+            }
+            else { ctrlTransistion.Transition = Controls.Transition.Right; }
+        }
+        private RelayCommand m_SaveCoachommand;
+        public RelayCommand SaveCoachommand
+        {
+            get
+            {
+                return m_SaveCoachommand ?? (m_SaveCoachommand = new RelayCommand(
+                    ve => SaveCoach(ve), (t) => true));
+            }
+        }
+
+        private void SaveCoach(object ve)
+        {
+            ShowCoachViewModel oShowCoachViewModel = this.ViewModel as ShowCoachViewModel;
+            if(oShowCoachViewModel.SaveCoach() ==0)
+            {
+                App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.DashboardView, param: true);
+            }
+        }
+
+
+        #endregion
+    }
+}

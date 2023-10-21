@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.Views.Objects
+{
+    public class QuealthMenuItem
+    {
+        public string DefaultIcon { get; set; }
+        public string HoverIcon { get; set; }
+        public string PressedIcon { get; set; }
+        public string MenuTitle { get; set; }
+        public Enums.ViewEnum ResultView { get; set; }
+    }
+}

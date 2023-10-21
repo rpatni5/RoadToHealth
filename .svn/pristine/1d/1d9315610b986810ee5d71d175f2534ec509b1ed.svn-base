@@ -1,0 +1,52 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public class GlobalData: NotifyBase
+    {
+        private GlobalData()
+        {
+
+        }
+        private static GlobalData m_Instance;
+        public static GlobalData Default
+        {
+            get
+            {
+                return m_Instance ?? (m_Instance = new GlobalData());
+            }            
+        }
+        public string Title
+        {
+            get { return GetValue(() => this.Title); }
+            set { SetValue(() => Title, value); }
+        }
+        public string ColorCode
+        {
+            get { return GetValue(() => this.ColorCode); }
+            set { SetValue(() => ColorCode, value); }
+        }
+        public string ImagePath
+        {
+            get { return GetValue(() => this.ImagePath); }
+            set { SetValue(() => ImagePath, value); }
+        }
+        public Visibility HeaderVisibility
+        {
+            get { return GetValue(() => this.HeaderVisibility); }
+            set { SetValue(() => HeaderVisibility, value); }
+        }
+        public bool IsInverted
+        {
+            get { return GetValue(() => this.IsInverted); }
+            set { SetValue(() => IsInverted, value); }
+        }
+       
+    }
+}

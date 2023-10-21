@@ -1,0 +1,57 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class QuestionnaireButtonsVisibilityConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (values == null || values.Length < 2) return Visibility.Collapsed;
+            if (parameter == null || string.IsNullOrEmpty(parameter.ToString())) return Visibility.Collapsed;
+            HRA questionnaire = (HRA)values[0];
+            if (questionnaire.questions == null || questionnaire.questions.Count == 0) return Visibility.Collapsed;
+            Question currentQuestion = (Question)values[1];
+            switch (parameter.ToString().ToLower())
+            {
+                case "continue":
+                    if (questionnaire.questions[0].questions[0]._id == currentQuestion._id) return Visibility.Visible;
+                    break;
+                case "next":
+                    if (questionnaire.questions[questionnaire.questions.Count - 1] != null && // last Categorised Question
+                        questionnaire.questions[questionnaire.questions.Count - 1].subcategories != null && // sub-categories of last categorised question
+                        questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count > 0 &&
+                        questionnaire.questions[questionnaire.questions.Count - 1].subcategories[questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count - 1].questions != null && // questions of last sub-category of last categorised question
+                        questionnaire.questions[questionnaire.questions.Count - 1].subcategories[questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count - 1].questions.Count > 0 &&
+                        questionnaire.questions[questionnaire.questions.Count - 1].subcategories[questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count - 1].questions[questionnaire.questions[questionnaire.questions.Count - 1].subcategories[questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count - 1].questions.Count - 1] != null // last question of last sub-category of last categorised question
+                        )
+                    {
+                        /// "summary"
+                        /// if the last question of the last sub-category of the last categorised question and the first question of the first categorised questions do not match (return true) the currentQuestion next button is visible.
+                        ///
+                        if (questionnaire.questions[questionnaire.questions.Count - 1].subcategories[questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count - 1].questions[questionnaire.questions[questionnaire.questions.Count - 1].subcategories[questionnaire.questions[questionnaire.questions.Count - 1].subcategories.Count - 1].questions.Count - 1]._id != currentQuestion._id &&
+                            questionnaire.questions[0].questions[0]._id != currentQuestion._id) return Visibility.Visible; ;
+                    }
+                    break;
+                case "prev":/// if currentQuestion is not the first one (ie, not at 0 index)
+                    if (questionnaire.questions[0].questions[0]._id != currentQuestion._id) return Visibility.Visible; ;
+                    break;
+                default:
+                    return Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

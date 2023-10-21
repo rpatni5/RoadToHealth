@@ -1,0 +1,324 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using System.Windows;
+using System.Windows.Input;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.ViewModels
+{
+    public class InsightViewModel : ViewModelBase
+    {
+
+        #region Global Variable Declartion
+
+        private ICommand m_selectedTabChanged;
+
+        #endregion
+
+        public Insight Insights
+        {
+            get { return GetValue(() => this.Insights); }
+            set { SetValue(() => Insights, value); }
+        }
+
+        public List<UserData> UserData
+        {
+            get { return GetValue(() => this.UserData); }
+            set { SetValue(() => UserData, value); }
+        }
+
+        public InsightViewModel()
+        {
+            
+            Get_Insights();
+            SelectedTabChangedAction(this.Insights.data.user[0]);
+
+        }
+
+        public ICommand SelectedTabChanged { get { return m_selectedTabChanged ?? (m_selectedTabChanged = new RelayCommand((o) => SelectedTabChangedAction(o), (o) => true)); } }
+
+        private void SelectedTabChangedAction(object o)
+        {
+
+            //Console.Write(o);
+            // Get the user object for selected tab 
+            Users objUser = (Users)o;
+            
+            // Get the selected key 
+            string objKey = objUser.key_string.ToString();
+
+            // Create the UserData object to be binded to listbox for the selected tab key
+            List<UserData> lstUserData = new List<UserData>();
+
+            object genderData = this.Insights.data.age_gender.GetPropValue(objKey);
+            object ageGenderData = this.Insights.data.gender.GetPropValue(objKey);
+
+            // 1st Row - User Row
+            // circle color as selected_back_class of user object
+            // imagePath as per calculations on my score of user object
+            // title as user name
+            // subtitle as  my_score  or suffix of user objects
+            // lstUserData.Add(new UserData() { circleColor = "back-green", imagePath = "", title = "User Name", subTitle = genderData.ToChangeType<string>() });
+
+            string sSubtitleForUser;
+            if (objUser.my_score.ToString() != "")
+                sSubtitleForUser = objUser.my_score.ToChangeType<string>();
+            else
+                sSubtitleForUser = objUser.suffix;
+
+            string imgPath = "";
+            if (objUser.selected_back_class == "back-green")
+                imgPath = @"/RTH.Windows.Views;component/Assets/drawable/exited_insight.png";
+            else if (objUser.selected_back_class == "back-amber")
+                imgPath = @"/RTH.Windows.Views;component/Assets/drawable/smily_insight.png";
+            else if (objUser.selected_back_class == "back-red")
+                imgPath = @"/RTH.Windows.Views;component/Assets/drawable/sad_insight.png";
+
+            lstUserData.Add(new UserData()
+                {
+                    circleColor = objUser.tab_color, //objUser.selected_color,
+                    imagePath =  imgPath, //@"/RTH.Windows.Views;component/Assets/drawable/exited_insight.png",
+                    title = ViewModelBase.UserDetails.name,  // "User Name", // App.oUser.name,  
+                    subTitle = sSubtitleForUser
+                });
+
+
+            // 2nd Row - Age Gender Row
+            // circle color as selected_back_class of user object - need to check
+            // No Image 
+            // title as age(from age gender object) + year old + men/women(from age gender object)
+            // subtitle as  selected key value from user object
+
+            string ageGenderTitle = this.Insights.data.age_gender.age.ToString() + " " + ((this.Insights.data.age_gender.male) ? ViewModelBase.AppMessages.year_old_men : ViewModelBase.AppMessages.year_old_women);
+
+            string ageGenderImageColorForSelectedKey = "";
+            string ageGenderCircleColor = "";
+
+            if (this.Insights.data.age_gender.GetPropValue(objKey + "_rag") != null)
+                ageGenderImageColorForSelectedKey = this.Insights.data.age_gender.GetPropValue(objKey + "_rag").ToString();
+
+            if (ageGenderImageColorForSelectedKey == "r")
+                ageGenderCircleColor = "#e5332a";
+            else if (ageGenderImageColorForSelectedKey == "a")
+                ageGenderCircleColor = "#f29100";
+            else if (ageGenderImageColorForSelectedKey == "g")
+                ageGenderCircleColor = "#76b72a";
+            else
+                ageGenderCircleColor = objUser.tab_color;
+
+            lstUserData.Add(new UserData()
+            {
+                circleColor = ageGenderCircleColor, //objUser.selected_color, 
+                imagePath =  "",
+                title = ageGenderTitle,
+                subTitle = ageGenderData.ToChangeType<string>()
+            }
+
+            );
+
+
+            // 3rd Row - Gender Row
+            // circle color as selected_back_class of user object - need to check
+            // No Image 
+            // title as men/women(from gender object) + as a whole
+            // subtitle as  selected key value from user object
+
+            string genderTitle = ((this.Insights.data.gender.male) ? ViewModelBase.AppMessages.men_whole : ViewModelBase.AppMessages.women_whole);
+
+            string genderImageColorForSelectedKey = "";
+            string genderCircleColor = "";
+
+            if (this.Insights.data.gender.GetPropValue(objKey + "_rag") != null)
+                genderImageColorForSelectedKey = this.Insights.data.gender.GetPropValue(objKey + "_rag").ToString();
+
+            if (genderImageColorForSelectedKey == "r")
+                genderCircleColor = "#e5332a";
+            else if (genderImageColorForSelectedKey == "a")
+                genderCircleColor = "#f29100";
+            else if (genderImageColorForSelectedKey == "g")
+                genderCircleColor = "#76b72a";
+            else
+                genderCircleColor = objUser.tab_color;
+
+            lstUserData.Add(new UserData()
+            {
+                circleColor = genderCircleColor, // objUser.selected_color,
+                imagePath = "",
+                title = genderTitle,
+                subTitle = genderData.ToChangeType<string>()
+                
+            });
+
+            this.UserData = lstUserData;
+            
+        }
+                
+        public void Get_Insights()
+        {
+            /*
+
+                548b2333ae8f826f1898a78f
+                0
+                20
+                true
+                en
+                566fae99553bb3b80c282106
+
+            */
+            var objInsight = new RTH.Business.Objects.Insight
+            {
+
+                hraid = "537f675a2140f60800de4531",
+                val1 = "0",
+                age =  26, // ViewModelBase.UserDetails.age ,
+                male = true,
+                enthnicity = "en", // Lang,
+                val2 = "54cf671a07ed6d99f6af6835"
+
+                /*
+                hraid = "548b2333ae8f826f1898a78f",
+                val1 = "0",
+                age = 20,
+                male = false,
+                enthnicity = "en",
+                val2 = "566fae99553bb3b80c282106"
+                */
+                
+                /*hraid = "0",
+                val1 = "0",
+                age = 0,
+                male = false,
+                enthnicity = "0",
+                val2 = "0"
+                */
+            };
+
+            Insight objResponseInsights = RTH.Business.Services.InsightService.GetInsights(objInsight, ViewModelBase.UserDetails.AuthToken.access_token);
+            this.Insights = objResponseInsights;
+
+            for(int i=0;i< this.Insights.data.user.Count; i++)
+            {
+                this.Insights.data.user[i].key_text = ViewModelBase.AppMessages.GetPropValue(this.Insights.data.user[i].key_string).ToString();
+
+                if (this.Insights.data.user[i].selected_back_class == "back-green")
+                    this.Insights.data.user[i].tab_color = "#76b72a";
+                if(this.Insights.data.user[i].selected_back_class == "back-amber")
+                    this.Insights.data.user[i].tab_color = "#f29100";
+                else if(this.Insights.data.user[i].selected_back_class == "back-red")
+                    this.Insights.data.user[i].tab_color = "#e5332a";
+                else
+                    this.Insights.data.user[i].tab_color = "#76b72a";
+
+            }
+
+            #region static data 
+
+            /*
+
+            // red: #e5332a
+            // green:#76b72a
+            // amber:#f29100
+
+            List<User_1> objUsers = new List<User_1>();
+
+
+            User_1 objUser1 = new User_1();
+            objUser1.suffix = "";
+            objUser1.my_score = "100";
+            objUser1.selected_color = "#2BB673";
+            objUser1.selected_back_class = "back - green";
+            objUser1.key_string = "q_score";
+
+            User_1 objUser2 = new User_1();
+            objUser2.suffix = "Non-smoker";
+            objUser2.my_score = "";
+            objUser2.selected_color = "#2BB673";
+            objUser2.selected_back_class = "back-green";
+            objUser2.key_string = "smoking";
+
+            objUsers.Add(objUser1);
+            objUsers.Add(objUser2);
+
+            // 2nd row 
+            AgeGender objAgeGender = new AgeGender();
+            objAgeGender.male = true;
+            objAgeGender.age = 20;
+            objAgeGender.q_score = 64;
+            objAgeGender.q_score_rag = "g";
+            objAgeGender.bmi = "22.8";
+            objAgeGender.bmi_rag = "a";
+            objAgeGender.waist_girth = "80";
+            objAgeGender.waist_girth_rag = "r";
+            objAgeGender.physical_activity = "1858";
+            objAgeGender.physical_activity_rag = "g";
+            objAgeGender.smoking = "22%";
+            objAgeGender.high_fibre = "Some days (2-4 times a week)";
+            objAgeGender.high_fibre_rag = "g";
+            objAgeGender.refined_carbs = "Most days (5-6 times a week)";
+            objAgeGender.refined_carbs_rag = "g";
+            objAgeGender.healthy_fats = "Once a week";
+            objAgeGender.healthy_fats_rag = "g";
+
+            // 3rd row
+            Gender objGender = new Gender();
+            objGender.male = true;
+            objGender.q_score = 59;
+            objGender.q_score_rag = "a";
+            objGender.bmi = "27.8";
+            objGender.bmi_rag = "r";
+            objGender.waist_girth = "90";
+            objGender.waist_girth_rag = "r";
+            objGender.physical_activity = "1770";
+            objGender.physical_activity_rag = "g";
+            objGender.smoking = "18%";
+            objGender.high_fibre = "Some days (2-4 times a week)";
+            objGender.high_fibre_rag = "g";
+            objGender.refined_carbs = "Most days (2-4 times a week)";
+            objGender.refined_carbs_rag = "g";
+            objGender.healthy_fats = "Once a week";
+            objGender.healthy_fats_rag = "g";
+
+
+            Data objData = new Data();
+            objData.user = objUsers;
+            objData.age_gender = objAgeGender;
+            objData.gender = objGender;
+
+            objInsight.data = objData;
+
+            this.Insights = objInsight;
+
+            //objUsers.ForEach(c => {
+
+            //    if(c.key_string== "q_score")
+            //    {
+            //        lstUserData.subTitle= objInsight.data.age_gender.q_score.ToString(); 
+            //        lstUserData.title= objInsight.data.gender
+
+
+            //    }
+            //    else if (c.key_string == "smoking")
+            //    {
+            //        lstUserData.subTitle = objInsight.data.age_gender.smoking;
+            //    }
+
+            //});
+
+
+            // this.Insights = objInsight;
+
+            */
+
+            #endregion
+
+        }
+
+    }
+
+}
+

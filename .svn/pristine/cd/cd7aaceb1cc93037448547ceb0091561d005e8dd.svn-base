@@ -1,0 +1,262 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System.Windows;
+using System.Windows.Input;
+
+namespace RTH.Windows.ViewModels
+{
+    public class SettingsViewModel : Common.ViewModelBase
+    {
+
+        private User objUser;
+        private ICommand m_updateFullName;
+        private ICommand m_updateEmail;
+        private ICommand m_updatePassword;
+        private ICommand m_tutorialsStatus;
+
+        public IEnumerable<Language> LanguageList
+        {
+            get { return GetValue(() => LanguageList); }
+            set
+            {
+                SetValue(() => LanguageList, value);
+            }
+        }
+
+        public IEnumerable<Country> CountryList
+        {
+            get { return GetValue(() => CountryList); }
+            set
+            {
+                SetValue(() => CountryList, value);
+            }
+        }
+
+        public SettingsViewModel()
+        {
+
+            GlobalData.Default.HeaderVisibility = Visibility.Collapsed;
+            //try
+            //{ 
+            // Init();
+            //}
+            //catch
+            //{
+
+            //}
+
+            LanguageList = RTH.Business.Services.AppService.GetLanguage().Data;
+            Language = ViewModelBase.UserDetails.language; // "en";
+
+            CountryList = RTH.Business.Services.AppService.GetCountry().Data;
+            country = ViewModelBase.UserDetails.country;
+
+            HeaderLabel = AppMessages.settings;
+
+            GetLoggedInUserData();
+
+        }
+
+        private async void Init()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+
+                LanguageList = RTH.Business.Services.AppService.GetLanguage().Data;
+                Language = ViewModelBase.UserDetails.language; // "en";
+
+                CountryList = RTH.Business.Services.AppService.GetCountry().Data;
+                country = ViewModelBase.UserDetails.country;
+
+                HeaderLabel = AppMessages.settings;
+
+                GetLoggedInUserData();
+
+                GlobalData.Default.FooterVisibility = Visibility.Visible;
+                GlobalData.Default.LoaderVisibility = false;
+
+            });
+
+        }
+
+        private void GetLoggedInUserData()
+        {
+
+            objUser = (User)ViewModelBase.UserDetails;
+
+            this.name = objUser.name;
+            this.email = objUser.email;
+            this.password = objUser.password;
+
+            this.updatedname = objUser.name;
+            this.updatedemail = objUser.email;
+
+        }
+
+        public ICommand UpdateFullName { get { return m_updateFullName ?? (m_updateFullName = new RelayCommand((o) => UpdateFullNameAction(o), (o) => true)); } }
+        public ICommand UpdateEmail { get { return m_updateEmail ?? (m_updateEmail = new RelayCommand((o) => UpdateEmailAction(o), (o) => true)); } }
+        public ICommand UpdatePassword { get { return m_updatePassword ?? (m_updatePassword = new RelayCommand((o) => UpdatePasswordAction(o), (o) => true)); } }
+
+        public ICommand UpdateTutorialsStatus { get { return m_tutorialsStatus ?? (m_tutorialsStatus = new RelayCommand((o) => UpdateTutorialsAction(o), (o) => true)); } }
+        
+        private void UpdateFullNameAction(object o)
+        {
+
+            objUser.name = this.updatedname;
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+        }
+
+        private void UpdateTutorialsAction(object o)
+        {
+
+            
+            // objUser = ;
+            // RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+            
+
+        }
+        public void UpdateTutorialsAction(bool isChecked)
+        {
+
+
+            // objUser = ;
+            // RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+
+        }
+
+        public void UpdateEmailAction(object o)
+        {
+            objUser.email = this.updatedemail;
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        }
+        public void UpdateEmailAction(string email)
+        {
+            objUser.email = email;
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        }
+        private void UpdatePasswordAction(object o)
+        {
+
+        }
+        public void UpdatePasswordAction(string strPwd)
+        {
+            objUser.password = strPwd;
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        }
+
+        public static void UpdateLanguage(string lang)
+        {
+
+            User objUser = (User)ViewModelBase.UserDetails;
+            objUser.language = lang;
+
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        }
+
+        public static void UpdateCountry(string country)
+        {
+
+            User objUser = (User)ViewModelBase.UserDetails;
+            objUser.country = country;
+
+            RTH.Business.Services.UserService.UpdateUserProfile(objUser, ViewModelBase.UserDetails.AuthToken.access_token);
+
+
+        }
+
+        #region ViewModel Property  
+        public String name
+        {
+            get { return GetValue(() => name); }
+            set { SetValue(() => name, value); }
+        }
+
+        public String email
+        {
+            get { return GetValue(() => email); }
+            set
+            {
+                SetValue(() => email, value);
+            }
+        }
+        public String password
+        {
+            get { return GetValue(() => password); }
+            set
+            {
+                SetValue(() => password, value);
+            }
+        }
+        public String confirm
+        {
+            get { return GetValue(() => confirm); }
+            set
+            {
+                SetValue(() => confirm, value);
+            }
+        }
+        public String Language
+        {
+            get { return GetValue(() => Language); }
+            set
+            {
+                SetValue(() => Language, value);
+            }
+        }
+        public String HealthGuidelines
+        {
+            get { return GetValue(() => HealthGuidelines); }
+            set
+            {
+                SetValue(() => HealthGuidelines, value);
+            }
+        }
+
+
+        public String updatedname
+        {
+            get { return GetValue(() => updatedname); }
+            set { SetValue(() => updatedname, value); }
+        }
+
+        public String updatedemail
+        {
+            get { return GetValue(() => updatedemail); }
+            set
+            {
+                SetValue(() => updatedemail, value);
+            }
+        }
+        #endregion
+
+        public String country
+        {
+            get { return GetValue(() => country); }
+            set
+            {
+                SetValue(() => country, value);
+            }
+        }
+        
+
+    }
+}

@@ -1,0 +1,143 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Navigation;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ImageSlider.xaml
+    /// </summary>
+    public partial class ImageSlider : UserControl
+    {
+
+        private RelayCommand m_SliderNavigatiionCommand;
+        public RelayCommand SliderNavigatiionCommand
+        {
+            get
+            {
+                return m_SliderNavigatiionCommand ?? (m_SliderNavigatiionCommand = new RelayCommand(
+                    ve => OnImageSlide(ve), (t) => true));
+            }
+        }
+        private void OnImageSlide(object ve)
+        {
+            if (ve != null)
+            {
+                if (ve.Equals("Previous"))
+                {
+                    SlideImage(true);
+                }
+                else
+                {
+                    SlideImage(false);
+                }
+            }
+        }
+        public ImageSlider()
+        {
+            InitializeComponent();
+            transition.LoadControl(ImageSlideContainer.FindResource("img"));
+        }
+        protected override void OnContentChanged(object oldContent, object newContent)
+        {
+            _tmrMain.Interval = new TimeSpan(0, 0, 3);
+            _tmrMain.Tick += new EventHandler(SetSlider);
+            _tmrMain.Start();
+        }
+        private void SetSlider(object sender, EventArgs e)
+        {
+            if (Products != null)
+            {
+                if (Products.Count > 1)
+                {
+                    _tmr.Interval = new TimeSpan(0, 0, 5);
+                    _tmr.Tick += new EventHandler(Timer_Tick);
+                    _tmr.Start();
+                    _tmrMain.Stop();
+
+                }
+                else if (Products.Count == 1)
+                {
+                    transition.LoadControl(ImageSlideContainer.FindResource("img"));
+                    _tmrMain.Stop();
+                }
+                else
+                {
+                    _tmrMain.Stop();
+                }
+                //this.Closing += new System.ComponentModel.CancelEventHandler(Window_Closing);
+            }
+        }
+        //The timer that will handle the transitions
+        private DispatcherTimer _tmr = new DispatcherTimer();
+        private DispatcherTimer _tmrMain = new DispatcherTimer();
+        //The list of images to loop through
+        //private List<BitmapImage> _lstImages = new List<BitmapImage>();
+        //The list-index of the currently visible image
+        void Timer_Tick(object sender, EventArgs e)
+        {
+            SlideImage();
+        }
+
+        private void SlideImage(bool slideDirection = false)
+        {
+            if (slideDirection)
+                transition.LoadControl(ImageSlideContainer.FindResource("img"), Controls.Transition.Right);
+            else
+                transition.LoadControl(ImageSlideContainer.FindResource("img"));
+            SetIndex();
+            _tmr.Stop();
+            _tmr.Start();
+        }
+        private void SetIndex(bool RightDirection = false)
+        {
+            if (RightDirection)
+            {
+                if (ImageIndex - 1 >= 0)
+                    this.SetValue(ImageIndexProperty, Products.Count);
+                else
+                    this.SetValue(ImageIndexProperty, ImageIndex - 1);
+            }
+            else
+            {
+                if (ImageIndex + 1 >= Products.Count)
+                    this.SetValue(ImageIndexProperty, 0);
+                else
+                    this.SetValue(ImageIndexProperty, ImageIndex + 1);
+            }
+        }
+        public List<Product> Products
+        {
+            get { return (List<Product>)GetValue(ProductsProperty); }
+            set { SetValue(ProductsProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for Products.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ProductsProperty =
+            DependencyProperty.Register("Products", typeof(List<Product>), typeof(ImageSlider), new PropertyMetadata(null));
+        public int TotalProduct
+        {
+            get { return (int)GetValue(TotalProductProperty); }
+            set { SetValue(TotalProductProperty, value - 1); }
+        }
+        // Using a DependencyProperty as the backing store for TotalProduct.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TotalProductProperty =
+            DependencyProperty.Register("TotalProduct", typeof(int), typeof(ImageSlider), new PropertyMetadata(0));
+        public int ImageIndex
+        {
+            get { return (int)GetValue(ImageIndexProperty); }
+            set { SetValue(ImageIndexProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for ImageIndex.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImageIndexProperty =
+            DependencyProperty.Register("ImageIndex", typeof(int), typeof(ImageSlider), new PropertyMetadata(0));
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.Uri.AbsoluteUri);
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Services
+{
+    public class HealthPlanServices
+    {
+        public static List<HealthPlanObjective> GetHealthPlan(string userid, string accessToken)
+        {
+            return Http.ExecuteGET<Response<List<HealthPlanObjective>>>(string.Format("apis/get_all_objectives/{0}", userid), null, accessToken).data;
+        }
+        public static HealthObjective GetHealthPlanObjective(string userid, string objectiveid, string accessToken)
+        {
+            return Http.ExecuteGET<HealthObjective>(string.Format("apis/find_user_health_objective/{0}/{1}", userid, objectiveid), null, accessToken);
+        }
+
+        public static HealthQuestionnaire GetHealthPlanQuestionaries(string userid, string objectiveid, string accessToken)
+        {
+            return Http.ExecuteGET<HealthQuestionnaire>(string.Format("apis/get_objective/{0}/{1}", userid, objectiveid), null, accessToken);
+        }
+
+
+    }
+}

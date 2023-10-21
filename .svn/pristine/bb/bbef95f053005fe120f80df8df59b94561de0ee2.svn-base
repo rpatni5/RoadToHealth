@@ -1,0 +1,86 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for MultiSelectUserControl.xaml
+    /// </summary>
+    public partial class MultiSelectUserControl : UserControl
+    {
+        public MultiSelectUserControl()
+        {
+            InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            //Question q = (Question)e.NewValue;
+            //if (q.SelectedAnswers == null)
+            //{
+            //    q.SelectedAnswers = new ObservableCollection<Answer>();
+            //    Answer a = new Answer();
+            //    a.date = DateTime.Now.ToString();
+            //    a.key_string = q.key_string;
+            //    a.element_type = q.element_type;
+            //    a.question = q.question;
+            //    q.SelectedAnswers.Add(a);
+            //}
+        }
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox chkMultiSelect = sender as CheckBox;
+            Question q = (DataContext as Question);
+            dynamic _answer = (sender as CheckBox).Tag.ToString();
+            if (chkMultiSelect.IsChecked == true)
+            {
+                if (q.SelectedAnswers[0].answer == null)
+                {
+                    Answer a = q.SelectedAnswers[0];
+                    q.SelectedAnswers.Remove(a);
+                }
+                var _getAnswer = (from _a in q.SelectedAnswers where _a.answer == _answer select _a);
+                if (_getAnswer.Count() == 0)
+                {
+                    Answer a = new Answer();
+                    a.date = null;
+                    a.key_string = q.key_string;
+                    a.element_type = q.element_type;
+                    a.question = q.question;
+                    a.answer = _answer;
+                    q.SelectedAnswers.Add(a);
+                }
+
+            }
+            else
+            {
+                //var _getAnswer = (from _a in q.SelectedAnswers where _a.answer == _answer select _a);
+                foreach (var item in q.SelectedAnswers)
+                {
+                    if (item.answer == _answer)
+                    {
+                        q.SelectedAnswers.Remove(item);
+                        break;
+                    }
+                }
+
+            }
+        }
+    }
+}

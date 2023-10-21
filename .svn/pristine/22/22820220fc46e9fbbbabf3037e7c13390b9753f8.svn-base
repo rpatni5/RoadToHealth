@@ -1,0 +1,78 @@
+﻿using RTH.Windows.ViewModels.Objects;
+using RTH.Windows.Views.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for DashboardHeaderView.xaml
+    /// </summary>
+    public partial class DashboardHeaderView : UserControl
+    {
+        public DashboardHeaderView()
+        {
+            InitializeComponent();           
+        }
+        public string Title
+        {
+            get { return (string)GetValue(TitleProperty); }
+            set { SetValue(TitleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for DiseaseText.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register("Title", typeof(string), typeof(DashboardHeaderView), new PropertyMetadata(null));
+
+        public string ImagePath
+        {
+            get { return (string)GetValue(ImagePathProperty); }
+            set { SetValue(ImagePathProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for DiseaseImagePath.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ImagePathProperty =
+            DependencyProperty.Register("ImagePath", typeof(string), typeof(DashboardHeaderView), new PropertyMetadata(null));
+
+        public string ColorCode
+        {
+            get { return (string)GetValue(ColorCodeProperty); }
+            set { SetValue(ColorCodeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ColorCode.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ColorCodeProperty =
+            DependencyProperty.Register("ColorCode", typeof(string), typeof(DashboardHeaderView), new PropertyMetadata(null));
+
+        public bool IsInverted
+        {
+            get { return (bool)GetValue(IsInvertedProperty); }
+            set { SetValue(IsInvertedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsConverted.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsInvertedProperty =
+            DependencyProperty.Register("IsInverted", typeof(bool), typeof(DashboardHeaderView), new PropertyMetadata(null));
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var window = ((Grid)sender).FindAncestor<Window>();
+            if (e.LeftButton == MouseButtonState.Pressed && window != null)
+            {
+                window.DragMove();
+            }
+        }
+    }
+}

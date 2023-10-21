@@ -1,0 +1,90 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+
+namespace Transitions
+{
+	public partial class PageTransition : UserControl
+	{
+        Stack<Control> childControls = new Stack<Control>();
+
+		public UserControl CurrentPage { get; set; }
+
+		public static readonly DependencyProperty TransitionTypeProperty = DependencyProperty.Register("TransitionType",
+            typeof(TransitionType), typeof(PageTransition), new PropertyMetadata(TransitionType.SlideAndFade));
+
+        public TransitionType TransitionType
+		{
+			get
+			{
+                return (TransitionType)GetValue(TransitionTypeProperty);
+			}
+			set 
+			{
+				SetValue(TransitionTypeProperty, value);
+			}
+		}
+
+		public PageTransition()
+		{
+			InitializeComponent();
+		}		
+		
+		public void LoadControl(Control newControl)
+		{			
+			childControls.Push(newControl);
+			Task.Factory.StartNew(() => LoadNewControl());
+		}
+
+		void LoadNewControl()
+		{
+			Dispatcher.Invoke((Action)delegate{
+                if (contentPresenter.Content != null)
+                {
+                    Control loadedControl = contentPresenter.Content as Control;
+                    if (loadedControl != null)
+                    {
+                        loadedControl.Loaded -= NewControl_Loaded;
+                        UnloadControl(loadedControl);
+                    }
+                }
+                else
+                {
+                    LoadControlWithTransition();
+                }
+            });
+		}
+
+		void LoadControlWithTransition()
+		{
+            Control newPage = childControls.Pop();
+			newPage.Loaded += NewControl_Loaded;
+			contentPresenter.Content = newPage;
+		}
+
+		void UnloadControl(Control page)
+		{
+			Storyboard existing = (Resources[string.Format("{0}Out", TransitionType.ToString())] as Storyboard).Clone();
+
+			existing.Completed += RemoveControl_Completed;
+
+			existing.Begin(contentPresenter);
+		}
+
+		void NewControl_Loaded(object sender, RoutedEventArgs e)
+		{
+			Storyboard showNewPage = Resources[string.Format("{0}In", TransitionType.ToString())] as Storyboard;
+			showNewPage.Begin(contentPresenter);
+			CurrentPage = sender as UserControl;
+		}		
+
+		void RemoveControl_Completed(object sender, EventArgs e)
+		{
+			contentPresenter.Content = null;
+			LoadControlWithTransition();
+		}		
+	}
+}

@@ -1,0 +1,28 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Services
+{
+    public static class DashboardService
+    {
+        public static UserTimeline GetTimelines(string userId, string clientOffset, string clientDate, string pushType,string accessToken)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("user_id", userId);
+            nvc.Add("client_offset", clientOffset);
+            nvc.Add("client_date", clientDate);
+            nvc.Add("push_type", pushType);
+            return Http.ExecuteGET<UserTimeline>(APIMethod.GetUserTimelines, nvc, accessToken);
+        }
+        public static Questionnaires GetQuestionaires(string clientId, string language)
+        {                    
+            return Http.ExecuteGET<Questionnaires>(string.Format("apis/get_client_questionnaires_html/{0}/{1}", clientId, language), null);
+        }        
+    }
+}

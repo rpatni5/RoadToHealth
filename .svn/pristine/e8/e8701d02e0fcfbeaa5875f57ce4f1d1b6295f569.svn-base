@@ -1,0 +1,339 @@
+﻿using System;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
+using Newtonsoft.Json;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Helpers.DataCaching;
+
+namespace RTH.Business.Services
+{
+    public static class Http
+    {
+
+        private static string _APIURL = Config.ApiUrl;
+
+        internal static string ExecuteTwitterGET(string requestUrl, string accessToken)
+        {
+            using (var client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(accessToken)) client.DefaultRequestHeaders.Add("Authorization", accessToken);
+                HttpResponseMessage response = client.GetAsync(requestUrl).Result;
+                if (response.IsSuccessStatusCode)
+                    return response.Content.ReadAsStringAsync().Result;
+            }
+            return null;
+        }
+
+        internal static string ExecuteTwitterPOST(string requestUrl, string accessToken, HttpContent data = null)
+        {
+            using (var client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(accessToken)) client.DefaultRequestHeaders.Add("Authorization", accessToken);
+                HttpResponseMessage response = client.PostAsync(requestUrl, data).Result;
+                if (response.IsSuccessStatusCode)
+                    return response.Content.ReadAsStringAsync().Result;
+                else
+                    return response.ReasonPhrase;
+            }
+
+        }
+
+        internal static T ExecuteTwitterGET<T>(string requestUrl, string accessToken)
+        {
+            using (var client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(accessToken)) client.DefaultRequestHeaders.Add("Authorization", accessToken);
+                HttpResponseMessage response = client.GetAsync(requestUrl).Result;
+                if (response.IsSuccessStatusCode)
+                    return response.Content.ReadAsAsync<T>().Result;
+            }
+            return default(T);
+        }
+
+        /// <summary>
+        /// Date                     Name            Descriptrion
+        /// 14-Dec-2015              Pawan           user to create Query string for Service 
+        /// 
+        /// </summary>
+        /// <param name="oUser"></param>
+        /// <returns></returns>
+        private static String MakeQuery(this NameValueCollection nvc)
+        {
+            return String.Join("&", nvc.AllKeys.Select(a => a + "=" + HttpUtility.UrlEncode(nvc[a])));
+        }
+
+        public static T ExecuteGET<T>(APIMethod method, NameValueCollection queryString, string authToken = null)
+        {
+            string methodUrl = method.GetMethodUri();
+            return ExecuteGET<T>(methodUrl, queryString, authToken);
+        }
+
+
+
+        public static T ExecuteGET<T>(string methodUrl, NameValueCollection queryString, string authToken = null)
+        {
+            using (var client = new HttpClient())
+            {
+
+                if (!string.IsNullOrEmpty(authToken)) client.DefaultRequestHeaders.Add("Authorization", "Bearer " + authToken);
+                else
+                    client.DefaultRequestHeaders.Accept.Add(
+                   new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                //HttpResponseMessage response = client.GetAsync(String.Concat(_APIURL, methodUrl, "?", queryString.MakeQuery())).Result;
+                string requestUrl = String.Concat(_APIURL, methodUrl);
+                if (queryString != null)
+                {
+                    requestUrl = String.Concat(_APIURL, methodUrl, "?", queryString.MakeQuery());
+                }
+                //HttpResponseMessage response;
+                //try
+                //{
+                //    response = client.GetAsync(requestUrl).Result;
+                //    
+
+                //    if (response.IsSuccessStatusCode)
+                //    {
+                //        try
+                //        {
+                //            return response.Content.ReadAsAsync<T>().Result;
+                //        }
+                //        catch (Exception)
+                //        {
+                //            throw;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                //    }
+                //}
+                //catch (Exception)
+                //{
+                //    throw new HttpException("There seems some internet connectivity issues. Please check and try again later");
+                //}
+                return ExecuteRequest<T>(client, RequestEnum.Get, requestUrl, methodUrl);
+            }
+        }
+        public static T ExecutePOST<T>(string methodUrl, NameValueCollection nvcData, NameValueCollection headers = null, string ContentType = "application/json")
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                StringContent content = new StringContent(nvcData.MakeQuery(), Encoding.UTF8, ContentType);
+                if (headers != null && headers.Count > 0)
+                {
+                    foreach (string item in headers.AllKeys)
+                    {
+                        content.Headers.Add(item, headers[item]);
+                    }
+                }
+                //content.Headers.Add();
+                HttpResponseMessage response;
+                try
+                {
+                    response = client.PostAsync(String.Concat(_APIURL, methodUrl), content).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return response.Content.ReadAsAsync<T>().Result;
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                    }
+                }
+                catch
+                {
+                    throw new HttpException("There seems some internet connectivity issues. Please check and try again later");
+                }
+            }
+        }
+        public static T ExecutePOST<T, K>(string methodUrl, K data, NameValueCollection headers = null, string authToken = null)
+        {
+            using (var client = new HttpClient())
+            {
+
+                if (!string.IsNullOrEmpty(authToken)) client.DefaultRequestHeaders.Add("Authorization", "Bearer " + authToken);
+                else
+                    client.DefaultRequestHeaders.Accept.Add(
+                   new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                HttpResponseMessage response;
+                try
+                {
+                    response = client.PostAsJsonAsync(String.Concat(_APIURL, methodUrl), data).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return response.Content.ReadAsAsync<T>().Result;
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                    }
+                }
+                catch
+                {
+                    throw new HttpException("There seems some internet connectivity issues. Please check and try again later");
+                }
+            }
+        }
+        public static T ExecutePOST<T>(string methodUrl, object Data, string authToken = null)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                if (!string.IsNullOrEmpty(authToken)) client.DefaultRequestHeaders.Add("Authorization", "Bearer " + authToken);
+                else
+                    client.DefaultRequestHeaders.Accept.Add(
+                   new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                var Json = Newtonsoft.Json.JsonConvert.SerializeObject(Data);
+                var CompleteJson = "{\"answers\":" + Json.ToString() + "}";
+
+                HttpResponseMessage response;
+                try
+                {
+                    response = client.PostAsync(String.Concat(_APIURL, methodUrl, "/1"), new StringContent(CompleteJson, Encoding.UTF8, "application/json")).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var HttpResponse = response.Content.ReadAsStringAsync().Result;
+                        if (HttpResponse.Split('\n')[1].Split(':')[1].Replace(',', ' ').Trim().Equals("0"))
+                        {
+                            return response.Content.ReadAsAsync<T>().Result;
+                        }
+                        else
+                        {
+                            QuestionnairesResponse oQuestionnairesResponse = new QuestionnairesResponse();
+                            oQuestionnairesResponse.status = -1;
+                            return (T)(object)oQuestionnairesResponse;
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                    }
+                }
+                catch
+                {
+                    throw new HttpException("There seems some internet connectivity issues. Please check and try again later");
+                }
+            }
+        }
+        public static T ExecuteJSONPOST<T>(string methodUrl, object JSON, string authToken = null)
+        {
+            using (HttpClient client = new HttpClient())
+            {
+
+                if (!string.IsNullOrEmpty(authToken)) client.DefaultRequestHeaders.Add("Authorization", "Bearer " + authToken);
+                else
+                    client.DefaultRequestHeaders.Accept.Add(
+                   new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                var Json = JsonConvert.SerializeObject(JSON);
+                HttpResponseMessage response;
+                try
+                {
+                    response = client.PostAsync(String.Concat(_APIURL, methodUrl), new StringContent(Json, Encoding.UTF8, "application/json")).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return response.Content.ReadAsAsync<T>().Result;
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                    }
+                }
+                catch
+                {
+                    throw new HttpException("There seems some internet connectivity issues. Please check and try again later");
+                }
+            }
+        }
+        public static async Task<object> GetAsync(string requestUrl)
+        {
+            using (var client = new HttpClient())
+            {
+                HttpResponseMessage response = client.GetAsync(requestUrl).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject(data);
+                }
+                else
+                {
+                    throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                }
+            }
+        }
+        public static async void PostAsync(string requestUrl, object oList, string accessToken)
+        {
+            using (var client = new HttpClient())
+            {
+                var RequestCollection = Newtonsoft.Json.JsonConvert.SerializeObject(oList);
+                var CompleteJson = "{\"journey\":" + RequestCollection.ToString() + "}";
+                if (!string.IsNullOrEmpty(accessToken)) client.DefaultRequestHeaders.Add("Authorization", "Bearer " + accessToken);
+                else
+                    client.DefaultRequestHeaders.Accept.Add(
+                   new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                try
+                {
+                    var response = await client.PostAsync(String.Concat(_APIURL, requestUrl), new StringContent(CompleteJson, Encoding.UTF8, "application/json"));
+                    if (response.IsSuccessStatusCode)
+                    {
+                        await response.Content.ReadAsStringAsync();
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                    }
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+
+        private static T ExecuteRequest<T>(HttpClient client, RequestEnum requestType, string requestUri)
+        {
+            string key = string.Empty;
+            try
+            {
+                if (requestType == RequestEnum.Get)
+                {
+                    key = string.Concat(requestUri, "~", requestType);
+                    HttpResponseMessage response = client.GetAsync(requestUri).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+
+                        var obj = response.Content.ReadAsAsync<T>().Result;
+                        QuealthSerializer.WriteToJsonFile<T>(string.Concat(key, ".json"), obj, false);
+                        return obj;
+                    }
+                    else
+                    {
+                        throw new Exception(string.Format("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return QuealthSerializer.ReadFromJsonFile<T>(string.Concat(key, ".json"));
+                throw;
+            }
+        }
+    }
+
+    public enum RequestEnum
+    {
+        Post,
+        Get,
+        PostWithJson,
+        GetWithJson,
+
+    }
+}

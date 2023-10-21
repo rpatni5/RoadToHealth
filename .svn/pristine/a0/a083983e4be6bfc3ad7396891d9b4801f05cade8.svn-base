@@ -1,0 +1,322 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+        private RelayCommand m_UserLogin;
+        private RelayCommand m_UserRegistration;
+        private RelayCommand m_RequestAnAccessCode;
+        private RelayCommand m_ChangePassword;
+        private RelayCommand m_RegisterWithSocialLogin;
+        private RelayCommand m_EmailColorCommand;
+        private RelayCommand twitterLoginCommand;
+        private RelayCommand m_DashboardSummeryCommand;
+        private RelayCommand m_SendInvitationCommand;
+
+        public RelayCommand SendInvitationCommand
+        {
+            get
+            {
+                return m_SendInvitationCommand ?? (m_SendInvitationCommand = new RelayCommand(
+                    ve => SendInvitation(ve), (t) => true));
+            }
+        }
+
+        private async void SendInvitation(object ve)
+        {
+            MWHealthierViewModel nWHealthierViewModel = this.ViewModel as MWHealthierViewModel;
+            bool result = await nWHealthierViewModel.SendInvitation();
+            if (result)
+                System.Diagnostics.Process.Start("mailto:" + nWHealthierViewModel.Email);
+        }
+
+        public RelayCommand DashboardSummeryCommand
+        {
+            get
+            {
+                return m_DashboardSummeryCommand ?? (m_DashboardSummeryCommand = new RelayCommand(
+                    ve => ExecuteQSummery(ve), (t) => true));
+            }
+        }
+
+        private void ExecuteQSummery(object ve)
+        {
+            if (ve != null && (int)ve > 1)
+            {
+                LoadView(Enums.ViewEnum.AllQScoreView);
+            }
+        }
+
+        public RelayCommand EmailColorCommand
+        {
+            get
+            {
+                return m_EmailColorCommand ?? (m_EmailColorCommand = new RelayCommand(
+                    ve => SetEmailColor(ve), (t) => true));
+            }
+        }
+
+        private void SetEmailColor(object ve)
+        {
+            if (ve == null)
+            {
+                if (this.ViewModel is LoginViewModel)
+                {
+                    (this.ViewModel as LoginViewModel).EmailColor = "#FF000000";
+                }
+                else if (this.ViewModel is UserRegistrationViewModel)
+                {
+                    (this.ViewModel as UserRegistrationViewModel).EmailColor = "#FF000000";
+                }
+                else if (this.ViewModel is ForgotPasswordViewModel)
+                {
+                    (this.ViewModel as ForgotPasswordViewModel).EmailColor = "#FF000000";
+                }
+                else if (this.ViewModel is FBUserRegistrationViewModel)
+                {
+                    (this.ViewModel as FBUserRegistrationViewModel).EmailColor = "#FF000000";
+                }
+                else if (this.ViewModel is MWHealthierViewModel)
+                {
+                    (this.ViewModel as MWHealthierViewModel).EmailColor = "#FF000000";
+                }
+            }
+            else if (ve.Equals("Name"))
+            {
+                if (this.ViewModel is UserRegistrationViewModel)
+                {
+                    (this.ViewModel as UserRegistrationViewModel).NameColor = "#FF000000";
+                }
+                else if (this.ViewModel is FBUserRegistrationViewModel)
+                {
+                    (this.ViewModel as FBUserRegistrationViewModel).NameColor = "#FF000000";
+                }
+                else if (this.ViewModel is MWHealthierViewModel)
+                {
+                    (this.ViewModel as MWHealthierViewModel).NameColor = "#FF000000";
+                }
+            }
+        }
+
+        public RelayCommand UserLoginCommand
+        {
+            get
+            {
+                return m_UserLogin ?? (m_UserLogin = new RelayCommand(
+                    ve => ExecuteUserLogin(ve), (t) => true));
+            }
+        }
+        public RelayCommand UserRegistrationCommand
+        {
+            get
+            {
+                return m_UserRegistration ?? (m_UserRegistration = new RelayCommand(
+                    ve => ExecuteUserRegistration(ve), (t) => true));
+            }
+        }
+        public RelayCommand RequestAnAccessCodeCommand
+        {
+            get
+            {
+                return m_RequestAnAccessCode ?? (m_RequestAnAccessCode = new RelayCommand(
+                    ve => ExecuteRequestAnAccessCode(ve), (t) => true));
+            }
+        }
+        public RelayCommand ChangePasswordCommand
+        {
+            get
+            {
+                return m_ChangePassword ?? (m_ChangePassword = new RelayCommand(
+                    ve => ExecuteChangePassword(ve), (t) => true));
+            }
+        }
+        public RelayCommand RegisterWithSocialLoginCommand
+        {
+            get
+            {
+                return m_RegisterWithSocialLogin ?? (m_RegisterWithSocialLogin = new RelayCommand(
+                    ve => ExecuteRegisterWithSocialLogin(ve), (t) => true));
+            }
+        }
+
+        private async void ExecuteRegisterWithSocialLogin(object ve)
+        {
+            var FBUserRegistrationViewModel = this.ViewModel as FBUserRegistrationViewModel;
+            FBUserRegistrationViewModel.ErrorMessage = "";
+            FBUserRegistrationViewModel.Type = ViewModelBase.UserDetails.type;
+            FBUserRegistrationViewModel.Password = ConfigurationManagers.DefaultPassword;
+
+            User oUser = await FBUserRegistrationViewModel.RegistrationWithSocialLogin();
+            if (oUser != null)
+            {
+                if (oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    SaveCredentials(oUser.email, FBUserRegistrationViewModel.Password);
+                    this.LoadViewModel.Execute("DashboardView");
+                }
+                else { FBUserRegistrationViewModel.ErrorMessage = oUser.message; }
+            }
+
+        }
+
+        private async void ExecuteChangePassword(object ve)
+        {
+            var ForgotPasswordViewModel = this.ViewModel as ForgotPasswordViewModel;
+            var passwords = (Array)ve;
+
+            PasswordBox PasswordObj = passwords.GetValue(0) as PasswordBox;
+            PasswordBox confPasswordObj = passwords.GetValue(1) as PasswordBox;
+
+            ForgotPasswordViewModel.Password = PasswordObj.Password;
+            ForgotPasswordViewModel.Confirm = confPasswordObj.Password;
+
+            User oUser = await ForgotPasswordViewModel.ChangePassword();
+
+            if (oUser != null)
+            {
+                if (oUser.status == 0)
+                {
+                    ExecuteLogin(new User() { email = Properties.Settings.Default.Email, password = PasswordObj.Password });
+                }
+                else
+                {
+                    ForgotPasswordViewModel.ErrorMessage2 = oUser.message;
+                }
+            }
+        }
+
+        private void ExecuteLogin(User oUser)
+        {
+            var ForgotPasswordViewModel = this.ViewModel as ForgotPasswordViewModel;
+            oUser = ForgotPasswordViewModel.UserLogin(oUser);
+            if (oUser != null)
+            {
+                if (oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    SaveCredentials(oUser.email, oUser.password);
+                    this.LoadView(Enums.ViewEnum.DashboardView);
+                }
+            }
+        }
+
+        private async void ExecuteRequestAnAccessCode(object ve)
+        {
+            var ForgotPasswordViewModel = this.ViewModel as ForgotPasswordViewModel;
+            User oUser = await ForgotPasswordViewModel.RequestAnAccessCode();
+            if (oUser != null)
+            {
+                Properties.Settings.Default.Email = ForgotPasswordViewModel.Email;
+                Properties.Settings.Default.Save();
+                ForgotPasswordViewModel.ErrorMessage = oUser.message;
+            }
+
+        }
+
+        private async void ExecuteUserRegistration(object ve)
+        {
+            var UserRegistrationViewModel = this.ViewModel as UserRegistrationViewModel;
+            UserRegistrationViewModel.ErrorMessage = "";
+            var passwords = (Array)ve;
+            PasswordBox PasswordObj = passwords.GetValue(0) as PasswordBox;
+            PasswordBox confPasswordObj = passwords.GetValue(1) as PasswordBox;
+            UserRegistrationViewModel.password = PasswordObj.Password;
+            UserRegistrationViewModel.confirm = confPasswordObj.Password;
+
+            User oUser = await UserRegistrationViewModel.UserRegistration();
+
+            if (oUser != null)
+            {
+                if (oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    SaveCredentials(oUser.email, UserRegistrationViewModel.password);
+                    this.LoadViewModel.Execute("DashboardView");
+                }
+                else { UserRegistrationViewModel.ErrorMessage = oUser.message; }
+            }
+        }
+
+        private void SaveCredentials(string email, string password)
+        {
+            Properties.Settings.Default.Email = email;
+            Properties.Settings.Default.Password = password;
+            Properties.Settings.Default.Save();
+        }
+
+        private async void ExecuteUserLogin(object ve)
+        {
+            GlobalData.Default.LoaderVisibility = true;
+            var LoginViewModel = this.ViewModel as LoginViewModel;
+            LoginViewModel.ErrorMessage = "";
+            PasswordBox PasswordObj = ve as PasswordBox;
+            LoginViewModel.Password = PasswordObj.Password;
+            LoginViewModel.Email = LoginViewModel.Email;
+
+            User oUser = await LoginViewModel.UserLogin();
+            if (oUser != null)
+            {
+                if (oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    SaveCredentials(LoginViewModel.Email, PasswordObj.Password);
+                    this.LoadView(Enums.ViewEnum.DashboardView);
+                }
+                else
+                {
+                    LoginViewModel.ErrorMessage = oUser.message;
+                }
+            }
+        }
+
+        public User ValidateSocialLogin(User oUser)
+        {
+            var _viewModel = this.ViewModel as ViewModelBase;
+            return _viewModel.ValidateSocialLogin(oUser._id, oUser.type);
+        }
+
+        public RelayCommand TwitterLoginCommand
+        {
+            get
+            {
+                return twitterLoginCommand ?? (twitterLoginCommand = new RelayCommand(
+                    (t) =>
+                    {
+                        ValidateTwitterLogin();
+
+                    },
+                    (vm) => { return true; }));
+            }
+        }
+
+        private void ValidateTwitterLogin()
+        {
+            LoadView(Enums.ViewEnum.TwitterAuthenticationView, true);
+        }
+
+        private void LoadAuthToken(TwitterCredentials tc)
+        {
+            if (tc == null) tc = new TwitterCredentials();
+            if (tc.OAuthToken == null) tc.OAuthToken = new TwitterAuthToken();
+            if (tc.OAuthToken2 == null) tc.OAuthToken2 = new TwitterAuthToken();
+            //tc.OAuthToken.Token = Properties.Settings.Default.TwitterOAuthToken;
+            //tc.OAuthToken.TokenSecret = Properties.Settings.Default.TwitterOAuthTokenSecret;
+            //SettingsPropertyCollection propCollection = ViewModelBase.GetViewModelSettings();
+            //// Values to be fetched properly
+            //tc.OAuthToken2.Token = propCollection["OAuthToken2"].ToString();
+            //tc.OAuthToken2.TokenSecret = propCollection["OAuthTokenSecret2"].ToString();
+        }
+    }
+}

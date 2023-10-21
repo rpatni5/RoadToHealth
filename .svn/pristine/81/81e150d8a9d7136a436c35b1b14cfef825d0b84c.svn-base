@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class ScoreToRAGColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            var score = (double)value;
+            String colorCode = "#76b72a";
+            if (score <= 20) colorCode =  "#e5332a";
+            if (score > 20 && score <= 60) colorCode = "#f29100";
+
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorCode)); 
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

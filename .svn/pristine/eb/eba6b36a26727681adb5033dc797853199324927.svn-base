@@ -1,0 +1,132 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuealthCoachView.xaml
+    /// </summary>
+    public partial class QuealthCoachView : ViewBase
+    {
+        public QuealthCoachView()
+        {
+            InitializeComponent();
+        }
+        DispatcherTimer _tmr = new DispatcherTimer();
+        private bool IsAnimate;
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<TermsAndConditionsViewModel>();
+            IsAnimate = true;
+        }
+        public override void OnViewLoaded()
+        {
+        }
+
+        public void CoachSuggestion(object param)
+        {
+            if (param.Equals("BeforeLogin"))
+            {
+                SuggestionBeforeLogin();
+            }
+            else if (param.Equals("AfterLogin"))
+            {
+                SuggestionAfterLogin();
+            }
+        }
+
+        private async void SuggestionBeforeLogin()
+        {
+            btnLetsGo.Visibility = Visibility.Collapsed;
+            coachControl.Children.Clear();
+            List<Question2> lst = (this.ViewModel as TermsAndConditionsViewModel).GetPreConversation();           
+            foreach (var c in lst)
+            {
+                await AsyncCall.Invoke(() =>
+                 {
+                     Thread.Sleep(1500);
+                     Dispatcher.Invoke(() =>
+                     {
+                         coachControl.Children.Add( new TextBlock()
+                         {
+                             Text = c.question,
+                             FontSize = 14.0,
+                             Foreground = Brushes.Gray,
+                             Margin = new Thickness(20, 0, 20, 20),
+                             Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#e6e6e6")),
+                             Padding = new Thickness(20, 10, 20, 10),
+                             TextWrapping = TextWrapping.Wrap,
+                         });
+                     });
+                     Thread.Sleep(1000);
+
+                     return true;
+                 }, false);
+            }
+
+            viewTyping.Visibility = Visibility.Collapsed;
+            ButtonSignUp(btnGetStarted);
+        }
+
+        private async void SuggestionAfterLogin()
+        {
+            btnGetStarted.Visibility = Visibility.Collapsed;
+            coachControl.Children.Clear();
+            List<string> lst = (this.ViewModel as TermsAndConditionsViewModel).GetPostConversation();
+            foreach (var c in lst)
+            {
+                await AsyncCall.Invoke(() =>
+                {
+                    Thread.Sleep(1500);
+                    Dispatcher.Invoke(() =>
+                    {
+                        coachControl.Children.Add(new TextBlock()
+                        {
+                            Text = c,
+                            FontSize = 14.0,
+                            Foreground = Brushes.Gray,
+                            Margin = new Thickness(20, 0, 20, 20),
+                            Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#e6e6e6")),
+                            Padding = new Thickness(20, 10, 20, 10),
+                            TextWrapping = TextWrapping.Wrap,
+                        });
+                    });
+                    Thread.Sleep(1000);
+
+                    return true;
+                }, false);
+            }
+
+            viewTyping.Visibility = Visibility.Collapsed;
+            ButtonSignUp(btnLetsGo);
+        }
+        private void ButtonSignUp(Button btn)
+        {
+            btn.SetValue(VisibilityProperty, Visibility.Visible);
+            Storyboard qSB = new Storyboard();
+            ThicknessAnimation da = new ThicknessAnimation(new Thickness(300, 0, 0, 0), new Thickness(0, 0, 0, 0), TimeSpan.FromSeconds(0.50));
+            Storyboard.SetTarget(da, btn);
+            Storyboard.SetTargetProperty(da, new PropertyPath(Border.MarginProperty));
+            qSB.Children.Add(da);
+            qSB.Begin();
+        }
+    }
+}

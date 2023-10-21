@@ -1,0 +1,101 @@
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.Controls
+{
+    /// <summary>
+    /// Interaction logic for CardFlip.xaml
+    /// </summary>
+    public partial class CardFlip : UserControl
+    {
+        public CardFlip()
+        {
+            InitializeComponent();
+        }
+
+
+
+        public Visual Frame1
+        {
+            get { return (Visual)GetValue(Frame1Property); }
+            set { SetValue(Frame1Property, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Frame1.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty Frame1Property =
+            DependencyProperty.Register("Frame1", typeof(Visual), typeof(CardFlip), new PropertyMetadata(null));
+
+
+
+
+        public Visual Frame2
+        {
+            get { return (Visual)GetValue(Frame2Property); }
+            set { SetValue(Frame2Property, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Frame2.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty Frame2Property =
+            DependencyProperty.Register("Frame2", typeof(Visual), typeof(CardFlip), new PropertyMetadata(null));
+
+
+
+        public bool IsFlipped
+        {
+            get { return (bool)GetValue(IsFlippedProperty); }
+            set { SetValue(IsFlippedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsFliped.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsFlippedProperty =
+            DependencyProperty.Register("IsFlipped", typeof(bool), typeof(CardFlip), new PropertyMetadata(false, new PropertyChangedCallback(OnIsFlipedPropertyChanged)));
+
+        private static void OnIsFlipedPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            (d as CardFlip).FlipAnimation((bool)e.NewValue);
+        }
+
+        private DispatcherTimer _tmrMain = new DispatcherTimer();
+        Storyboard Storyboard_Begin;
+        Storyboard Storyboard_Reversed;
+        private void FlipAnimation(bool isFlip)
+        {
+
+            Storyboard_Begin = this.FindResource("FlipFirst") as Storyboard;
+            Storyboard_Reversed = this.FindResource("FlipLast") as Storyboard;
+
+            if (isFlip)
+            {
+                _tmrMain.Interval = new TimeSpan(0, 0, 3);
+                _tmrMain.Tick += new EventHandler(FlipImage);
+                _tmrMain.Start();
+            }
+        }
+
+        private void FlipImage(object sender, EventArgs e)
+        {
+            Storyboard_Begin.Begin();
+            _tmrMain.Stop();
+            _tmrMain.Interval = new TimeSpan(0, 0, 30);
+            _tmrMain.Start();
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _tmrMain.Stop();
+        }
+
+        private async void Storyboard_Completed(object sender, EventArgs e)
+        {
+            await Task.Delay(3000);
+            Storyboard_Begin.Stop();
+            Storyboard_Reversed.Begin();
+        }
+    }
+}

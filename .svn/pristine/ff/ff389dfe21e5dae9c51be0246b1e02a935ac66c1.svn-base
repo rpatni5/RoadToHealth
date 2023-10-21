@@ -1,0 +1,56 @@
+﻿using RTH.Helpers;
+
+namespace RTH.Windows.ViewModels.Objects
+{
+    public class DiseaseData : NotifyBase
+    {
+        public DiseaseData()
+        {
+
+        }
+        public DiseaseData(DiseaseData data)
+        {
+            if (data != null)
+            {
+                ID = data.ID;
+                BgColor = data.BgColor;
+                Title = data.Title;
+                TotalScore = data.TotalScore;
+                Summary = data.Summary;
+                IsCompleted = data.IsCompleted;
+                KeyString = data.KeyString;
+                Language = data.Language;
+                IsChecked = data.IsChecked;
+            }
+        }
+        public string ID { get; set; }
+        public string BgColor { get { return GetValue(() => this.BgColor); } set { SetValue(() => this.BgColor, value); } }
+        public string Title { get; set; }       
+        public string TotalScore { get; set; }
+        public string Summary { get; set; }
+        public HRAStatusEnum IsCompleted { get; set; }
+        public string KeyString { get; set; }       
+        public string Language { get; set; }       
+        public bool IsChecked { get { return GetValue(() => this.IsChecked); } set { SetValue(() => this.IsChecked, value); } }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            DiseaseData d = obj as DiseaseData;
+            if (d == null) return base.Equals(obj);
+            return ID.Equals(d.ID) && BgColor.Equals(d.BgColor) && Title.Equals(d.Title) && TotalScore.Equals(d.TotalScore) && Summary.Equals(d.Summary) && IsCompleted.Equals(d.IsCompleted) && KeyString.Equals(d.KeyString) && IsChecked.Equals(d.IsChecked) && Language.Equals(d.Language);
+        }
+       
+    }
+
+    public enum HRAStatusEnum
+    {
+        NotCompleted,
+        Completed,
+        Redo
+    }
+}

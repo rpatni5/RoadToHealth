@@ -1,0 +1,127 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class TwitterAuthenticationViewModel : ViewModelBase
+    {
+        RelayCommand authenticateCommand;
+        IDictionary<string, string> parameters;
+        public TwitterAuthenticationViewModel(TwitterCredentials credentials)
+        {
+            Credentials = credentials;
+            GetAuthTokenAndNavigateBrowser();
+        }
+
+        IDictionary<string, string> Parameters
+        {
+            get
+            {
+                if (parameters == null)
+                {
+                    parameters = new Dictionary<string, string>();
+                    parameters.Add("oauth_consumer_key", Credentials.ConsumerKey);
+                    if (Credentials.OAuthToken == null) Credentials.OAuthToken = new TwitterAuthToken();
+                    parameters.Add("oauth_token", Credentials.OAuthToken.Token);
+                }
+
+                return parameters;
+            }
+        }
+        public Uri NavigateToUri { get { return GetValue(() => NavigateToUri); } set { SetValue(() => NavigateToUri, value); } }
+        private async void GetAuthTokenAndNavigateBrowser()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Parameters.Add("oauth_callback", EncodeToProtectMultiByteCharUrls("oob"));
+                Parameters.Remove("oauth_token");
+                string oAuthToken = TwitterService.GetRequestToken(Credentials.ConsumerKey, Credentials.ConsumerSecret, Credentials.AccessToken, Parameters);
+                string[] tokens = oAuthToken.Split('&');
+                Credentials.OAuthToken.Token = tokens[0].Split('=')[1];
+                Credentials.OAuthToken.TokenSecret = tokens[1].Split('=')[1];
+                NavigateToUri = new Uri("http://twitter.com/oauth/authenticate?oauth_token=" + Credentials.OAuthToken.Token);
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+        string EncodeToProtectMultiByteCharUrls(string callback)
+        {
+            return callback == "oob" ? "oob" : new Uri(callback).AbsoluteUri;
+        }
+        public RelayCommand AuthenticateCommand
+        {
+            get
+            {
+                return authenticateCommand ?? (authenticateCommand = new RelayCommand(
+                    (o) =>
+                    {
+                        GetUserDetailsAsync();
+                    },
+                    (o) =>
+                    {
+                        return !string.IsNullOrEmpty(Credentials.Pin) && !string.IsNullOrWhiteSpace(Credentials.Pin);
+                    }));
+            }
+        }
+
+        public async void GetUserDetailsAsync()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Parameters.Remove("oauth_verifier");
+                Parameters.Remove("oauth_token");
+                Parameters.Add("oauth_verifier", Credentials.Pin);
+                Parameters.Add("oauth_token", Credentials.OAuthToken.Token);
+                if (TwitterService.GetAccessToken(Credentials, Parameters))
+                {
+                    Properties.Settings.Default.OAuthToken2 = Credentials.OAuthToken2.Token;
+                    Properties.Settings.Default.OAuthTokenSecret2 = Credentials.OAuthToken2.TokenSecret;
+                    Properties.Settings.Default.Save();
+                    Parameters.Remove("screen_name");
+                    Parameters.Remove("oauth_token");
+                    Parameters.Add("oauth_token", Credentials.OAuthToken2.Token);
+                    Parameters.Add("screen_name", Credentials.OAuthToken2.ScreenName);
+                    Parameters.Remove("oauth_verifier");
+                    TwitterUser tUser = TwitterService.GetUserInfo(Credentials, Parameters);
+
+                    User oUser = new User();
+                    oUser.name = tUser.name;
+                    //oUser.email = (string)me.email;
+                    oUser._id = tUser.id_str;
+                    oUser.type = "Twitter";
+                    ViewModelBase.UserDetails = oUser;
+                    oUser = this.ValidateSocialLogin(oUser);
+                    if (oUser.status != 0)
+                    {
+
+                    }
+                    //if (oUser.message == "Failed to load User")
+                    //{ App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.FBUserRegistrationView); }
+                    //else
+                    //{
+                    //    ViewModelBase.UserDetails = oUser;
+                    //    App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.DashboardView);
+                    //}
+                    //TwitterAccount..(oOAuthTokens); //TwitterTimeline.UserTimeline(oOAuthTokens);
+
+
+
+                }
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+
+
+        public TwitterCredentials Credentials { get { return GetValue(() => Credentials); } set { SetValue(() => Credentials, value); } }
+
+
+    }
+}

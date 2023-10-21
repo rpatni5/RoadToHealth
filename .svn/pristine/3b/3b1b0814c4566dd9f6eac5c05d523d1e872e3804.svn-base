@@ -1,0 +1,139 @@
+﻿using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Enums;
+using RTH.Windows.Views.Objects;
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+
+
+namespace RTH.Windows.Views.UserControls
+{
+    public class ViewBase : UserControl, IMessagingTarget
+    {
+        [System.Runtime.InteropServices.DllImport("wininet.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, SetLastError = true)]
+        private static extern bool InternetSetOption(int hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
+        protected static unsafe void SuppressCookies()
+        {
+            /* SOURCE: http://msdn.microsoft.com/en-us/library/windows/desktop/aa385328%28v=vs.85%29.aspx
+                *      A general purpose option that is used to suppress behaviors on a process-wide basis. 
+                *      The lpBuffer parameter of the function must be a pointer to a DWORD containing the specific behavior to suppress. 
+                *      This option cannot be queried with InternetQueryOption. 
+                *      
+                * INTERNET_SUPPRESS_COOKIE_PERSIST (3):
+                *      Suppresses the persistence of cookies, even if the server has specified them as persistent.
+                *      Version:  Requires Internet Explorer 8.0 or later.
+                */
+            int INTERNET_OPTION_SUPPRESS_BEHAVIOR = 81;
+            int INTERNET_SUPPRESS_COOKIE_PERSIST = 3;
+
+            int* optionPtr = &INTERNET_SUPPRESS_COOKIE_PERSIST;
+
+            bool success = InternetSetOption(0, INTERNET_OPTION_SUPPRESS_BEHAVIOR, new IntPtr(optionPtr), sizeof(int));
+
+            if (!success)
+            {
+                Controls.QuealthMessageBox.ShowInformation("Something went wrong !");
+            }
+        }
+        public bool ShowTutorial
+        {
+            get { return (bool)GetValue(ShowTutorialProperty); }
+            set { SetValue(ShowTutorialProperty, value); }
+        }
+
+        public static readonly DependencyProperty ShowTutorialProperty =
+            DependencyProperty.Register("ShowTutorial", typeof(bool), typeof(ViewBase), new PropertyMetadata(false));
+
+        public ViewModelBase ViewModel { get; protected set; }
+
+        public virtual void Refresh()
+        {
+            if (this.RefreshOnLoad)
+            {
+                if (Properties.Settings.Default.SecurePwd.Length > 0)
+                {
+                    ViewModelBase.UserDetails.Securepwd = Properties.Settings.Default.SecurePwd;
+                }
+                this.ViewModel.Refresh();
+            }
+        }
+
+        public ViewBase()
+        {
+            Token = Guid.NewGuid();
+            this.Loaded += ViewBase_Loaded;
+            this.Unloaded += ViewBase_Unloaded;
+            this.LoadViewModel();
+        }
+
+        public virtual void LoadViewModel()
+        {
+            if (this.ViewModel != null)
+            {
+                this.ViewModel.ViewToken = this.Token;
+            }
+        }
+
+        public virtual bool CanUnload()
+        {
+            return true;
+        }
+        public virtual TutorialContent GetTutorials()
+        {
+            return null;
+        }
+        public virtual void SkipTutorials()
+        {
+
+        }
+
+        public virtual void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.Message)
+            {
+                RTH.Windows.Views.Controls.QuealthMessageBox.ShowInformation(e.Data as String);
+            }
+            else if (e.Type == MessageType.LoadView)
+            {
+                ViewEnum ve = (ViewEnum)Enum.Parse(typeof(ViewEnum), e.Data as string);
+                App.SharedValues.WindowMain.LoadView(ve);
+            }
+            else if (e.Type == MessageType.ExecuteBack)
+            {
+                App.SharedValues.WindowMain.BackCommand.Execute(e);
+            }
+        }
+
+        #region properties
+        public Guid Token { get; private set; }
+        public bool RefreshOnLoad { get; set; }
+
+        #endregion properties
+        private void ViewBase_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (DesignerProperties.GetIsInDesignMode(this) == false)
+            {
+                AppMessages.Register(this, this.Token);
+            }
+            this.DataContext = this.ViewModel;
+            this.OnViewLoaded();
+        }
+        public virtual void OnViewLoaded()
+        {
+
+        }
+        private void ViewBase_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (DesignerProperties.GetIsInDesignMode(this) == false)
+            {
+                AppMessages.Unregister(this.Token);
+            }
+        }
+        public void ReceiveMessage(Message msg)
+        {
+            Dispatcher.BeginInvoke((Action)(() => { this.OnMessage(msg); }));
+        }
+    }
+}

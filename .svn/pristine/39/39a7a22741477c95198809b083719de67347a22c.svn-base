@@ -1,0 +1,124 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+
+namespace RTH.Windows.ViewModels
+{
+    public class FBUserRegistrationViewModel : Common.ViewModelBase
+    {
+
+        public IEnumerable<Language> LanguageList
+        {
+            get { return GetValue(() => LanguageList); }
+            set
+            {
+                SetValue(() => LanguageList, value);
+            }
+        }
+
+        public FBUserRegistrationViewModel()
+        {
+            LanguageList = RTH.Business.Services.AppService.GetLanguage().Data;
+            Language = "en";
+            HeaderLabel = AppMessages.we_need_more_detail;
+
+        }
+        public User RegistrationWithSocialLogin()
+        {
+            if (string.IsNullOrEmpty(this.name))
+            { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_name; return null; }
+            if (string.IsNullOrEmpty(this.email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+            if (!ExtensionMethod.ValidateEmail(this.email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+
+            var User = new User
+            {
+                name = name,
+                email = email,
+                username = email,
+                language = Language,
+                password = Password,
+                confirm = Password
+                ,_id = FbId
+                ,type = Type
+
+            };
+            return RTH.Business.Services.UserService.RegisterUserWithSocialLogin(User);
+        }
+
+
+        #region ViewModel Property  
+        public String name
+        {
+            get { return GetValue(() => name); }
+            set { SetValue(() => name, value); }
+        }
+
+        public String email
+        {
+            get { return GetValue(() => email); }
+            set
+            {
+                SetValue(() => email, value);
+            }
+        }
+
+        public String Language
+        {
+            get { return GetValue(() => Language); }
+            set
+            {
+                SetValue(() => Language, value);
+            }
+        }
+        public String HealthGuidelines
+        {
+            get { return GetValue(() => HealthGuidelines); }
+            set
+            {
+                SetValue(() => HealthGuidelines, value);
+            }
+        }
+        public String FbId
+        {
+            get { return GetValue(() => FbId); }
+            set
+            {
+                SetValue(() => FbId, value);
+            }
+        }
+        public String Type
+        {
+            get { return GetValue(() => Type); }
+            set
+            {
+                SetValue(() => Type, value);
+            }
+        }
+
+        public String Password
+        {
+            get { return GetValue(() => Password); }
+            set
+            {
+                SetValue(() => Password, value);
+            }
+        }
+
+        #endregion
+
+
+
+    }
+}

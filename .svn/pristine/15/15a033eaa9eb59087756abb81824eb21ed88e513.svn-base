@@ -1,0 +1,33 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Configuration;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public static class ConfigurationManagers
+    {
+        public static string ImagePath
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["BaseAPiConnection"] != null ?string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], ConfigurationManager.AppSettings["ImageUrl"]) : string.Empty;
+            }
+        }
+        public static string ClientId
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["client_id"] != null ? ConfigurationManager.AppSettings["client_id"] : string.Empty;
+            }
+        }
+
+        public static string DementiaId = "54bd0b493c0ac6fe880b7e62";
+        public static string CardioId = "54192bbc6330920800fe70cd";
+        public static string DiabetesId = "537f675a2140f60800de4531";
+        public static string LungsId = "548b2333ae8f826f1898a78f";
+        public static string CancerId = "54192ba46330920800fe70c8";   
+    }
+}

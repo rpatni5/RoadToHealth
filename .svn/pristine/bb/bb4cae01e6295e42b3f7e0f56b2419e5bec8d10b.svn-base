@@ -1,0 +1,180 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Controls;
+using RTH.Windows.Views.Enums;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuealthCoachView.xaml
+    /// </summary>
+    public partial class QuealthCoachView : ViewBase, IEnumerable, IEnumerator
+    {
+        public QuealthCoachView()
+        {
+            InitializeComponent();
+        }
+        DispatcherTimer _tmr = new DispatcherTimer();
+        private bool IsAnimate;
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<TermsAndConditionsViewModel>();
+            IsAnimate = true;
+        }
+        public override void OnViewLoaded()
+        {
+        }
+
+        public void CoachSuggestion(object param)
+        {
+            if (param.Equals("BeforeLogin"))
+            {
+                SuggestionBeforeLogin();
+            }
+            else if (param.Equals("AfterLogin"))
+            {
+                SuggestionAfterLogin();
+            }
+        }
+        List<Question> ListCon;
+        int position;
+
+        public object Current
+        {
+            get
+            {
+                return ListCon[position];
+            }
+        }
+        IEnumerator conEnumerator;
+        private void SuggestionBeforeLogin()
+        {
+            position = 0;
+            btnLetsGo.Visibility = Visibility.Collapsed;
+            coachControl.Children.Clear();
+            ListCon = (this.ViewModel as TermsAndConditionsViewModel).GetPreConversation();
+            conEnumerator = ListCon.GetEnumerator();
+            conEnumerator.Reset();
+            if (conEnumerator.MoveNext())
+            {
+                List<string> lstChat = FetchData();
+                DisplayChat(lstChat, btnGetStarted);
+            }
+        }
+
+        private async void DisplayChat(List<string> lstChat, Button btn)
+        {
+            viewTyping.Visibility = Visibility.Visible;
+            foreach (var c in lstChat)
+            {
+                await AsyncCall.Invoke(() =>
+                {
+                    Thread.Sleep(2000);
+                    Dispatcher.Invoke(() =>
+                    {
+                        chatScroll.ScrollToBottom();
+                        coachControl.Children.Add(new ChatBox(c));
+                    });
+                    return true;
+                }, false);
+            }
+            viewTyping.Visibility = Visibility.Collapsed;
+            ButtonSignUp(btn);
+            ViewBase.conversationAnswer.Add(GetAnswerBag());
+        }
+        private void SuggestionAfterLogin()
+        {
+            btnGetStarted.Visibility = Visibility.Collapsed;
+            viewTyping.Visibility = Visibility.Visible;
+            coachControl.Children.Clear();
+            ListCon = (this.ViewModel as TermsAndConditionsViewModel).GetPostConversation();
+            conEnumerator = ListCon.GetEnumerator();
+            conEnumerator.Reset();
+            if (conEnumerator.MoveNext())
+            {
+                List<string> lstChat = FetchData();
+                DisplayChat(lstChat, btnLetsGo);
+            }
+        }
+
+        private List<string> FetchData()
+        {
+            string str = ((Question)(conEnumerator.Current)).question;
+            return str.Split('\n').ToList();
+        }
+        private Option GetAnswerBag()
+        {
+            return ((Question)(conEnumerator.Current)).answers[0];
+        }
+        private void ButtonSignUp(Button btn)
+        {
+            btn.Content = ((Question)(conEnumerator.Current)).answers[0].answer_text;
+            btn.SetValue(VisibilityProperty, Visibility.Visible);
+            Storyboard qSB = new Storyboard();
+            ThicknessAnimation da = new ThicknessAnimation(new Thickness(300, 10, 0, 10), new Thickness(0, 10, 0, 10), TimeSpan.FromSeconds(0.50));
+            Storyboard.SetTarget(da, btn);
+            Storyboard.SetTargetProperty(da, new PropertyPath(Border.MarginProperty));
+            qSB.Children.Add(da);
+            qSB.Begin();
+        }
+
+        public bool MoveNext()
+        {
+            if (position < ListCon.Count - 1)
+            {
+                ++position;
+                return true;
+            }
+            return false;
+        }
+
+        public void Reset()
+        {
+            position = -1;
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return (IEnumerator)this;
+        }
+
+        private void btnGetStarted_Click(object sender, RoutedEventArgs e)
+        {
+            if (conEnumerator.MoveNext())
+            {
+                (sender as Button).SetValue(VisibilityProperty, Visibility.Collapsed);
+                List<string> lstChat = FetchData();
+                DisplayChat(lstChat, btnGetStarted);
+            }
+            else
+            {
+                App.SharedValues.WindowMain.LoadView(ViewEnum.UserRegistrationView);
+            }
+        }
+
+        private void btnLetsGo_Click(object sender, RoutedEventArgs e)
+        {
+            if (conEnumerator.MoveNext())
+            {
+                (sender as Button).SetValue(VisibilityProperty, Visibility.Collapsed);
+                List<string> lstChat = FetchData();
+                DisplayChat(lstChat, btnLetsGo);
+            }
+            else
+            {
+
+                App.SharedValues.WindowMain.LoadView(ViewEnum.MotivationView);
+            }
+        }
+    }
+}

@@ -1,0 +1,162 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.LifeStyleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+                xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+             mc:Ignorable="d" Background="{StaticResource HealthPlanBackground}"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <converters:ParameterConvertor x:Key="ParameterConvertor" />
+        <Style TargetType="{x:Type RadioButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="White" Padding="0,5" Name="border" BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ToggleButton HorizontalAlignment="Stretch"
+                                              BorderThickness="0"
+                                              Background="Transparent"
+                                              Style="{StaticResource ToggleButtonDefaultStyle}"
+                                              VerticalAlignment="Stretch"
+                                              HorizontalContentAlignment="Stretch" >
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="20" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding question_title}" Padding="0,5" 
+                                           TextWrapping="Wrap" TextAlignment="Left"
+                                           FontSize="16" />
+                                        <!--<Image Name="Helper" Stretch="None" Margin="10,0,15,0" 
+                                       VerticalAlignment="Center" Source="/Assets/help.png"
+                                       Grid.Column="1"/>-->
+                                        <Image Name="Arrow" Source="/Assets/blue_arrow.png" Stretch="None" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" 
+                                       Grid.Column="2" />
+                                    </Grid>
+                                    <ToggleButton.CommandParameter>
+                                        <MultiBinding Converter="{StaticResource ParameterConvertor}">
+                                            <Binding ElementName="border" Path="DataContext" />
+                                            <Binding ElementName="expandPanel" />
+                                        </MultiBinding>
+                                    </ToggleButton.CommandParameter>
+                                </ToggleButton>
+                                <StackPanel Grid.Row="1" Name="expandPanel" 
+                                            Orientation="Vertical" 
+                                            Visibility="Collapsed"
+                                            Margin="10,0">
+                                    <TextBlock Foreground="{StaticResource ThemeBlueColor}" 
+                                               FontWeight="Bold"
+                                               Text="Next Steps" Padding="0,5" />
+                                    <TextBlock Padding="0,5" Foreground="{StaticResource ThemeBlueColor}" 
+                                               Text="{Binding NextStepsData}"/>
+                                </StackPanel>
+                            </Grid>
+
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <!--<Setter TargetName="Arrow" Property="Source" Value="/Assets/blue_arrow.png" />-->
+                                <Setter Property="RenderTransform" TargetName="Arrow" >
+                                    <Setter.Value>
+                                        <RotateTransform Angle="90" CenterX="0" CenterY="0" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="55" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Vertical" Margin="30,10">
+            <TextBlock FontSize="{StaticResource LargeFontSize}"
+                           Foreground="{StaticResource ThemeBlueColor}"
+                           Text="Your lifestyle assessments" />
+            <TextBlock FontSize="{StaticResource NormalFontSize}" 
+                           Margin="0,10,0,0"
+                           TextWrapping="Wrap"
+                           Text="Lorem ipsum dolor sit amet, consectetur
+adipiscing elit, sed do eiusmod tempor incididunt
+ut labore et dolore magna aliqua." />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"  VerticalScrollBarVisibility="Visible" Style="{StaticResource ExtendedScrollViewer}">
+
+            <StackPanel Orientation="Vertical">
+                <Button Style="{StaticResource ButtonDefaultStyle}"  
+                        BorderThickness="0" Name="smoking"
+                        Background="White"
+                        Visibility="{Binding LifestyleVisibility,Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Border Padding="30,10" Width="{Binding ElementName=smoking,Path=ActualWidth}"  >
+                        <Grid >
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Text="Smoking" 
+                                    Background="White"
+                                    FontSize="{StaticResource LargeFontSize}"
+                                    Foreground="Gray"/>
+
+                            <TextBlock  Text="Take the assessment" 
+                                    Grid.Row="1" Margin="0,5,0,0"
+                                    FontSize="20" 
+                                    Foreground="{StaticResource ThemeBlueColor}"/>
+
+                            <Image Name="Arrow" 
+                               Source="/Assets/blue_arrow.png" 
+                               Stretch="None" 
+                               HorizontalAlignment="Center" 
+                               Grid.RowSpan="2" 
+                               VerticalAlignment="Center"
+                               Grid.Column="1" />
+
+                        </Grid>
+                    </Border>
+                </Button>
+                <StackPanel Grid.Row="0" Background="White"
+                            Visibility="{Binding LifestyleVisibility,Converter={StaticResource ReverseBooleanToVisibilityConverter}}">
+                    <TextBlock  Text="Smoking" Margin="30,5"
+                        FontSize="20" Background="White"
+                        Visibility="{Binding MotivationVisibility,Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Foreground="{StaticResource ThemeBlueColor}"/>
+
+                    <ItemsControl ItemsSource="{Binding LifestyleAnswers}" Margin="0,0,0,0"
+                           HorizontalAlignment="Stretch" Padding="0" Height="Auto">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <RadioButton Margin="30,0" BorderThickness="0,0,0,1" BorderBrush="LightGray" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+
+        </ScrollViewer>
+    </Grid>
+
+</local:ViewBase>

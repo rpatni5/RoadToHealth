@@ -1,0 +1,78 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class LifeStyleViewModel : ViewModelBase
+    {
+        public LifeStyleViewModel()
+        {
+            LoadPrimaryData();
+        }
+        public override void Refresh()
+        {
+            LoadPrimaryData();
+            base.Refresh();
+        }
+
+        void SetHeader()
+        {
+            HeaderVisibility = true;
+            KeyString = GlobalData.Default.ClickedHRA.KeyString;
+            HeaderState = false;
+            //HeaderColor = Questionnaire.background_colour;
+            //HeaderTitle = Questionnaire.title;
+        }
+        public List<MotivationQuestionaire> LifestyleAnswers
+        {
+            get { return GetValue(() => LifestyleAnswers); }
+            set { SetValue(() => LifestyleAnswers, value); }
+        }
+
+        public bool LifestyleVisibility
+        {
+            get { return GetValue(() => LifestyleVisibility); }
+            set { SetValue(() => LifestyleVisibility, value); }
+        }
+        public PHA PHADetails
+        {
+            get { return GetValue(() => PHADetails); }
+            set { SetValue(() => PHADetails, value); }
+        }
+        public HealthArea CurrentHealthArea
+        {
+            get { return GetValue(() => CurrentHealthArea); }
+            set { SetValue(() => CurrentHealthArea, value); }
+        }
+
+        private void LoadPrimaryData()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                //PHADetails = HealthAreasService.GetPHA(UserDetails._id, "", UserDetails.AuthToken.access_token);
+                //CurrentHealthArea = PHADetails[0].;
+            });
+        }
+        private RelayCommand _showSummaryCommand;
+        public RelayCommand ShowSummaryCommand
+        {
+            get
+            {
+                return _showSummaryCommand ?? (_showSummaryCommand = new RelayCommand(vm =>
+                {
+                    if (vm == null) throw new ArgumentNullException("PHA details are not provided");
+                    CurrentHealthArea = vm as HealthArea;
+
+                },
+                vm => { return true; }));
+            }
+        }
+    }
+}

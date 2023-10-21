@@ -1,0 +1,28 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RTH.Windows.Views.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Email" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Password" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LastTheme" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="Tutorials" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LastVisitedHRAID" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TutorialsKeys" Type="System.String" Scope="User">
+      <Value Profile="(Default)">hra_tutorial_windows:false&amp;off_menu_tutorial_windows:false&amp;timeline_tutorial_windows:false&amp;share_tutorial_windows:false&amp;view_update_tutorial:false&amp;dashboard_tutorial_windows:false&amp;insights_tutorial_windows:false&amp;advice_tutorial_windows:false&amp;score_tutorial_windows:false&amp;overall_qscore_tutorial_windows:false&amp;go_tutorial_windows:false&amp;
+insights_bar_tutorial_windows:false&amp;questionnaire_tutorial_windows:false&amp;CTutorialsCompleted:false&amp;expand_pha_tutorial_windows:false&amp;Overview:false&amp;foqpha_tutorial_windows:false&amp;Advicepanel_tutorials_windows:false&amp;</Value>
+    </Setting>
+    <Setting Name="Setting" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
+</SettingsFile>

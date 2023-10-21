@@ -1,0 +1,104 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class StrategyViewModel : ViewModelBase
+    {
+        public StrategyViewModel()
+        {
+            SetHeader();
+        }
+        public string HealthPlanText
+        {
+            get { return GetValue(() => HealthPlanText); }
+            set { SetValue(() => HealthPlanText, value); }
+        }
+
+        public ObservableCollection<Strategy> strategy
+        {
+            get { return GetValue(() => strategy); }
+            set { SetValue(() => strategy, value); }
+        }
+        public string ObjectiveID { get; set; }
+
+        public void GetHealthPlanQuestion(string ObjectiveId)
+        {
+            ObjectiveID = ObjectiveId;
+
+            AsyncCall.Invoke(() =>
+            {
+                //Get Question Answer From the bellow API
+                var result = HealthPlanServices.GetHealthPlan(UserDetails._id, UserDetails.AuthToken.access_token);
+                HealthPlanText = result.Where(x => x._id.Equals(ObjectiveId)).FirstOrDefault().objective_title;
+                var ObjectiveData = HealthPlanServices.GetHealthPlanObjective(UserDetails._id, ObjectiveId, UserDetails.AuthToken.access_token).data.questions;
+                //Get Question From the bellow API
+                var healthplanquestion = HealthPlanServices.GetHealthPlanQuestionaries(UserDetails._id, ObjectiveId, UserDetails.AuthToken.access_token).data;
+                strategy = healthplanquestion.strategies;
+
+            });
+        }
+
+        public void SubmitStrategy()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                HealthStrategyRequest.strategy = strategy;
+                HealthStrategyRequest.objective_id = ObjectiveID;
+                HealthStrategyRequest.user_id = UserDetails._id;
+                HealthPlanServices.PostHealthPlanQuestionaries(HealthStrategyRequest, UserDetails.AuthToken.access_token);
+            });
+        }
+
+        private void SetHeader()
+        {
+            HeaderColor = "#FF1492B7";
+            HeaderVisibility = true;
+            HeaderState = true;
+            KeyString = "None";
+            HeaderTitle = AppMessages.strategies;
+        }
+
+        private RelayCommand m_AddStrategyCommand;
+
+        public RelayCommand AddStrategyCommand
+        {
+            get
+            {
+                return m_AddStrategyCommand ?? (m_AddStrategyCommand = new RelayCommand(
+                    ve => AddNewStrategy(ve)));
+            }
+        }
+
+        private void AddNewStrategy(object ve)
+        {
+
+            ErrorMessage = string.Empty;
+            if (string.IsNullOrEmpty(ve as string))
+            {
+                ErrorMessage = "Please add custom strategy";
+                return;
+            }
+
+            strategy.Insert(0, new Strategy()
+            {
+                strategy_id = null,
+                strategy_status = 1,
+                strategy_text = ve as string,
+                _id = ObjectiveID
+            });
+
+            RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.StrategyAdded });
+        }
+
+
+    }
+}

@@ -1,0 +1,173 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ctrls="clr-namespace:RTH.Windows.Views.UserControls"  
+             xmlns:helpers="clr-namespace:RTH.Windows.Views.Helpers"
+             xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+             xmlns:Root="clr-namespace:RTH.Windows.Views">
+    <UserControl.Resources>
+        <Style TargetType="{x:Type RadioButton}"  x:Key="DiseaseButton">
+            <Setter Property="Button.Background">
+                <Setter.Value>
+                    <ImageBrush ImageSource="{Binding BackgroundImage}" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <ControlTemplate TargetType="{x:Type RadioButton}" x:Key="DiseaseButtonTemplate">
+            <Grid>
+                <Ellipse Name="OuterBorder">
+                    <Ellipse.Fill >
+                        <ImageBrush Opacity=".5" ImageSource="{Binding CoverImagePath, IsAsync=False}" Stretch="Uniform"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <Ellipse Name="InnerImage" Margin="5">
+                    <Ellipse.Fill >
+                        <ImageBrush ImageSource="{Binding BgImagePath, IsAsync=False}" Stretch="Uniform"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <TextBlock Name="txtContent" FontSize="26" Text="{Binding InnerText}" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock Name="Status"  Text="{Binding StatusText}" Opacity="0"/>
+                <TextBlock Name="KeyStrings"  Text="{Binding KeyString}" Opacity="0"/>
+            </Grid>
+        </ControlTemplate>
+    </UserControl.Resources>
+    <DockPanel LastChildFill="True">
+        <Popup PopupAnimation="Slide" Closed="RedoPopup_Closed"        
+               IsOpen="False" Placement="Top" x:Name="RedoPopup" AllowsTransparency="True" StaysOpen="False">
+            <StackPanel Name="RedoContainer" Orientation="Horizontal">
+                <Button Height="50" Width="50"  Margin="5,0,5,-5">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Grid>
+                                <Ellipse Margin="7" Fill="{Binding BgColor}" />
+                                <Ellipse>
+                                    <Ellipse.Fill >
+                                        <ImageBrush ImageSource="/Assets/RedoPopup/result.png" Stretch="Uniform"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Height="50" Width="50"  Margin="5,15,5,0" Command="{Binding Path=LoadViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" CommandParameter="QuestionNavigatorView">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Grid>
+                                <Ellipse Margin="7" Fill="{Binding BgColor}" />
+                                <Ellipse>
+                                    <Ellipse.Fill >
+                                        <ImageBrush ImageSource="/Assets/RedoPopup/redo.png" Stretch="Uniform"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
+        </Popup>
+        <ScrollViewer VerticalScrollBarVisibility="Hidden" >
+            <Grid Name="Content">
+                <Grid.Resources>
+                    <converters:TimelineGroupingConverter x:Key="TimelineConverter" />
+                    <CollectionViewSource x:Key="timeline" Source="{Binding Path=UserTimelines.engagements}">
+                        <CollectionViewSource.GroupDescriptions>
+                            <PropertyGroupDescription PropertyName="when_required_user" Converter="{StaticResource ResourceKey=TimelineConverter}"  />
+                        </CollectionViewSource.GroupDescriptions>
+                    </CollectionViewSource>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Name="ScoreContent" Grid.Row="0" Background="{DynamicResource DashboardBGColor}"
+                      IsManipulationEnabled="True"
+                      ManipulationStarting="Grid_ManipulationStarting"
+                      ManipulationDelta="Grid_ManipulationDelta"
+                      ManipulationCompleted="Grid_ManipulationCompleted">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" MaxHeight="330"/>
+                        <RowDefinition Height="Auto" MaxHeight="100"/>
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <ctrls:HRAControl x:Name="MainScore" Grid.Row="0" MaxHeight="330" Padding="0,0,0,30"
+                                      Dementia="{Binding DementiaScore}" Cardio="{Binding CardioScore}" 
+                                      Diabetes="{Binding DiabetesScore}" 
+                                      Lungs="{Binding LungsScore}" Cancer="{Binding CancerScore}"
+                                      TotalScore="{Binding TotalScore}" />
+                    <Grid Grid.Row="1" Name="DiseaseContainer" Margin="20,0,20,0" MaxHeight="100">
+                        <ItemsControl ItemsSource="{Binding Diseases}" HorizontalAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1" IsItemsHost="True"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <RadioButton Margin="30,0" Name="Dis" MaxHeight="100" GroupName="DiseaseGroup" Foreground="White" MinHeight="25" MinWidth="25" Click="DiseaseButton_Click"
+                                                 Height="{Binding RelativeSource={RelativeSource Self}, Path=ActualWidth}"
+                                                 Style="{DynamicResource DiseaseButton}" Template="{DynamicResource DiseaseButtonTemplate}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                    <StackPanel Margin="10" x:Name="carousel" Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Ellipse Margin="10,0,10,0" Width="10" Height="10" Name="firstSlide" Fill="Gray"/>
+                        <Ellipse Margin="10,0,10,0" Width="10" Height="10" Name="secondSlide" Fill="White"/>
+                        <Ellipse Margin="10,0,10,0" Width="10" Height="10" Name="thirdSlide" Fill="Gray"/>
+                    </StackPanel>
+                </Grid>
+                <ItemsControl Background="LightGray" ItemsSource="{Binding Source={StaticResource timeline}}"
+                          x:Name="TimeLineContainer" BorderThickness="0" Grid.Row="1">
+                    <ItemsControl.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Stretch" TextAlignment="Center"
+                                        FontWeight="Bold" Foreground="White" FontSize="14" Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ItemsControl.GroupStyle>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="7" Margin="10" BorderThickness="1" HorizontalAlignment="Stretch" Background="White" >
+                                <TextBlock TextWrapping="Wrap" FontSize="14" Text="{Binding engage_statement}"
+                                           HorizontalAlignment="Center" Padding="5" Foreground="Gray"  />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Grid Grid.Row="2" x:Name="SummeryContainer" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="50" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Margin="8,0,0,0" Grid.Row="0"  x:Name="Header" FontSize="20" Foreground="{Binding BgColor}" Text="{Binding KeyString}"/>
+                    <WebBrowser Grid.Row="1" ScrollViewer.HorizontalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollBarVisibility="Hidden" 
+                                helpers:BrowserBehavior.Html="{Binding Summery}" />
+                    <StackPanel Grid.Row="2">
+                        <Button  x:Name="BtnGo"              
+                                 Width="Auto" BorderThickness="0"
+                                 HorizontalAlignment="Center" 
+                                 VerticalAlignment="Stretch">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Grid>
+                                        <Ellipse  Fill="{Binding BgColor}"/>
+                                        <TextBlock Padding="10" FontSize="18" Text="GO" Foreground="White" />
+                                    </Grid>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

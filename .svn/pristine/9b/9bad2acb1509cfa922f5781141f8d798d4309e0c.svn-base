@@ -1,0 +1,113 @@
+﻿using Newtonsoft.Json;
+using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+
+namespace RTH.Windows.ViewModels
+{
+    public class LoginViewModel : Common.ViewModelBase
+    {
+        public LoginViewModel()
+        {
+            HeaderLabel = AppMessages.login;
+            EmailColor = "#FF000000";
+        }
+        public string GetView()
+        {
+            string view = "DashboardView";
+            List<Answer> Motivations = null;
+            MotivationQuestionaire obj = QuestionnaireService.GetHealthAgendaQuestionaire(UserDetails._id)?.FirstOrDefault(x => x.key_string == "your_motivations");
+            if (obj != null)
+            {
+                List<Answer> answer = new List<Answer>();
+                if (obj.element_type == "7")
+                {
+                    answer = JsonConvert.DeserializeObject<List<Answer>>(obj.answer.ToString());
+                }
+                else
+                {
+                    Answer objAnswer = JsonConvert.DeserializeObject<Answer>(obj.answer.ToString());
+                    answer.Add(objAnswer);
+                }
+                Motivations = answer;
+            }
+            if (!(Motivations != null && Motivations.Count > 0))
+            {
+                return "MotivationView";
+            }
+            return view;
+        }
+
+
+        public async Task<User> UserLogin()
+        {
+            var user = await AsyncCall.Invoke(() =>
+            {
+                EmailColor = "#FF000000";
+                if (string.IsNullOrEmpty(this.Email))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.missing_email;
+                    GlobalData.Default.LoaderVisibility = false;
+                    return null;
+                }
+                if (!ExtensionMethod.ValidateEmail(this.Email))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry;
+                    EmailColor = "#FFE51400";
+                    GlobalData.Default.LoaderVisibility = false; return null;
+                }
+                if (string.IsNullOrEmpty(this.Password))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_password;
+                    GlobalData.Default.LoaderVisibility = false; return null;
+                }
+                var oUserLogin = new RTH.Business.Objects.User
+                {
+                    email = Email,
+                    Securepwd = Password.ToSecureString()
+                };
+                return RTH.Business.Services.UserService.UserLogin(oUserLogin);
+            });
+            return user;
+        }
+
+        public User UserLogin(User oUserLogin)
+        {
+            return RTH.Business.Services.UserService.UserLogin(oUserLogin);
+        }
+
+        public String Email
+        {
+            get { return GetValue(() => Email); }
+            set
+            {
+                SetValue(() => Email, value);
+            }
+        }
+        public String Password
+        {
+            get { return GetValue(() => Password); }
+            set
+            {
+                SetValue(() => Password, value);
+            }
+        }
+        public String EmailColor
+        {
+            get { return GetValue(() => EmailColor); }
+            set
+            {
+                SetValue(() => EmailColor, value);
+            }
+        }
+    }
+}

@@ -1,0 +1,200 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+
+
+namespace RTH.Windows.ViewModels
+{
+    public class FriendsOfQViewModel : ViewModelBase
+    {
+        #region GlobalProperties
+        public FriendsOfQ QFriends
+        {
+            get { return GetValue(() => this.QFriends); }
+            set { SetValue(() => QFriends, value); }
+        }
+        public List<Product> FeatureProduct
+        {
+            get { return GetValue(() => this.FeatureProduct); }
+            set { SetValue(() => this.FeatureProduct, value); }
+        }
+        public int TotalFeatureProduct
+        {
+            get { return GetValue(() => this.TotalFeatureProduct); }
+            set { SetValue(() => this.TotalFeatureProduct, value); }
+        }
+        public List<ProductInfo> NonFeatureProduct
+        {
+            get { return GetValue(() => this.NonFeatureProduct); }
+            set { SetValue(() => this.NonFeatureProduct, value); }
+        }
+
+        public bool ImageSliderVisibility
+        {
+            get { return GetValue(() => this.ImageSliderVisibility); }
+            set { SetValue(() => this.ImageSliderVisibility, value); }
+        }
+
+        public int TotalNonFeaturedProduct
+        {
+            get { return GetValue(() => this.TotalNonFeaturedProduct); }
+            set { SetValue(() => this.TotalNonFeaturedProduct, value); }
+        }
+        #endregion
+
+        public FriendsOfQViewModel()
+        {
+            HeaderVisibility = false;
+            RaiseLoadedEvent();
+        }
+       
+
+        public async void FriendsOfQ()
+        {
+            await Init();
+            GlobalData.Default.ProductsFilter = null;
+            SetFeatureProduct();
+        }
+
+        public async void RelatedProducts()
+        {
+            await Init();
+            ImageSliderVisibility = false;
+        }
+        public override void Refresh()
+        {
+            SetAllProducts();
+        }
+        private async Task<bool> Init()
+        {
+            return await AsyncCall.Invoke(() =>
+            {
+                if (QFriends == null)
+                {
+                    QFriends = GetFriendsOfQ(UserDetails._id, UserDetails.AuthToken.access_token);
+                    QFriends.data.ForEach(c =>
+                    {
+                        c.DiseaseIcons = SetDiseaseIcons(c.diseases);
+                    });
+                    SetAllProducts();
+                }
+                return true;
+            });
+        }
+
+        private void SetFeatureProduct()
+        {
+            FeatureProduct = QFriends.data.Where(x => x.featured == true).ToList();
+            TotalFeatureProduct = FeatureProduct.Count - 1;
+            ImageSliderVisibility = FeatureProduct.Count > 0 ? true : false;
+        }
+
+        private String GetDestinationPath(string folderName, string filename)
+        {
+            String appStartPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName) + folderName;
+            if (!System.IO.Directory.Exists(appStartPath))
+                System.IO.Directory.CreateDirectory(appStartPath);
+
+            appStartPath = String.Format("{0}\\{1}", appStartPath, filename);
+            return appStartPath;
+        }
+        public FriendsOfQ GetFriendsOfQ(string id, string authToken)
+        {
+            return RTH.Business.Services.FriendsOfQService.GetFriendsOfQ(id, authToken);
+        }
+        public void SetAllProducts()
+        {
+            if (GlobalData.Default.Products == null)
+            {
+                List<ProductInfo> lstProducts = new List<ProductInfo>();
+                lstProducts.Add(new ProductInfo() { ID = "", Name = "All Categories", IsChecked = true, Products = QFriends.data, ProductImage = string.Format("/RTH.Windows.Views;component/Assets/ic_product_cat.png") });
+                var product = QFriends.data.GroupBy(x => x.product_type._id).ToList();
+                foreach (var item in product)
+                {
+                    ProductInfo productInfo = new ProductInfo();
+                    productInfo.ID = item.Key;
+                    productInfo.Name = item.FirstOrDefault().product_type.name;
+                    productInfo.IsChecked = true;
+                    productInfo.ProductImage = item.FirstOrDefault().product_type.ProductImage;
+
+                    List<Product> productData = new List<Product>();
+                    foreach (var i in item)
+                    {
+                        productData.Add(i);
+                    }
+                    productInfo.Products = productData;
+                    lstProducts.Add(productInfo);
+                }
+                GlobalData.Default.Products = lstProducts;
+
+                NonFeatureProduct = SetProductVisibility(GlobalData.Default.Products);
+            }
+            else
+            {
+                List<ProductInfo> lstProducts = new List<ProductInfo>();
+
+                if (GlobalData.Default.Products.Any(x => x.ID == "" && x.IsChecked == true))
+                {
+                    NonFeatureProduct = SetProductVisibility(GlobalData.Default.Products);
+                }
+                else
+                {
+                    List<Product> lstProductData = new List<Product>();
+                    GlobalData.Default.Products.Where(x => x.IsChecked == true).ToList().ForEach(c =>
+                    {
+                        c.Products.ForEach(i =>
+                        {
+                            lstProductData.Add(i);
+                        });
+                    });
+                    lstProducts.Add(new ProductInfo() { ID = "", Name = "All Categories", IsChecked = true, Products = lstProductData, ProductImage = string.Format("/RTH.Windows.Views;component/Assets/ic_product_cat.png") });
+
+                    GlobalData.Default.Products.Where(x => x.IsChecked == true).ToList().ForEach(item =>
+                    {
+                        ProductInfo productInfo = new ProductInfo();
+                        productInfo.ID = item.ID;
+                        productInfo.Name = item.Name;
+                        productInfo.IsChecked = true;
+                        productInfo.ProductImage = item.ProductImage;
+                        productInfo.Products = item.Products;
+                        lstProducts.Add(productInfo);
+                    });
+                    NonFeatureProduct = SetProductVisibility(lstProducts);
+                }
+            }
+        }
+        private Dictionary<string, bool> SetDiseaseIcons(List<string> DiseasesIcon)
+        {
+            Business.Objects.Questionnaires QuestionnaireData = RTH.Business.Services.DashboardService.GetQuestionaires(Configurations.ClientId, "en");
+            Dictionary<string, bool> diseaseIcons = new Dictionary<string, bool>();
+            QuestionnaireData.data.ForEach(c =>
+            {
+                if (!diseaseIcons.ContainsKey((c.key_string)))
+                    diseaseIcons.Add(c.key_string, DiseasesIcon.Any(x => x == c._id) ? true : false);
+            });
+            return diseaseIcons;
+        }
+
+        private List<ProductInfo> SetProductVisibility(List<ProductInfo> lstSource)
+        {
+            lstSource.ForEach(pi =>
+            {
+                if (GlobalData.Default.ProductsFilter == null)
+                {
+                    pi.Products.ForEach(x => x.IsVisible = true);
+                }
+                else {
+                    pi.Products.ForEach(x => x.IsVisible = GlobalData.Default.ProductsFilter.Contains(x._id));
+                }
+            });
+            return lstSource.Where(t => GlobalData.Default.ProductsFilter == null ||
+                        t.Products.Any(x => GlobalData.Default.ProductsFilter.Contains(x._id))).ToList();
+        }
+    }
+}

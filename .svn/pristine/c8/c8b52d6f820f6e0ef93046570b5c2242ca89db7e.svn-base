@@ -1,0 +1,90 @@
+﻿using Facebook;
+using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Controls;
+using System.Windows.Documents;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for FaceBookAuthenticationView.xaml
+    /// </summary>
+    public partial class FaceBookAuthenticationView : UserControl
+    {
+        private string addressTextBox;
+
+        public FaceBookAuthenticationView()
+        {
+            InitializeComponent();
+            this.Loaded += FaceBookAuthenticationView_Loaded;
+            this.Unloaded += FaceBookAuthenticationView_Unloaded;
+        }
+
+        void FaceBookAuthenticationView_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.Unloaded -= FaceBookAuthenticationView_Unloaded;
+            this.browser.Dispose();
+            this.browser = null;
+        }
+
+        void FaceBookAuthenticationView_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                this.Loaded -= FaceBookAuthenticationView_Loaded;
+                browser.Navigate(new Uri("https://graph.facebook.com/oauth/authorize?client_id=1626126174305294&redirect_uri=http://facebook.com/connect/login_success.html&type=user_agent&display=popup").AbsoluteUri);
+            });
+        }
+
+        public string AccessToken { get; private set; }
+        public FacebookClient FBClient { get; private set; }
+
+        private void browser_Navigated(object sender, System.Windows.Forms.WebBrowserNavigatedEventArgs e)
+        {
+            this.addressTextBox = e.Url.ToString();
+            if (this.addressTextBox.StartsWith("https://www.facebook.com/connect/login_success.html"))
+            {
+                string queryString = e.Url.Fragment;
+                string[] parameters = queryString.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string parameter in parameters)
+                {
+                    List<string> parameterList = parameter.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                    if (parameterList.ElementAt(0).Equals("#access_token"))
+                    {
+                        AccessToken = parameterList.ElementAt(1);
+                        FBClient = new FacebookClient(AccessToken);
+                        dynamic a = FBClient.AppId;
+                        dynamic me = FBClient.Get("me?fields=first_name,last_name,id,email");
+
+
+                        User oUser = new User();
+                        oUser.name = (string)me.first_name + " " + (string)me.last_name;
+                        oUser.email = (string)me.email;
+                        oUser._id = (string)me.id;
+                        oUser.type = "Facebook";
+                        ViewModelBase.UserDetails = oUser;
+                        oUser = App.SharedValues.WindowMain.ValidateSocialLogin(oUser);
+                        if (oUser.message == "Failed to load User")
+                        { App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.FBUserRegistrationView); }
+                        else {
+                            ViewModelBase.UserDetails = oUser;
+                            App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.DashboardView);
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        App.SharedValues.WindowMain.LoadView(Views.Enums.ViewEnum.UserRegistrationView);
+                    }
+                }
+            }
+        }
+    }
+
+}

@@ -1,0 +1,35 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Helpers.Messaging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public abstract class SocialViewModelBase : ViewModelBase
+    {
+        public void Connect(string socialId,string socialType)
+        {
+            UserDetails.socialmedia_id = socialId;
+            UserDetails.type = socialType;
+            User updatedUser = UserService.UpdateUserProfile(UserDetails, UserDetails.AuthToken.access_token);
+            if (!string.IsNullOrEmpty(updatedUser.message))
+            {
+                RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.Message, Data = updatedUser.message });
+            }
+            else
+            {
+                UserDetails.sociallogins = updatedUser.sociallogins;
+                UserDetails.socialmedia_id = updatedUser.socialmedia_id;
+                UserDetails.salt = updatedUser.salt;
+                UserDetails.hashed_password = updatedUser.hashed_password;
+                UserDetails.type = ConfigurationManagers.NORMAL_USER_TYPE;
+            }
+            RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.ExecuteBack });
+        }
+
+    }
+}

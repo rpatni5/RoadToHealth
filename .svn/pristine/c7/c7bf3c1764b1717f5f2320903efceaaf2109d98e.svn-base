@@ -1,0 +1,76 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects.JSON
+{
+    public class Category
+    {
+        public string name { get; set; }
+        public string icon { get; set; }
+        public string color { get; set; }
+        public string question_color { get; set; }
+    }
+
+    public class Dependency
+    {
+        public List<object> dependency_answer { get; set; }
+        public string dependency_question { get; set; }
+    }
+
+    public class Answer
+    {
+        public string answer_text { get; set; }
+        public string answer_label { get; set; }
+        public object answer_value { get; set; }
+        public string _id { get; set; }
+        public bool answer_overrider { get; set; }
+    }
+
+    public class Question2
+    {
+        public string _id { get; set; }
+        public string question { get; set; }
+        public Dependency dependency { get; set; }
+        public int element_type { get; set; }
+        public bool decimals { get; set; }
+        public int decimal_places { get; set; }
+        public List<object> ranges { get; set; }
+        public string summary { get; set; }
+        public string helper_title { get; set; }
+        public int gender { get; set; }
+        public string key_string { get; set; }
+        public List<Answer> answers { get; set; }
+        public int roundVal { get; set; }
+        public bool is_restricted { get; set; }
+        public bool sortable { get; set; }
+        public string helper_image { get; set; }
+    }
+
+    public class Question
+    {
+        public Category category { get; set; }
+        public List<Question2> questions { get; set; }
+        public List<object> subcategories { get; set; }
+    }
+
+    public class Conversation
+    {
+        public string _id { get; set; }
+        public string background_colour { get; set; }
+        public object sponsor { get; set; }
+        public string title { get; set; }
+        public string strap { get; set; }
+        public string summary { get; set; }
+        public string helper { get; set; }
+        public string updated { get; set; }
+        public List<Question> questions { get; set; }
+        public string image_name { get; set; }
+        public string image_logo_color { get; set; }
+        public string image_logo_grey { get; set; }
+        public string key_string { get; set; }
+        public int type { get; set; }
+    }
+}

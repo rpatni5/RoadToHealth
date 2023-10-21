@@ -1,0 +1,26 @@
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Xml;
+
+namespace RTH.Windows.Views.Helpers
+{
+    public static class ErrorLog
+    {
+        public static void WriteErrorLog(Exception ex)
+        {
+            try
+            {
+                //var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                //Directory.CreateDirectory(Path.Combine(appDataPath, "RTH"));
+                //string filePath = Path.Combine(appDataPath, "RTH", "RTHErrorLog.txt");
+                //var fileExists = File.Exists(filePath);
+                //using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
+                //{
+
+                //}
+            }
+            catch (Exception) { }
+        }
+    }
+}

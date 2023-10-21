@@ -1,0 +1,17 @@
+﻿using RTH.Business.Objects.JSON;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels.Objects
+{
+    public class ProductInfo
+    {
+        public string ID { get; set; }
+        public string Name { get; set; }
+        public string ProductImage { get; set; }
+        public List<ProductData> Products { get; set; }
+    }
+}

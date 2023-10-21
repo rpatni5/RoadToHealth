@@ -1,0 +1,34 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HomeViewModel : ViewModelBase
+    {
+        public bool Animate
+        {
+            get { return GetValue(() => this.Animate); }
+            set { SetValue(() => this.Animate, value); }
+        }
+
+        public HomeViewModel()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Collapsed;
+            GlobalData.Default.FooterVisibility = Visibility.Collapsed;
+        }
+
+        public Variables GetLanguageVariables(string lang = "en")
+        {
+            return RTH.Business.Services.AppService.GetVariable(lang);
+        }
+        
+    }
+}

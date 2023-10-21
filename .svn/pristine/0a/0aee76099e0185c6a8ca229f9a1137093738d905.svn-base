@@ -1,0 +1,97 @@
+﻿<UserControl x:Class="RTH.Windows.Views.Controls.ScoreArcUserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.Controls"
+             xmlns:ctrls="clr-namespace:RTH.Windows.Views.Controls"
+             xmlns:conv="clr-namespace:RTH.Windows.Views.Converters"
+               xmlns:hlpr="clr-namespace:RTH.Windows.Views.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Viewbox TextOptions.TextFormattingMode="Ideal">
+        <Grid Height="175" Width="175" x:Name="hraView" RenderTransformOrigin="0.5,0.5">          
+            <Grid.Resources>
+                <Style TargetType="{x:Type ctrls:ArcScore}">
+                    <Setter Property="StrokeThickness" Value="12" />                   
+                </Style>
+                <conv:ScoreToRAGColorConverter x:Key="scoreToRAG" />
+                <conv:NotValueConverter x:Key="NotValueConverter" />
+                <conv:HRAScoreStrokeConverter x:Key="HRAScoreStroke" />
+            </Grid.Resources>
+
+
+            <local:ArcScore  Progress="100" MarkProgress="False" 
+                       StartAngle="-90" EndAngle="-10" 
+                       Radius="80" Stroke="#FFF3B8A4" />
+            <local:ArcScore  Progress="100" MarkProgress="False" 
+                       StartAngle="-10" EndAngle="120" 
+                       Radius="80" Stroke="#FFF9D7AD" />
+            <local:ArcScore  Progress="100" MarkProgress="False" 
+                       StartAngle="120" EndAngle="270" 
+                       Radius="80" Stroke="#FFB0DAAE"/>
+
+
+
+
+
+            <local:ArcScore  x:Name="arcFirst" Progress="100" MarkProgress="False" 
+                       StartAngle="-90" EndAngle="-10" 
+                       Radius="80" Stroke="#FFE14E1B" />
+            <local:ArcScore x:Name="arcSecond" Progress="100" 
+                      MarkProgress="False" StartAngle="-10" EndAngle="120" 
+                      Radius="80" Stroke="#FFF19A33" />
+            <local:ArcScore x:Name="arcThird" Progress="100" 
+                      MarkProgress="False" StartAngle="120" EndAngle="270" 
+                      Radius="80" Stroke="#FF39A235"/>
+
+
+            <local:ArcScore  x:Name="pathFirst" Progress="100" MarkProgress="True" 
+                       StartAngle="-90" EndAngle="-10" 
+                       Radius="80" Stroke="#FFE14E1B" />
+            <local:ArcScore x:Name="pathSecond" Progress="100" 
+                      MarkProgress="True" StartAngle="-10" EndAngle="120" 
+                      Radius="80" Stroke="#FFF19A33" />
+            <local:ArcScore x:Name="pathThird" Progress="100" 
+                      MarkProgress="True" StartAngle="120" EndAngle="270" 
+                      Radius="80" Stroke="#FF39A235"/>
+
+            <local:ArcScore  x:Name="pathOptFirst" Progress="100" MarkProgress="True" 
+                       StartAngle="-90" EndAngle="-10" 
+                       Radius="80" Stroke="{Binding TotalOptimumScore,Converter={StaticResource scoreToRAG}}" />
+            <local:ArcScore x:Name="pathOptSecond" Progress="100" 
+                      MarkProgress="True" StartAngle="-10" EndAngle="120" 
+                      Radius="80" Stroke="{Binding TotalOptimumScore,Converter={StaticResource scoreToRAG}}" />
+            <local:ArcScore x:Name="pathOptThird" Progress="100" 
+                      MarkProgress="True" StartAngle="120" EndAngle="270" 
+                      Radius="80" Stroke="{Binding TotalOptimumScore,Converter={StaticResource scoreToRAG}}"/>
+
+
+            <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                <TextBlock Text="Quealth" TextAlignment="Center" />
+                <TextBlock Name="txtTotalScore"  Height="0"/>
+                <TextBlock  Name="TotalScoreText" 
+                              Foreground="{Binding  ElementName=txtTotalScore,Path=Opacity,Converter={StaticResource scoreToRAG}}"
+                            hlpr:DecimalTextHelper.DecimalText="{Binding ElementName=txtTotalScore,Path=Opacity, StringFormat=0.00}"
+                            hlpr:DecimalTextHelper.LargeTextSize="35" 
+                            hlpr:DecimalTextHelper.SmallTextSize="20"
+                            RenderTransformOrigin="0.5,0.5"
+                            VerticalAlignment="Center" HorizontalAlignment="Center" />
+
+                <TextBlock Text="Optimum" TextAlignment="Center" />
+                <TextBlock Name="txtTotalOptScore"  Height="0"/>
+                <TextBlock  Name="TotalOptScoreText" 
+                            Foreground="{Binding TotalOptimumScore,Converter={StaticResource scoreToRAG}}"
+                            hlpr:DecimalTextHelper.DecimalText="{Binding ElementName=txtTotalOptScore,Path=Opacity, StringFormat=0.00}" 
+                            hlpr:DecimalTextHelper.LargeTextSize="30" 
+                            hlpr:DecimalTextHelper.SmallTextSize="16"
+                            RenderTransformOrigin="0.5,0.5"
+                            VerticalAlignment="Center" 
+                            HorizontalAlignment="Center" />
+
+            </StackPanel>
+
+
+        </Grid>
+    </Viewbox>
+</UserControl>

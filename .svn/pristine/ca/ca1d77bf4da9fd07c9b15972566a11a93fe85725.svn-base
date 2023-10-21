@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.Views.UserControls
+{
+    public class ViewLocator
+    {
+        private static object lockObject = new object();
+        private static ConcurrentDictionary<Type, ViewBase> _viewModels = new ConcurrentDictionary<Type, ViewBase>();
+
+        public static T Get<T>(Dictionary<string, object> args = null) where T : ViewBase
+        {
+            var type = typeof(T);
+
+            if (_viewModels.ContainsKey(type))
+            {
+                lock (lockObject)
+                {
+                    return _viewModels[type] as T;
+                }
+            }
+            else //Register and Return
+            {
+                lock (lockObject)
+                {
+                    var vm = Activator.CreateInstance(type) as T;
+                    _viewModels.AddOrUpdate(type, vm, (t, v) => v);
+                    return vm;
+                }
+            }
+        }
+
+        public static T GetNew<T>(Dictionary<string, object> args = null) where T : ViewBase
+        {
+            var type = typeof(T);
+            lock (lockObject)
+            {
+                return Activator.CreateInstance(type, true, args.Values) as T;
+            }
+        }
+    }
+}

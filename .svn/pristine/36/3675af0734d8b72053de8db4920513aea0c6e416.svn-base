@@ -1,0 +1,50 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System.Windows;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ProductSummaryView.xaml
+    /// </summary>
+    public partial class ProductSummaryView : ViewBase
+    {
+        public ProductSummaryView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<ProductSummaryViewModel>();           
+            base.LoadViewModel();
+        }
+
+        private RelayCommand m_ExpandSummaryCommand;
+        public RelayCommand ExpandSummaryCommand
+        {
+            get
+            {
+                return m_ExpandSummaryCommand ?? (m_ExpandSummaryCommand = new RelayCommand(
+                    ve => ExpendProductSummary(ve), (t) => true));
+            }
+        }
+
+        private void ExpendProductSummary(object ve)
+        {
+            if (ve == null)
+            {
+                partnerImage.Visibility = Visibility.Collapsed;
+                summaryButton.Visibility = Visibility.Collapsed;
+                summaryButtonCollapsed.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                partnerImage.Visibility = Visibility.Visible;
+                summaryButton.Visibility = Visibility.Visible;
+                summaryButtonCollapsed.Visibility = Visibility.Collapsed;
+
+            }
+        }
+
+    }
+}

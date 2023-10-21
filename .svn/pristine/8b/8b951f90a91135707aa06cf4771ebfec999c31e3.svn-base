@@ -1,0 +1,371 @@
+﻿using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Windows.Views.Helpers;
+using RTH.Windows.Views.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for us_Dashboard.xaml
+    /// </summary>
+    public partial class DashboardView : ViewBase, ITutorialHost
+    {
+        #region properties
+
+        private RelayCommand m_LoadTimeLine;
+        public RelayCommand LoadTimeLine
+        {
+            get
+            {
+                return m_LoadTimeLine ?? (m_LoadTimeLine = new RelayCommand(
+                    ve => OnLoadTimeLine(ve), (t) => true));
+            }
+        }
+
+
+
+        private void OnLoadTimeLine(object ve)
+        {
+            var diseaseData = SummeryContainer.DataContext as DiseaseData;
+            diseaseData.IsChecked = false;
+            SwitchRightControl(true);
+        }
+        #endregion
+        public DashboardView()
+        {
+            InitializeComponent();
+            ViewModelBase.UserDetails.password = Properties.Settings.Default.Password;
+            qStoryboard = new Storyboard();
+            DBContextMenu.ItemsSource = App.SharedValues.WindowMain.QuealthMenuItems;
+        }
+
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<DashboardViewModel>(refreshRequired: true);
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+        private void DiseaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            RadioButton button = sender as RadioButton;
+            DiseaseData diseaseData = (DiseaseData)button.DataContext;
+            SummeryContainer.DataContext = button.DataContext;
+            RedoContainer.DataContext = button.DataContext;
+
+            if (diseaseData.IsCompleted == HRAStatusEnum.NotCompleted)
+            {
+                App.SharedValues.WindowMain.HeaderMenu.HideMenu();
+                ViewModelBase.ExecuteTrackNavigation("DashboardView", diseaseData.KeyString + "-intro", 1);
+                if (SummeryContainer.Visibility == Visibility.Collapsed)
+                {
+                    SwitchRightControl(false);
+                }
+                else
+                {
+                    SetGoButtonTutorial();
+                }
+            }
+            else if (diseaseData.IsCompleted == HRAStatusEnum.Completed)
+            {
+                double leftPosition, topPosition;
+
+
+                if (timelineContainer.Visibility == Visibility.Collapsed)
+                {
+                    SwitchRightControl(true);
+                }
+
+                button.IsChecked = false;
+                if (diseaseData.KeyString == "lung" || diseaseData.KeyString == "dementia")
+                {
+                    leftPosition = 7;
+                    topPosition = 60;
+                }
+                else
+                {
+                    leftPosition = 93.0;
+                    topPosition = 40;
+                }
+
+                if (RedoPopup.IsOpen)
+                {
+                    RedoPopup.IsOpen = false;
+                    App.SharedValues.WindowMain.Opacity = 1;
+                }
+                else
+                {
+                    RedoPopup.PlacementTarget = button;
+                    StartPopUpAnimation(leftPosition, topPosition);
+                    App.SharedValues.WindowMain.Opacity = .8;
+                    RedoPopup.IsOpen = true;
+                }
+            }
+            else if (diseaseData.IsCompleted == HRAStatusEnum.Redo)
+            {
+                App.SharedValues.WindowMain.ViewHRACommand.Execute(diseaseData);
+            }
+        }
+
+        private void SwitchRightControl(bool ShowTimeLine)
+        {
+            var actWidth = RightPanel.ActualWidth;
+            var thickness1 = new Thickness(0, 0, -actWidth, 0);
+            var thickness2 = new Thickness(actWidth, 0, 0, 0);
+            var thickness3 = new Thickness(-actWidth, 0, 0, 0);
+
+            var thickness0 = new Thickness(0, 0, 0, 0);
+
+            var sb = new Storyboard();
+            var duration = TimeSpan.FromSeconds(0.8);
+
+            var daFadeIn = new DoubleAnimation(0, 1, duration, FillBehavior.HoldEnd);
+            var daFadeOut = new DoubleAnimation(1, 0, duration, FillBehavior.HoldEnd);
+            var daSlideOut = new ThicknessAnimation(thickness0, thickness2, duration, FillBehavior.HoldEnd);
+            var daSlideIn = new ThicknessAnimation(thickness1, thickness0, duration, FillBehavior.HoldEnd);
+
+            daFadeIn.SetCurrentValue(Storyboard.TargetPropertyProperty, new PropertyPath("Opacity"));
+            daFadeOut.SetCurrentValue(Storyboard.TargetPropertyProperty, new PropertyPath("Opacity"));
+            daSlideIn.SetCurrentValue(Storyboard.TargetPropertyProperty, new PropertyPath("Margin"));
+            daSlideOut.SetCurrentValue(Storyboard.TargetPropertyProperty, new PropertyPath("Margin"));
+
+            if (ShowTimeLine) //R => L : RED
+            {
+                timelineContainer.Visibility = System.Windows.Visibility.Visible;
+                daFadeIn.SetCurrentValue(Storyboard.TargetProperty, timelineContainer);
+                daFadeOut.SetCurrentValue(Storyboard.TargetProperty, SummeryContainer);
+                daSlideIn.SetCurrentValue(Storyboard.TargetProperty, timelineContainer);
+                daSlideOut.SetCurrentValue(Storyboard.TargetProperty, SummeryContainer);
+                daSlideOut.To = thickness3;
+
+                sb.Completed += (o, ea) => SummeryContainer.Visibility = Visibility.Collapsed;
+            }
+            else //L => R : BLUE
+            {
+                SummeryContainer.Visibility = Visibility.Visible;
+                daFadeIn.SetCurrentValue(Storyboard.TargetProperty, SummeryContainer);
+                daFadeOut.SetCurrentValue(Storyboard.TargetProperty, timelineContainer);
+                daSlideIn.SetCurrentValue(Storyboard.TargetProperty, SummeryContainer);
+                daSlideOut.SetCurrentValue(Storyboard.TargetProperty, timelineContainer);
+                daSlideOut.To = daSlideIn.From; daSlideIn.From = thickness3;
+                sb.Completed += (o, ea) =>
+                {
+                    timelineContainer.Visibility = Visibility.Collapsed;
+                    SetGoButtonTutorial();
+                };
+            }
+
+            sb.Children.Add(daFadeIn);
+            sb.Children.Add(daFadeOut);
+            sb.Children.Add(daSlideIn);
+            sb.Children.Add(daSlideOut);
+            sb.Begin();
+        }
+        private void RedoPopup_Closed(object sender, EventArgs e)
+        {
+            if (App.SharedValues.WindowMain != null)
+                App.SharedValues.WindowMain.Opacity = 1;
+
+            btnResult.BeginAnimation(Canvas.TopProperty, null);
+            btnResult.BeginAnimation(Canvas.LeftProperty, null);
+            btnRedo.BeginAnimation(Canvas.LeftProperty, null);
+            btnRedo.BeginAnimation(Canvas.TopProperty, null);
+
+            btnResult.SetValue(Canvas.TopProperty, 80.0);
+            btnRedo.SetValue(Canvas.LeftProperty, 50.0);
+            btnRedo.SetValue(Canvas.LeftProperty, 50.0);
+            btnRedo.SetValue(Canvas.TopProperty, 80.0);
+        }
+        Storyboard qStoryboard = null;
+        private void StartPopUpAnimation(double leftPosition, double topPosition)
+        {
+            var daCanvasTop1 = new DoubleAnimation(80, 14, TimeSpan.FromSeconds(0.3));
+            daCanvasTop1.BeginTime = TimeSpan.FromSeconds(0.1);
+            Storyboard.SetTarget(daCanvasTop1, btnResult);
+            Storyboard.SetTargetProperty(daCanvasTop1, new PropertyPath("(Canvas.Top)"));
+
+            var daCanvasLeft1 = new DoubleAnimation(50, topPosition, TimeSpan.FromSeconds(0.3));
+            daCanvasLeft1.BeginTime = TimeSpan.FromSeconds(0.1);
+            Storyboard.SetTarget(daCanvasLeft1, btnResult);
+            Storyboard.SetTargetProperty(daCanvasLeft1, new PropertyPath("(Canvas.Left)"));
+
+            var daCanvasTop2 = new DoubleAnimation(80, 27, TimeSpan.FromSeconds(0.3));
+            daCanvasTop2.BeginTime = TimeSpan.FromSeconds(0.1);
+            Storyboard.SetTarget(daCanvasTop2, btnRedo);
+            Storyboard.SetTargetProperty(daCanvasTop2, new PropertyPath("(Canvas.Top)"));
+
+            var daCanvasLeft = new DoubleAnimation(50, leftPosition, TimeSpan.FromSeconds(0.3));
+            daCanvasLeft.BeginTime = TimeSpan.FromSeconds(0.1);
+            Storyboard.SetTarget(daCanvasLeft, btnRedo);
+            Storyboard.SetTargetProperty(daCanvasLeft, new PropertyPath("(Canvas.Left)"));
+
+            qStoryboard.Children.Add(daCanvasTop1);
+            qStoryboard.Children.Add(daCanvasLeft1);
+            qStoryboard.Children.Add(daCanvasTop2);
+            qStoryboard.Children.Add(daCanvasLeft);
+            qStoryboard.Begin();
+        }
+        public override void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.AnimateHRA)
+            {
+                MainScore.StartQAnimation();
+            }
+            else if (e.Type == MessageType.RefreshComplete)
+            {
+                if (HasShowTutorials())
+                {
+                    DiseaseData diseaseData = (this.ViewModel as DashboardViewModel).Diseases.FirstOrDefault(x => x.IsCompleted == HRAStatusEnum.Completed);
+                    if (diseaseData != null)
+                    {
+                        AddTutorialToList(TutorialHelper.ShareIcon, App.SharedValues.WindowMain.ShareButton);
+                        AddTutorialToList(TutorialHelper.DiseaseIcon, null);
+                        AddTutorialToList(TutorialHelper.DashboardTab, App.SharedValues.WindowMain.footerContainer.rdoHome);
+                        AddTutorialToList(TutorialHelper.InsightTab, App.SharedValues.WindowMain.footerContainer.rdoRight);
+                        AddTutorialToList(TutorialHelper.AdviceTab, App.SharedValues.WindowMain.footerContainer.rdoMiddle);
+                        AddTutorialToList(TutorialHelper.ScoreTab, App.SharedValues.WindowMain.footerContainer.rdoLeft);
+                    }
+                    if ((this.ViewModel as DashboardViewModel).TotalHRA > 1)
+                    {
+                        AddTutorialToList(TutorialHelper.MainScore, this.MainScore.HRAEllipse);
+                    }
+                    AddTutorialToList(TutorialHelper.GoIcon, BtnGo);
+
+                    this.SetValue(ShowTutorialProperty, true);
+                }
+            }
+        }
+
+
+        #region Tutorials
+
+        Dictionary<int, Tuple<string, FrameworkElement>> tutorialObjects;
+        public void InitializeTutorials()
+        {
+            tutorialObjects = new Dictionary<int, Tuple<string, FrameworkElement>>();
+            AddTutorialToList(TutorialHelper.DiseaseIcons, this.DiseaseContainer);
+            AddTutorialToList(TutorialHelper.MenuIcon, App.SharedValues.WindowMain.HeaderMenu.tbtnExp);
+            AddTutorialToList(TutorialHelper.Timeline, timelineContainer);
+        }
+        public override void OnViewLoaded()
+        {
+            if (Properties.Settings.Default.Tutorials == true && TutorialHelper.CoachesTutorial.ShowTutorial())
+            {
+                App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.ShowCoaches, param: true);
+                TutorialHelper.TutorialComplete(TutorialHelper.CoachesTutorial);
+            }
+            InitializeTutorials();
+        }
+
+        int currentTutIndex = 0;
+        public override TutorialContent GetTutorials()
+        {
+            if (currentTutIndex >= this.MaxTutorials)
+            {
+                ShowTutorial = false;
+                return null;
+            }
+            var tuple = tutorialObjects[currentTutIndex++];
+            if (tuple.Item1.ShowTutorial())
+            {
+                if (tuple.Item1 != TutorialHelper.GoIcon)
+                {
+                    tuple.Item1.TutorialComplete();
+                    if (tuple.Item2 == null)
+                    {
+                        var item = DiseaseContainer.Items.Cast<DiseaseData>().First(x => x.IsCompleted == HRAStatusEnum.Completed);
+                        return (DiseaseContainer.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter).GetTutorial(this, tuple.Item1, true);
+                    }
+                    return tuple.Item2.GetTutorial(this, tuple.Item1, true);
+                }
+                else if (goComplete)
+                {
+                    tuple.Item1.TutorialComplete();
+                    if (tuple.Item2 == null)
+                    {
+                        var item = DiseaseContainer.Items.Cast<DiseaseData>().First(x => x.IsCompleted == HRAStatusEnum.Completed);
+                        return (DiseaseContainer.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter).GetTutorial(this, tuple.Item1, true);
+                    }
+                    return tuple.Item2.GetTutorial(this, tuple.Item1, true);
+                }               
+            }
+            currentTutIndex--;
+            ShowTutorial = false;
+            return null;
+        }
+        public int MaxTutorials
+        {
+            get
+            {
+                return tutorialObjects.Count;
+            }
+        }
+
+        bool goComplete = false;
+        public int GetTutorialIndex()
+        {
+            return currentTutIndex;
+        }
+        public string GetTutorialText(string keyString)
+        {
+            if (App.SharedValues.LanguageResource.GetType().GetProperty(keyString) != null)
+            {
+                return App.SharedValues.LanguageResource.GetType().GetProperty(keyString).GetValue(App.SharedValues.LanguageResource).ToString();
+            }
+            return string.Empty;
+        }
+        private void SetGoButtonTutorial()
+        {
+            if (HasShowTutorials())
+            {
+                goComplete = true;
+                this.SetValue(ShowTutorialProperty, true);
+            }
+        }
+        private bool HasShowTutorials()
+        {
+            if (Properties.Settings.Default.Tutorials == true)
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool AddTutorialToList(string keyString, FrameworkElement element)
+        {
+            if (TutorialHelper.ShowTutorial(keyString))
+            {
+                tutorialObjects.Add(tutorialObjects.Count, new Tuple<string, FrameworkElement>(keyString, element));
+                return true;
+            }
+            return false;
+        }
+        public override void SkipTutorials()
+        {
+            string[] keys;
+            if ((this.ViewModel as DashboardViewModel).TotalHRA > 1)
+            {
+                keys = new string[] { TutorialHelper.DiseaseIcons, TutorialHelper.MenuIcon, TutorialHelper.Timeline, TutorialHelper.GoIcon, TutorialHelper.MainScore, TutorialHelper.ShareIcon, TutorialHelper.DiseaseIcon, TutorialHelper.DashboardTab, TutorialHelper.InsightTab, TutorialHelper.AdviceTab, TutorialHelper .ScoreTab};
+
+            }
+            else if ((this.ViewModel as DashboardViewModel).TotalHRA == 1)
+            {
+                keys = new string[] { TutorialHelper.DiseaseIcons, TutorialHelper.MenuIcon, TutorialHelper.Timeline, TutorialHelper.GoIcon, TutorialHelper.ShareIcon, TutorialHelper.DiseaseIcon, TutorialHelper.DashboardTab, TutorialHelper.InsightTab, TutorialHelper.AdviceTab, TutorialHelper.ScoreTab };
+            }
+            else
+            {
+                keys = new string[] { TutorialHelper.DiseaseIcons, TutorialHelper.MenuIcon, TutorialHelper.Timeline, TutorialHelper.GoIcon };
+            }
+            TutorialHelper.SkipTutorials(keys);
+            this.SetValue(ShowTutorialProperty, false);
+        }
+
+        #endregion Tutorials
+    }
+}

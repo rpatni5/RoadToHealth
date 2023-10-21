@@ -1,0 +1,19 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class FaceBookAuthenticationViewModel : ViewModelBase
+    {
+        public User ValidateSocialLogin(User OUser)
+        {
+            return RTH.Business.Services.UserService.ValidateSocialLogin(OUser._id, OUser.type, ConfigurationManagers.DefaultPassword);
+        }
+    }
+
+}

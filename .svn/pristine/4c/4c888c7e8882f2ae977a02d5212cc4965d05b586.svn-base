@@ -1,0 +1,402 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
+using System.Linq;
+using RTH.Helpers;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for uc_home.xaml
+    /// </summary>
+    public partial class HomeView : ViewBase
+    {
+        public bool Animate
+        {
+            get { return (bool)GetValue(AnimateProperty); }
+            set { SetValue(AnimateProperty, value); }
+        }
+
+        public static readonly DependencyProperty AnimateProperty =
+            DependencyProperty.Register("Animate", typeof(bool), typeof(HomeView), new PropertyMetadata(false));
+
+        public HomeView()
+        {
+            InitializeComponent();
+
+            OnViewLoaded();
+            this.Loaded += HomeView_Loaded;
+        }
+        public override void OnViewLoaded()
+        {
+            Properties.Settings.Default.Email = string.Empty;
+            Properties.Settings.Default.SaveSecurePwd(string.Empty);
+            Properties.Settings.Default.LastVisitedHRAID = string.Empty;
+            ViewModelBase.ClearViewModelSettings();
+            Properties.Settings.Default.Save();
+            GlobalData.Default.LastVisitedDiseaseID = string.Empty;
+            GlobalData.Default.ClickedHRA = null;
+            TutorialHelper.UnsetTutorialSettings();
+            ViewModelLocator.PerformCleanUp();
+            ViewLocator.PerformCleanUp();
+            SuppressCookies();
+            App.SharedValues.WindowMain.SetLanguage("en");
+            base.OnViewLoaded();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<HomeViewModel>();
+            base.LoadViewModel();
+        }
+        Storyboard qStoryboard = null;
+        String CurrentArc = null;
+
+        async void HomeView_Loaded(object sender, RoutedEventArgs e)
+        {
+            await AsyncCall.Invoke(() => { Thread.Sleep(500); return true; }, showLoader: false);
+            Tutorials = null;
+            if (this.Animate)
+            {
+                this.Loaded -= HomeView_Loaded;
+                qStoryboard = new Storyboard();
+                this.diseaseTitle.Text = "Diabetes";
+                this.StartAnimation(arcDiabetes);
+            }
+            else
+            {
+                gridButtons.SetValue(VisibilityProperty, Visibility.Visible);
+                Canvas.SetTop(gridButtons, 0);
+                Canvas.SetTop(gridIcons, gridIcons.ActualHeight);
+                SetTutorialContent();
+            }
+        }
+        private void StartAnimation(Arc arc)
+        {
+            var da = new DoubleAnimation(0, 100, TimeSpan.FromSeconds(0.75));
+            Storyboard.SetTarget(da, arc);
+            Storyboard.SetTargetProperty(da, new PropertyPath("Progress"));
+
+            arc.MarkProgress = true;
+            CurrentArc = arc.Name;
+            qStoryboard.Children.Add(da);
+            qStoryboard.Completed += qStoryboard_Completed;
+
+            qStoryboard.Begin();
+        }
+        private void StartImageAnimation(Grid imageGrid, Point current, Point updated)
+        {
+            imageGrid.SetValue(VisibilityProperty, Visibility.Visible);
+
+            var daCanvasTop = new DoubleAnimation(current.Y, updated.Y, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daCanvasTop, imageGrid);
+            Storyboard.SetTargetProperty(daCanvasTop, new PropertyPath("(Canvas.Top)"));
+
+            var daCanvasLeft = new DoubleAnimation(current.X, updated.X, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daCanvasLeft, imageGrid);
+            Storyboard.SetTargetProperty(daCanvasLeft, new PropertyPath("(Canvas.Left)"));
+
+            var daImageWidth = new DoubleAnimation(0, 48, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daImageWidth, imageGrid);
+            Storyboard.SetTargetProperty(daImageWidth, new PropertyPath("Width"));
+
+            var daImageHeight = new DoubleAnimation(0, 48, TimeSpan.FromSeconds(0.5));
+            Storyboard.SetTarget(daImageHeight, imageGrid);
+            Storyboard.SetTargetProperty(daImageHeight, new PropertyPath("Height"));
+
+            qStoryboard.Children.Add(daCanvasTop);
+            qStoryboard.Children.Add(daCanvasLeft);
+            qStoryboard.Children.Add(daImageWidth);
+            qStoryboard.Children.Add(daImageHeight);
+
+            qStoryboard.Completed += imgStoryboard_Completed;
+
+            qStoryboard.Begin();
+        }
+        void imgStoryboard_Completed(object sender, EventArgs e)
+        {
+            qStoryboard.Completed -= imgStoryboard_Completed;
+            qStoryboard.Children.Clear();
+
+            switch (CurrentArc)
+            {
+                case "arcCardio":
+                    this.diseaseTitle.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFF9AE43"));
+                    this.diseaseTitle.Text = "Dementia";
+                    this.StartAnimation(arcDementia); break;
+                case "arcCancer":
+                    this.diseaseTitle.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFAC3054"));
+                    this.diseaseTitle.Text = "Cardiovascular";
+                    this.StartAnimation(arcCardio); break;
+                case "arcDiabetes":
+                    this.diseaseTitle.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FFA998C5"));
+                    this.diseaseTitle.Text = "Cancer";
+                    this.StartAnimation(arcCancer); break;
+                case "arcDementia":
+                    this.diseaseTitle.Foreground = (SolidColorBrush)(new BrushConverter().ConvertFrom("#FF00A181"));
+                    this.diseaseTitle.Text = "Lung";
+                    this.StartAnimation(arcLungs); break;
+                case "arcLungs":
+                    this.AnimateLoginOptions();
+                    this.CurrentArc = null; break;
+            }
+        }
+        private void AnimateLoginOptions()
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(0.5);
+            timer.Tick += (o, e) =>
+            {
+                timer.Stop();
+                timer = null;
+                this.AnimateLoginOptionsEx();
+            };
+            timer.Start();
+        }
+        private void AnimateLoginOptionsEx()
+        {
+            gridButtons.SetValue(VisibilityProperty, Visibility.Visible);
+            var daSetTop = new DoubleAnimation(gridButtons.ActualHeight * -1, 0, TimeSpan.FromSeconds(1));
+            Storyboard.SetTarget(daSetTop, gridButtons);
+            Storyboard.SetTargetProperty(daSetTop, new PropertyPath("(Canvas.Top)"));
+
+            var daSetTop2 = new DoubleAnimation(0, gridIcons.ActualHeight, TimeSpan.FromSeconds(1));
+            Storyboard.SetTarget(daSetTop2, gridIcons);
+            Storyboard.SetTargetProperty(daSetTop2, new PropertyPath("(Canvas.Top)"));
+
+            qStoryboard.Children.Add(daSetTop);
+            qStoryboard.Children.Add(daSetTop2);
+            qStoryboard.Begin();
+            SetTutorialContent();
+
+        }
+        void qStoryboard_Completed(object sender, EventArgs e)
+        {
+            qStoryboard.Completed -= qStoryboard_Completed;
+            qStoryboard.Children.Clear();
+
+            switch (CurrentArc)
+            {
+                case "arcCardio":
+                    this.arcCardio.MarkProgress = false;
+                    this.StartImageAnimation(imgCardio, arcCardio.EndPoint, new Point(176, 400));
+                    break;
+                case "arcCancer":
+                    this.arcCancer.MarkProgress = false;
+                    this.StartImageAnimation(imgCancer, arcCancer.EndPoint, new Point(96, 400));
+                    break;
+                case "arcDiabetes":
+                    this.arcDiabetes.MarkProgress = false;
+                    this.StartImageAnimation(imgDiabetes, arcDiabetes.EndPoint, new Point(16, 400));
+                    break;
+                case "arcDementia":
+                    this.arcLungs.MarkProgress = false;
+                    this.StartImageAnimation(imgDementia, arcDementia.EndPoint, new Point(256, 400));
+                    break;
+                case "arcLungs":
+                    this.arcDementia.MarkProgress = false;
+                    this.StartImageAnimation(imgLungs, arcLungs.EndPoint, new Point(336, 400));
+                    break;
+            }
+        }
+
+        private void SetTutorialContent()
+        {
+            List<Tutorials> lst = new List<Tutorials>();
+            lst.Add(new Tutorials()
+            {
+                Id = 1,
+                IsChecked = true,
+                Header =App.SharedValues.LanguageResource.why_quealth,
+                Content = App.SharedValues.LanguageResource.why_quealth_description,
+
+            });
+            lst.Add(new Tutorials()
+            {
+                Id = 2,
+                IsChecked = false,
+                Header = App.SharedValues.LanguageResource.assessments,
+                Content = App.SharedValues.LanguageResource.assessments_description,
+
+            });
+            lst.Add(new Tutorials()
+            {
+                Id = 3,
+                IsChecked = false,
+                Header = App.SharedValues.LanguageResource.plan,
+                Content = App.SharedValues.LanguageResource.plan_description,
+
+            });
+            lst.Add(new Tutorials()
+            {
+                Id = 4,
+                IsChecked = false,
+                Header = App.SharedValues.LanguageResource.coach,
+                Content = App.SharedValues.LanguageResource.coach_description,
+
+            });
+            lst.Add(new Tutorials()
+            {
+                Id = 5,
+                IsChecked = false,
+                Header = App.SharedValues.LanguageResource.score,
+                Content = App.SharedValues.LanguageResource.score_description,
+
+            });
+            this.SetValue(TutorialsProperty, lst);
+            this.SetValue(CurrentTutorialProperty, Tutorials[0]);
+            //transition.LoadControl(null, Controls.Transition.Left);
+            lastSelected = 1;
+        }
+
+
+
+        public Tutorials CurrentTutorial
+        {
+            get { return (Tutorials)GetValue(CurrentTutorialProperty); }
+            set { SetValue(CurrentTutorialProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for CurrentTutorial.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CurrentTutorialProperty =
+            DependencyProperty.Register("CurrentTutorial", typeof(Tutorials), typeof(HomeView), new PropertyMetadata(null));
+
+
+        private int lastSelected = 0;
+        public List<Tutorials> Tutorials
+        {
+            get { return (List<Tutorials>)GetValue(TutorialsProperty); }
+            set { SetValue(TutorialsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Tutorials.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TutorialsProperty =
+            DependencyProperty.Register("Tutorials", typeof(List<Tutorials>), typeof(HomeView), new PropertyMetadata(null));
+
+
+
+        public bool IsGetStarted
+        {
+            get { return (bool)GetValue(IsGetStartedProperty); }
+            set { SetValue(IsGetStartedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsGetStarted.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsGetStartedProperty =
+            DependencyProperty.Register("IsGetStarted", typeof(bool), typeof(HomeView), new PropertyMetadata(false));
+
+
+
+        private void Storyboard_Completed(object sender, EventArgs e)
+        {
+            btnGetStarted.SetValue(VisibilityProperty, Visibility.Visible);
+            Storyboard qSB = new Storyboard();
+            ThicknessAnimation da = new ThicknessAnimation(new Thickness(400, 0, 0, 0), new Thickness(0, 0, 0, 0), TimeSpan.FromSeconds(0.75));
+            Storyboard.SetTarget(da, btnGetStarted);
+            Storyboard.SetTargetProperty(da, new PropertyPath(Border.MarginProperty));
+            qSB.Children.Add(da);
+            qSB.Begin();
+        }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            Tutorials t = (Tutorials)(sender as RadioButton).DataContext;
+            if (t.Id != lastSelected)
+            {
+                if (t.Id > lastSelected)
+                {
+                    transition.Transition = Controls.Transition.Left;
+                }
+                else
+                {
+                    transition.Transition = Controls.Transition.Right;
+                }
+                CurrentTutorial = Tutorials.First(x => x.Id == t.Id);
+                transition.Transition = Controls.Transition.Fade;
+                lastSelected = t.Id;
+
+                if (Tutorials.Last().Id == t.Id)
+                {
+                    this.SetValue(IsGetStartedProperty, true);
+                }
+                else
+                {
+                    this.SetValue(IsGetStartedProperty, false);
+                }
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentTutorial = Tutorials.Last();
+            lastSelected = CurrentTutorial.Id;
+            Tutorials.FirstOrDefault(x => x.IsChecked == true).IsChecked = false;
+            Tutorials.Last().IsChecked = true;
+            this.SetValue(IsGetStartedProperty, true);
+        }
+
+        private void Btn_previes_Click(object sender, RoutedEventArgs e)
+        {
+            Tutorials t = Tutorials.LastOrDefault(x => x.Id < lastSelected);
+            if (t != null)
+            {
+                Tutorials.First(x => x.IsChecked == true).IsChecked = false;
+                Tutorials.First(x => x.Id == t.Id).IsChecked = true;
+                transition.Transition = Controls.Transition.Right;
+
+                CurrentTutorial = Tutorials.First(x => x.Id == t.Id);
+                transition.Transition = Controls.Transition.Fade;
+                lastSelected = t.Id;
+
+                if (Tutorials.Last().Id == t.Id)
+                {
+                    this.SetValue(IsGetStartedProperty, true);
+                }
+                else
+                {
+                    this.SetValue(IsGetStartedProperty, false);
+                }
+            }
+        }
+
+        private void Btn_next_Click(object sender, RoutedEventArgs e)
+        {
+            Tutorials t = Tutorials.FirstOrDefault(x => x.Id > lastSelected);
+            if (t != null)
+            {
+                Tutorials.First(x => x.IsChecked == true).IsChecked = false;
+                Tutorials.First(x => x.Id == t.Id).IsChecked = true;
+                transition.Transition = Controls.Transition.Left;
+
+                CurrentTutorial = Tutorials.First(x => x.Id == t.Id);
+                transition.Transition = Controls.Transition.Fade;
+                lastSelected = t.Id;
+
+                if (Tutorials.Last().Id == t.Id)
+                {
+                    this.SetValue(IsGetStartedProperty, true);
+                }
+                else
+                {
+                    this.SetValue(IsGetStartedProperty, false);
+                }
+            }
+        }
+    }
+
+    public class Tutorials : NotifyBase
+    {
+        public int Id { get { return GetValue(() => Id); } set { SetValue(() => Id, value); } }
+        public bool IsChecked { get { return GetValue(() => IsChecked); } set { SetValue(() => IsChecked, value); } }
+        public string Header { get { return GetValue(() => Header); } set { SetValue(() => Header, value); } }
+        public string Content { get { return GetValue(() => Content); } set { SetValue(() => Content, value); } }
+    }
+
+
+}

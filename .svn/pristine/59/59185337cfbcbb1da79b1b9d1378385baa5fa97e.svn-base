@@ -1,0 +1,346 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System.Windows;
+using RTH.Helpers.Messaging;
+using System.Windows.Controls.Primitives;
+using System;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using System.Windows.Shapes;
+using System.Windows.Media;
+using RTH.Windows.Views.Helpers;
+using System.Collections.Generic;
+using RTH.Windows.Views.Objects;
+using System.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for StrategyUserControl.xaml
+    /// </summary>
+    public partial class StrategyView : ViewBase, ITutorialHost
+    {
+        public string ObjectiveId { get; set; }
+        public StrategyView()
+        {
+            InitializeComponent();
+
+        }
+
+        private RelayCommand m_CheckedCommand;
+        private RelayCommand m_EditStrategyCommand;
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private RelayCommand setCommand;
+
+        public RelayCommand SetCommand
+        {
+            get
+            {
+                return setCommand ?? (setCommand = new RelayCommand(
+                    vm => ExecuteSetCommand(vm), (vm) => true));
+            }
+        }
+
+        private async void ExecuteSetCommand(object vm)
+        {
+            StrategyViewModel svm = vm as StrategyViewModel;
+            await svm.SubmitStrategy();
+        }
+        Storyboard bubbleSB = null;
+        private void RunBubbleAnimation()
+        {
+            bubbleSB = new Storyboard();
+            var rnd = new Random();
+            var center = new Point(this.ActualWidth / 2, this.ActualHeight / 2);
+            for (int i = 0; i < 200; i++)
+            {
+                var circle = new Ellipse() { Fill = Brushes.White, Opacity = 0 };
+
+                var duration = TimeSpan.FromSeconds(15 * rnd.NextDouble());
+                var beginTime = TimeSpan.FromSeconds(10 * rnd.NextDouble());
+
+                var daLeft = new DoubleAnimation(center.X, this.ActualWidth * rnd.NextDouble(), duration) { BeginTime = beginTime };
+                var daTop = new DoubleAnimation(center.Y, this.ActualHeight * rnd.NextDouble(), duration) { BeginTime = beginTime };
+                var daHeight = new DoubleAnimation(0, 30, duration) { BeginTime = beginTime };
+                var daWidth = new DoubleAnimation(0, 30, duration) { BeginTime = beginTime };
+                var daOpacity = new DoubleAnimation(0, 0.3, duration, FillBehavior.Stop)
+                {
+                    BeginTime = beginTime,
+                    EasingFunction = new ElasticEase { Oscillations = 1, Springiness = 20, EasingMode = EasingMode.EaseOut }
+                };
+
+                cv.Children.Add(circle);
+                cv.Visibility = System.Windows.Visibility.Visible;
+
+                Storyboard.SetTarget(daHeight, circle);
+                Storyboard.SetTarget(daWidth, circle);
+                Storyboard.SetTarget(daLeft, circle);
+                Storyboard.SetTarget(daTop, circle);
+                Storyboard.SetTarget(daOpacity, circle);
+
+                Storyboard.SetTargetProperty(daOpacity, new PropertyPath("Opacity"));
+                Storyboard.SetTargetProperty(daHeight, new PropertyPath("Height"));
+                Storyboard.SetTargetProperty(daWidth, new PropertyPath("Width"));
+                Storyboard.SetTargetProperty(daLeft, new PropertyPath("(Canvas.Left)"));
+                Storyboard.SetTargetProperty(daTop, new PropertyPath("(Canvas.Top)"));
+
+                bubbleSB.Children.Add(daHeight);
+                bubbleSB.Children.Add(daWidth);
+                bubbleSB.Children.Add(daLeft);
+                bubbleSB.Children.Add(daTop);
+                bubbleSB.Children.Add(daOpacity);
+            }
+            bubbleSB.Begin();
+        }
+        private void ExecutePreviousCommand(object obj)
+        {
+            if (ViewModelBase.HealthStrategyRequest.question.Count == 0)
+            {
+                App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthPlanView, param: null);
+            }
+            else
+            {
+                App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthPlanQuestionnaireView, param: ObjectiveId);
+            }
+        }
+        public RelayCommand CheckedCommand
+        {
+            get
+            {
+                return m_CheckedCommand ?? (m_CheckedCommand = new RelayCommand(
+                    ve => ToggleButtonChecked(ve)));
+            }
+        }
+        public RelayCommand EditStrategyCommand
+        {
+            get
+            {
+                return m_EditStrategyCommand ?? (m_EditStrategyCommand = new RelayCommand(
+                    ve => ShowEditStragey(ve)));
+            }
+        }
+        private void ToggleButtonChecked(object ve)
+        {
+            if (ve != null)
+            {
+                ToggleButton tBtn = (ToggleButton)ve;
+                if (tBtn.IsChecked == true)
+                {
+                    tBtn.IsChecked = false;
+                }
+                else
+                {
+                    tBtn.IsChecked = true;
+                }
+                tBtn.Click += tBtn_Click;
+                tBtn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+        }
+        private void tBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleButton tg = (ToggleButton)sender;
+            if (tg.IsChecked == true)
+            {
+                if (tg.Tag != null)
+                    (this.ViewModel as StrategyViewModel).UpdateStrategyStatus(tg.Tag.ToString(), 1);
+            }
+            else { if (tg.Tag != null) (this.ViewModel as StrategyViewModel).UpdateStrategyStatus(tg.Tag.ToString(), 0); }
+        }
+        private void ShowEditStragey(object ve)
+        {
+            this.txtNewStrategy.Text = ve == null ? string.Empty : ve as string;
+            this.strategyContainer.Visibility = Visibility.Collapsed;
+            this.EditStrategyGrid.Visibility = Visibility.Visible;
+        }
+        public override void OnMessage(Message e)
+        {
+            base.OnMessage(e);
+            if (e.Type == MessageType.StrategyAdded)
+            {
+                HideEditStrategy();
+            }
+        }
+        private void HideEditStrategy()
+        {
+            this.strategyContainer.Visibility = Visibility.Visible;
+            this.EditStrategyGrid.Visibility = Visibility.Collapsed;
+            (this.ViewModel as StrategyViewModel).ErrorMessage = string.Empty;
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.GetNew<StrategyViewModel>();
+            this.RefreshOnLoad = true;
+            if (ViewModel.IsLoaded)
+            {
+                Dispatcher.BeginInvoke((Action)(() => grdRoot.Visibility = Visibility.Visible));
+            }
+            else
+            {
+                ViewModel.Loaded += OnViewModelLoaded;
+            }
+            base.LoadViewModel();
+        }
+        private void OnViewModelLoaded(object sender)
+        {
+            InitializeTutorials();
+            Dispatcher.BeginInvoke((Action)(() => grdRoot.Visibility = Visibility.Visible));
+            if (HasShowTutorials())
+            {
+                AsyncCall.Invoke(() =>
+                {
+                    Thread.Sleep(200);
+                    Dispatcher.Invoke(() => { Thread.Sleep(1000); ShowTutorial = true; });
+                }, false);
+            }
+        }
+        public override void OnViewLoaded()
+        {            
+            grdRoot.Visibility = Visibility.Collapsed;
+            (this.ViewModel as StrategyViewModel).GetHealthPlanQuestion(ObjectiveId);
+           
+        }
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            HideEditStrategy();
+        }
+        private void grdSuccess_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+            {
+                ResetAnimationControls();
+                RunBubbleAnimation();
+                RunHealthPlanTextAnimation();
+            }
+        }
+        private void RunHealthPlanTextAnimation()
+        {
+            pathTick.Visibility = Visibility.Collapsed;
+            txtHealthPlan.Opacity = 0;
+            var sb = new Storyboard();
+            var da = new DoubleAnimation(0D, 1D, new Duration(TimeSpan.FromSeconds(3)));
+            sb.Children.Add(da);
+            Storyboard.SetTarget(da, txtHealthPlan);
+            Storyboard.SetTargetProperty(da, new PropertyPath("Opacity"));
+            sb.Completed += Sb_Completed;
+            sb.Begin();
+        }
+        private void Sb_Completed(object sender, EventArgs e)
+        {
+            pathTick.Visibility = Visibility.Visible;
+            AsyncCall.Invoke(() =>
+            {
+                System.Threading.Thread.Sleep(5000);
+                AppMessages.Send(Token, new Message { Type = MessageType.ExecuteBack, RemoveLastView = true });
+                Dispatcher.BeginInvoke((Action)(() =>
+                {
+                    if (bubbleSB != null)
+                    {
+                        bubbleSB.Stop();
+                        bubbleSB = null;
+                    }
+                }));
+            }, false);
+        }
+        private void ResetAnimationControls()
+        {
+            txtHealthPlan.Opacity = 0;
+            pathTick.Visibility = Visibility.Collapsed;
+        }
+
+        #region Tutorials
+
+        Dictionary<int, Tuple<string, FrameworkElement>> tutorialObjects;
+        public void InitializeTutorials()
+        {
+            tutorialObjects = new Dictionary<int, Tuple<string, FrameworkElement>>();
+            if (HasStarategy())
+                AddTutorialToList(TutorialHelper.HPStrategyIcon, null);
+            AddTutorialToList(TutorialHelper.HPCustomStrategyIcon, btnCstomeStrategy);
+            AddTutorialToList(TutorialHelper.HPStrategySetIcon, btnSubmit);
+            if (HasStarategy())
+                AddTutorialToList(TutorialHelper.HPStrategyEditIcon, tutorialEdit);
+
+        }
+        private bool HasStarategy()
+        {
+            return ((this.ViewModel as StrategyViewModel).HealthplanQuestionnaire.strategies != null &&
+                (this.ViewModel as StrategyViewModel).HealthplanQuestionnaire.strategies.Count > 0) ? true : false;
+        }
+        int currentTutIndex = 0;
+        public override TutorialContent GetTutorials()
+        {
+            if (currentTutIndex >= this.MaxTutorials)
+            {
+                currentTutIndex = 0;
+                tutorialObjects.Clear();
+                ShowTutorial = false;
+                return null;
+            }
+            var tuple = tutorialObjects[currentTutIndex++];
+            if (tuple.Item1.ShowTutorial())
+            {
+                tuple.Item1.TutorialComplete();
+                if (tuple.Item2 == null)
+                {
+                    var item = strategyConrol.Items[0];
+                    return (strategyConrol.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter).GetTutorial(this, tuple.Item1, true);
+                }
+                return tuple.Item2.GetTutorial(this, tuple.Item1, true);
+            }
+            ShowTutorial = false;
+            return null;
+        }
+        public int MaxTutorials
+        {
+            get
+            {
+                return tutorialObjects.Count;
+            }
+        }
+
+        public int GetTutorialIndex()
+        {
+            return currentTutIndex;
+        }
+        public string GetTutorialText(string keyString)
+        {
+            if (App.SharedValues.LanguageResource.GetType().GetProperty(keyString) != null)
+            {
+                return App.SharedValues.LanguageResource.GetType().GetProperty(keyString).GetValue(App.SharedValues.LanguageResource).ToString();
+            }
+            return string.Empty;
+        }
+
+        private bool HasShowTutorials()
+        {
+            return Properties.Settings.Default.Tutorials;
+        }
+        private bool AddTutorialToList(string keyString, FrameworkElement element)
+        {
+            if (TutorialHelper.ShowTutorial(keyString))
+            {
+                tutorialObjects.Add(tutorialObjects.Count, new Tuple<string, FrameworkElement>(keyString, element));
+                return true;
+            }
+            return false;
+        }
+        public override void SkipTutorials()
+        {
+            string[] keys = new string[] { TutorialHelper.HealthPlanObjIcon };
+            TutorialHelper.SkipTutorials(keys);
+            this.SetValue(ShowTutorialProperty, false);
+        }
+
+        #endregion Tutorials
+    }
+}

@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Data;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class ImagePathConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value != null)
+            {
+                if (parameter == null)
+                    return (bool)value == true ? string.Format("/Assets/RedoPopup/menu.png") : string.Format("/Assets/menu_opener.png");
+                else if (parameter.Equals("Logo"))
+                    return value== null ? string.Format("/RTH.Windows.Views;component/Assets/top_q_logo.png") : string.Format("/RTH.Windows.Views;component/Assets/ic_logo.png");
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

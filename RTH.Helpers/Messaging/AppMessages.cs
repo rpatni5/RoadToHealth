@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace RTH.Helpers.Messaging
+{
+    public static class AppMessages
+    {
+        private static Dictionary<Guid, IMessagingTarget> _clients = new Dictionary<Guid, IMessagingTarget>();
+        public delegate Message OnMessageReceived();
+
+        public static void Send(Guid Token, Message notification)
+        {
+            if (_clients.ContainsKey(Token))
+            {
+                _clients[Token].ReceiveMessage(notification);
+            }
+        }
+
+        public static void Register(IMessagingTarget view, Guid Token)
+        {
+            if (!_clients.ContainsKey(Token))
+                _clients.Add(Token, view);
+        }
+
+        public static void Unregister(Guid Token)
+        {
+            _clients.Remove(Token);
+        }
+    }
+}

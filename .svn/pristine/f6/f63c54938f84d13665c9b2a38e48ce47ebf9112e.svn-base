@@ -1,0 +1,47 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+
+namespace RTH.Windows.Views.Helpers
+{
+    public static class DecimalTextHelper
+    {
+        public static Regex decimalPattern = new Regex(@"(?<Number>\d+)(?<Decimal>[.,])(?<Precision>\d+)", RegexOptions.Compiled);
+
+        public static string GetDecimalText(DependencyObject obj)
+        {
+            return (string)obj.GetValue(DecimalTextProperty);
+        }
+
+        public static void SetDecimalText(DependencyObject obj, string value)
+        {
+            obj.SetValue(DecimalTextProperty, value);
+        }
+
+        public static readonly DependencyProperty DecimalTextProperty = DependencyProperty.RegisterAttached("DecimalText",
+            typeof(string), typeof(DecimalTextHelper), new UIPropertyMetadata("", ValueChanged));
+
+        private static void ValueChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            string value = e.NewValue as string;
+            TextBlock textBlock = sender as TextBlock;
+
+            var match = decimalPattern.Match(value); ;
+            textBlock.Text = value;
+
+            if (textBlock != null)
+            {
+                textBlock.Inlines.Clear();
+                textBlock.Inlines.Add(new Run() { FontSize = 48, Text = match.Groups["Number"].Value });
+                textBlock.Inlines.Add(new Run() { FontSize = 12, Text = match.Groups["Decimal"].Value });
+                textBlock.Inlines.Add(new Run() { FontSize = 12, Text = match.Groups["Precision"].Value });
+            }
+        }
+    }
+}

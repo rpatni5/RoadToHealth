@@ -1,0 +1,33 @@
+﻿using System;
+using System.Linq;
+using System.Collections.Concurrent;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public static class ViewModelLocator
+    {
+        private static object lockObject = new object();
+        private static ConcurrentDictionary<Type, ViewModelBase> _viewModels = new ConcurrentDictionary<Type, ViewModelBase>();
+
+        public static T Get<T>(bool refreshRequired = false) where T : ViewModelBase
+        {
+            var type = typeof(T);
+
+            if (_viewModels.ContainsKey(type))
+            {
+                if (refreshRequired)
+                    _viewModels[type].Refresh();
+                return _viewModels[type] as T;
+            }
+            else //Register and Return
+            {
+                lock (lockObject)
+                {
+                    var vm = Activator.CreateInstance(type, true) as T;
+                    _viewModels.AddOrUpdate(type, vm, (t, v) => v);
+                    return vm;
+                }
+            }
+        }
+    }
+}

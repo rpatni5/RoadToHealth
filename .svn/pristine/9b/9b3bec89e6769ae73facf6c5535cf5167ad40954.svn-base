@@ -1,0 +1,29 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.TwitterAuthenticationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"           
+             xmlns:Root="clr-namespace:RTH.Windows.Views"    
+             xmlns:viewHelper="clr-namespace:RTH.Windows.Views.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <local:OffHeaderView Grid.Row="0" />
+
+        <WebBrowser viewHelper:BrowserBehavior.SourceUri="{Binding NavigateToUri}" Grid.Row="1" MinHeight="500" MinWidth="500" />
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Style="{StaticResource LoginText}" BorderThickness="1" BorderBrush="Black" Margin="0" Text="{Binding Credentials.Pin, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Grid.Column="1" Content="Authenticate" Padding="5" Command="{Binding AuthenticateCommand}"/>
+        </Grid>
+    </Grid>
+</local:ViewBase>

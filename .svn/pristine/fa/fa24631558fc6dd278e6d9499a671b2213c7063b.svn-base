@@ -1,0 +1,152 @@
+﻿using RTH.Windows.Views.Objects;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System;
+
+namespace RTH.Windows.Views.Helpers
+{
+    public interface ITutorialHost
+    {
+        int MaxTutorials { get; }
+        int GetTutorialIndex();
+        string GetTutorialText(string keyString);
+
+    }
+    public static class TutorialHelper
+    {
+        private static Dictionary<string, bool> _dic;
+        public static string DiseaseIcons = "hra_tutorial_windows";
+        public static string MenuIcon = "off_menu_tutorial_windows";
+        public static string Timeline = "timeline_tutorial_windows";
+        public static string ShareIcon = "share_tutorial_windows";
+        public static string DiseaseIcon = "view_update_tutorial";
+        public static string DashboardTab = "dashboard_tutorial_windows";
+        public static string InsightTab = "insights_tutorial_windows";
+        public static string AdviceTab = "advice_tutorial_windows";
+        public static string ScoreTab = "score_tutorial_windows";
+        public static string MainScore = "overall_qscore_tutorial_windows";
+        public static string GoIcon = "go_tutorial_windows";
+        public static string InsightInnerIcon = "insights_bar_tutorial_windows";
+        public static string QuestionIcon = "questionnaire_tutorial_windows";
+        public static string CoachesTutorial = "CTutorialsCompleted";
+        public static string ExpendIcon = "expand_pha_tutorial_windows";
+        public static string OverviewIcon = "Overview";
+        public static string FOQIcon = "foqpha_tutorial_windows";
+        public static string PhaResultIcon = "Advicepanel_tutorials_windows";
+        public static string HealthReportIcon = "health_report_tutorial_windows";
+
+        public static string HealthPlanObjIcon = "health_report_tutorial_windows";
+        public static string HPStrategyIcon = "health_report_tutorial_windows";
+        public static string HPCustomStrategyIcon = "health_report_tutorial_windows";
+        public static string HPStrategyEditIcon = "health_report_tutorial_windows";
+        public static string HPStrategySetIcon = "health_report_tutorial_windows";
+
+        static TutorialHelper()
+        {
+            _dic = new Dictionary<string, bool>();
+            Initialise();
+        }
+        public static TutorialContent GetTutorial(this FrameworkElement child, ITutorialHost parent, string keyString, bool isList = false)
+        {
+            var pt = child.TranslatePoint(new Point(0, 0), App.SharedValues.WindowMain);
+            TutorialContent _t = new TutorialContent();
+
+            _t.Bounds = new Rect(pt.X, pt.Y, child.ActualWidth, child.ActualHeight > 160 ? 160 : child.ActualHeight);
+            _t.CurrentItem = parent.GetTutorialIndex();
+            _t.TotalItem = parent.MaxTutorials;
+            _t.FooterText = parent.GetTutorialText(keyString);
+            _t.KeyString = keyString;
+            _t.HeaderContent = new Dictionary<string, Rect>();
+
+            var trans = child.TransformToVisual(App.SharedValues.WindowMain);
+            var rc = trans.TransformBounds(_t.Bounds);
+
+            _t.Bounds = new Rect(pt, rc.Size);
+
+            if (isList && child is ItemsControl)
+            {
+                var itemsControl = child as ItemsControl;
+                for (int i = 0; i < itemsControl.Items.Count; i++)
+                {
+                    ContentPresenter cp = (ContentPresenter)itemsControl.ItemContainerGenerator.ContainerFromIndex(i);
+                    var pt1 = cp.TranslatePoint(new Point(0, 0), App.SharedValues.WindowMain);
+                    var item = itemsControl.Items[i];
+                    _t.HeaderContent.Add(item.GetType().GetProperty("Title").GetValue(item).ToString(), new Rect(pt1.X, pt1.Y, cp.ActualWidth, cp.ActualHeight));
+                }
+            }
+            else
+            {
+                _t.HeaderContent.Add(string.Empty, _t.Bounds);
+            }
+            return _t;
+        }
+
+        public static void SetTutorialSettings()
+        {
+            Properties.Settings.Default.Tutorials = true;
+            ResetKeys();
+            Properties.Settings.Default.Save();
+            Initialise();
+        }
+
+        private static void ResetKeys()
+        {
+            string keyValue = string.Empty;
+            Properties.Settings.Default.TutorialsKeys = string.Empty;
+            for (int i = 0; i < _dic.Count; i++)
+            {
+                string key = _dic.ElementAt(i).Key;
+                _dic[key] = true;
+                keyValue = string.Format("{0}{1}:true&", keyValue, key);
+            }
+            Properties.Settings.Default.TutorialsKeys = keyValue;
+            Properties.Settings.Default.Save();
+        }
+
+        public static void UnsetTutorialSettings()
+        {
+            Properties.Settings.Default.Tutorials = false;
+            Properties.Settings.Default.Save();
+        }
+        private static void Initialise()
+        {
+            string keyValues = Properties.Settings.Default.TutorialsKeys;
+            string[] keyValuePair = keyValues.Split('&');
+            foreach (var item in keyValuePair)
+            {
+                string[] pair = item.Split(':');
+                if (pair[0] != string.Empty)
+                    _dic[pair[0]] = Convert.ToBoolean(pair[1]);
+            }
+        }
+
+        public static bool ShowTutorial(this string KeyString)
+        {
+            return _dic[KeyString];
+        }
+        public static void TutorialComplete(this string KeyString)
+        {
+            _dic[KeyString] = false;
+            string keyValue = string.Empty;
+            Properties.Settings.Default.TutorialsKeys = string.Empty;
+            for (int i = 0; i < _dic.Count; i++)
+            {
+                string key = _dic.ElementAt(i).Key;
+
+                keyValue = string.Format("{0}{1}:{2}&", keyValue, key, _dic[key]);
+            }
+            Properties.Settings.Default.TutorialsKeys = keyValue;
+            Properties.Settings.Default.Save();
+        }
+
+        public static void SkipTutorials(string[] keys)
+        {
+            foreach (var item in keys)
+            {
+                TutorialComplete(item);
+            }
+        }
+    }
+}

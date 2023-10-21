@@ -1,0 +1,197 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Business.Objects.JSON;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class DashboardViewModel : ViewModelBase
+    {
+        #region Global Properties
+        public List<DiseaseData> Diseases
+        {
+            get { return GetValue(() => this.Diseases); }
+            set { SetValue(() => Diseases, value); }
+        }
+        public double DementiaScore
+        {
+            get { return GetValue(() => this.DementiaScore); }
+            set { SetValue(() => DementiaScore, value); }
+        }
+        public double CardioScore
+        {
+            get { return GetValue(() => this.CardioScore); }
+            set { SetValue(() => CardioScore, value); }
+        }
+        public double DiabetesScore
+        {
+            get { return GetValue(() => this.DiabetesScore); }
+            set { SetValue(() => DiabetesScore, value); }
+        }
+        public double LungsScore
+        {
+            get { return GetValue(() => this.LungsScore); }
+            set { SetValue(() => LungsScore, value); }
+        }
+        public double CancerScore
+        {
+            get { return GetValue(() => this.CancerScore); }
+            set { SetValue(() => CancerScore, value); }
+        }
+        public double TotalScore
+        {
+            get { return GetValue(() => this.TotalScore); }
+            set { SetValue(() => TotalScore, value); }
+        }
+        public int TotalHRA
+        {
+            get { return GetValue(() => this.TotalHRA); }
+            set { SetValue(() => TotalHRA, value); }
+        }
+        public bool OverLayVisibility
+        {
+            get { return GetValue(() => this.OverLayVisibility); }
+            set { SetValue(() => OverLayVisibility, value); }
+        }
+        #endregion
+
+        #region Instance
+        static private DashboardViewModel _instance;
+        public static DashboardViewModel Instance
+        {
+            get
+            {
+                if (_instance == null) _instance = new DashboardViewModel();
+                return _instance;
+            }
+        }
+        #endregion
+
+        #region Constructor
+        public DashboardViewModel()
+        {
+            GlobalData.Default.HeaderVisibility = true;
+            GlobalData.Default.HeaderState = false;
+            GlobalData.Default.HeaderColor = "#00FFFFFF";
+            GlobalData.Default.KeyString = string.Empty;
+            GlobalData.Default.HeaderTitle = string.Empty;
+            GlobalData.Default.FooterVisibility = true;
+
+            LoadMainScores();
+            Init();
+        }
+        #endregion
+
+        private void Init()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                LoadTimelines();
+                GetQuestionaires(ViewModelBase.UserDetails.language == null ? "en" : ViewModelBase.UserDetails.language);
+            });
+        }
+        private void LoadMainScores()
+        {
+            TotalScore = 0;
+            TotalScore = ViewModelBase.UserDetails.score;
+            DiabetesScore = AssignScore(ConfigurationManagers.DiabetesId);
+            CardioScore = AssignScore(ConfigurationManagers.CardioId);
+            DementiaScore = AssignScore(ConfigurationManagers.DementiaId);
+            LungsScore = AssignScore(ConfigurationManagers.LungsId);
+            CancerScore = AssignScore(ConfigurationManagers.CancerId);
+        }
+        private double AssignScore(string Id)
+        {
+            ScoreHistory score = ViewModelBase.UserDetails.score_history.FirstOrDefault(x => x.questionnaire == Id);
+            return score != null ? score.total_score : 0;
+        }
+        private void SetHeader()
+        {
+            if (SelectedDisease != null)
+            {
+                GlobalData.Default.KeyString = SelectedDisease.KeyString;
+                GlobalData.Default.HeaderColor = SelectedDisease.BgColor;
+                GlobalData.Default.HeaderTitle = SelectedDisease.Title;
+                GlobalData.Default.LastVisitedDiseaseID = SelectedDisease.ID;
+            }
+        }
+        private void GetQuestionaires(string language)
+        {
+            List<DiseaseData> lstDiseases = new List<DiseaseData>();
+            Questionnaires QuestionnaireData = RTH.Business.Services.DashboardService.GetQuestionaires(ConfigurationManagers.ClientId, language);
+            ScoreHistory score = ViewModelBase.UserDetails.score_history.FirstOrDefault(x => x.questionnaire != null);
+            if (score != null)
+            {
+                GlobalData.Default.LastVisitedDiseaseID = GlobalData.Default.LastVisitedDiseaseID == string.Empty ? score.questionnaire : GlobalData.Default.LastVisitedDiseaseID;
+                //SetHeader(QuestionnaireData.data.FirstOrDefault(x => x._id == GlobalData.Default.LastVisitedDiseaseID));
+            }
+            if (QuestionnaireData != null)
+            {
+                ViewModelBase.UserDetails.LastHra = false;
+                OverLayVisibility = true;
+                TotalHRA = 0;
+                QuestionnaireData.data.ForEach(c =>
+                {
+                    DiseaseData diseaseData = new DiseaseData();
+                    diseaseData.ID = c._id;
+                    diseaseData.BgColor = c.background_colour;
+                    diseaseData.KeyString = c.key_string;
+                    diseaseData.Title = c.title;
+                    ScoreHistory scoreHistory = ViewModelBase.UserDetails.score_history.FirstOrDefault(x => x.questionnaire == c._id);
+                    if (scoreHistory != null)
+                    {
+                        //setting extra properties
+                        GlobalData.Default.FooterVisibility = true;
+                        ViewModelBase.UserDetails.LastHra = true;
+                        OverLayVisibility = false;
+
+                        TotalHRA++;
+                        diseaseData.TotalScore = scoreHistory.total_score.ToChangeType<Int32>().ToString();
+                        diseaseData.Summary = string.Empty;
+                        diseaseData.IsCompleted = true;
+                    }
+                    else
+                    {
+                        diseaseData.TotalScore = string.Empty;
+                        diseaseData.Summary = c.summary;
+                        diseaseData.IsCompleted = false;
+                    }
+                    lstDiseases.Add(diseaseData);
+                });
+                SelectedDisease = GlobalData.Default.ClickedHRA = lstDiseases.FirstOrDefault(x => x.ID == GlobalData.Default.LastVisitedDiseaseID);
+                SetHeader();
+                Diseases = lstDiseases;
+            }
+        }
+        private void LoadTimelines()
+        {
+            UserTimelines = RTH.Business.Services.DashboardService.GetTimelines(ViewModelBase.UserDetails._id, ViewModelBase.UserDetails.timezone_offset.ToString(), (DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds.ToString(), 0.ToString(), ViewModelBase.UserDetails.AuthToken.access_token);
+            UserTimelines.engagements.GroupBy(x => Convert.ToDateTime(x.when_required_user).ToShortDateString()).ToList().ForEach(c =>
+            {
+                int index = 0;
+                foreach (var item in c)
+                {
+                    item.Tag = index++;
+                }
+            });
+        }
+        public UserTimeline UserTimelines
+        {
+            get
+            {
+                return GetValue(() => UserTimelines);
+            }
+            set
+            {
+                SetValue(() => UserTimelines, value);
+            }
+        }
+
+    }
+}

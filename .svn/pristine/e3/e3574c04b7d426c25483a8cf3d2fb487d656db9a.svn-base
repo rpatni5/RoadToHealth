@@ -1,0 +1,143 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Helpers;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for SettingsView.xaml
+    /// </summary>
+    public partial class SettingsView : UserControl
+    {
+
+        SettingsViewModel objSettings = new SettingsViewModel();
+
+        public SettingsView()
+        {
+            InitializeComponent();
+            this.ErrorMessage.Content = "";
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if(this.stackFullName.Visibility == Visibility.Visible)
+            this.stackFullName.Visibility = Visibility.Collapsed;
+            else
+                this.stackFullName.Visibility = Visibility.Visible;
+
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (this.stackEmail.Visibility == Visibility.Visible)
+                this.stackEmail.Visibility = Visibility.Collapsed;
+            else
+                this.stackEmail.Visibility = Visibility.Visible;
+
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            if (this.stackPassword.Visibility == Visibility.Visible)
+                this.stackPassword.Visibility = Visibility.Collapsed;
+            else
+                this.stackPassword.Visibility = Visibility.Visible;
+
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+
+            if (string.IsNullOrEmpty(this.txtUpdatedEmail.Text.ToString()))
+            {
+                this.ErrorMessage.Content = ViewModelBase.AppMessages.missing_email;
+                GlobalData.Default.LoaderVisibility = false;
+            }
+            else if (!ExtensionMethod.ValidateEmail(this.txtUpdatedEmail.Text.ToString()))
+            {
+                this.ErrorMessage.Content = ViewModelBase.AppMessages.invalid_email_entry;
+                GlobalData.Default.LoaderVisibility = false;
+            }
+            else
+            {
+                objSettings.UpdateEmailAction(this.txtUpdatedEmail.Text.ToString());
+                
+                Properties.Settings.Default.Email = this.txtUpdatedEmail.Text.ToString();
+                Properties.Settings.Default.Save();
+            }
+
+        }
+
+        private void Button_Click_4(object sender, RoutedEventArgs e)
+        {
+            if (txtPassword.Password.ToString() != Properties.Settings.Default.Password)
+            { this.ErrorMessage.Content = ViewModelBase.AppMessages.wrong_old_password; }
+
+            else if (string.IsNullOrEmpty(txtPassword.Password.ToString()))
+              { this.ErrorMessage.Content = ViewModelBase.AppMessages.please_enter_password; }
+
+            else if (string.IsNullOrEmpty(txtNewPassword.Password.ToString()))
+             { this.ErrorMessage.Content = ViewModelBase.AppMessages.please_enter_confirm_password; }
+
+            else if (txtNewPassword.Password.ToString() != txtConfirmPassword.Password.ToString())
+            { this.ErrorMessage.Content = ViewModelBase.AppMessages.password_mismatched; }
+
+            else
+            {
+                objSettings.UpdatePasswordAction(this.txtNewPassword.Password.ToString());
+                
+                Properties.Settings.Default.Password = this.txtNewPassword.Password.ToString();
+                Properties.Settings.Default.Save();
+            }
+
+
+            //if (txtPassword.Password.ToString() == Properties.Settings.Default.Password)
+            //{
+            //    if(txtNewPassword.Password.ToString() == txtConfirmPassword.Password.ToString())
+            //    {
+            //        objSettings.UpdatePasswordAction(this.txtNewPassword.Password.ToString());
+
+            //        Properties.Settings.Default.Password = this.txtNewPassword.Password.ToString();
+            //        Properties.Settings.Default.Save();
+            //    }
+            //}
+
+            
+        }
+
+        private void tglButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (tglButton.IsChecked == true)
+                Properties.Settings.Default.Tutorials = true;
+
+            else
+                Properties.Settings.Default.Tutorials = false;
+
+            Properties.Settings.Default.Save();
+
+        }
+
+        private void btnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.Email = string.Empty;
+            Properties.Settings.Default.Password = string.Empty;
+            Properties.Settings.Default.Save();
+        }
+    }
+}

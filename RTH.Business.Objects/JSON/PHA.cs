@@ -1,0 +1,93 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class PHA : NotifyBase
+    {
+        public int status { get { return GetValue(() => status); } set { SetValue(() => status, value); } }
+        public string message { get { return GetValue(() => message); } set { SetValue(() => message, value); } }
+        public ObservableCollection<HealthArea> health_areas { get { return GetValue(() => health_areas); } set { SetValue(() => health_areas, value); } }
+        public ObservableCollection<SubDisease> sub_diseases { get { return GetValue(() => sub_diseases); } set { SetValue(() => sub_diseases, value); } }
+    }
+
+    public class HealthArea : NotifyBase
+    {
+        public string id { get { return GetValue(() => id); } set { SetValue(() => id, value); } }
+        public string key_string { get { return GetValue(() => key_string); } set { SetValue(() => key_string, value); } }
+        public string health_area { get { return GetValue(() => health_area); } set { SetValue(() => health_area, value); } }
+        public string summary { get { return GetValue(() => summary); } set { SetValue(() => summary, value); } }
+        public string detail { get { return GetValue(() => detail); } set { SetValue(() => detail, value); } }
+        public string display_value { get { return GetValue(() => display_value); } set { SetValue(() => display_value, value); } }
+        public string display_text { get { return GetValue(() => display_text); } set { SetValue(() => display_text, value); } }
+        public string background { get { return GetValue(() => background); } set { SetValue(() => background, value); } }
+        public ObservableCollection<Product> products { get { return GetValue(() => products); } set { SetValue(() => products, value); } }
+
+    }
+
+    public class SubDisease : NotifyBase
+    {
+        public string id
+        {
+            get { return GetValue(() => id); }
+            set { SetValue(() => id, value); }
+        }
+        public string key_string
+        {
+            get { return GetValue(() => key_string); }
+            set { SetValue(() => key_string, value); }
+        }
+        public string health_area
+        {
+            get { return GetValue(() => health_area); }
+            set { SetValue(() => health_area, value); }
+        }
+        public string summary
+        {
+            get { return GetValue(() => summary); }
+            set { SetValue(() => summary, value); }
+        }
+        public string details
+        {
+            get { return GetValue(() => details); }
+            set { SetValue(() => details, value); }
+        }
+        public string display_value
+        {
+            get { return GetValue(() => display_value); }
+            set { SetValue(() => display_value, value); }
+        }
+        public string display_text
+        {
+            get { return GetValue(() => display_text); }
+            set { SetValue(() => display_text, value); }
+        }
+        public string background
+        {
+            get { return GetValue(() => background); }
+            set { SetValue(() => background, value); }
+        }
+        public string icon
+        {
+            get { return GetValue(() => icon); }
+            set { SetValue(() => icon, value); }
+        }
+        public string disease
+        {
+            get { return GetValue(() => disease); }
+            set { SetValue(() => disease, value); }
+        }
+        public string UploadUrl { get { return GetValue(() => this.UploadUrl); } set { SetValue(() => this.UploadUrl, value); } }
+        public ObservableCollection<string> health_areas
+        {
+            get { return GetValue(() => health_areas); }
+            set { SetValue(() => health_areas, value); }
+        }
+    }
+}

@@ -1,0 +1,195 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthPlanQuestionnaireViewModel : ViewModelBase
+    {
+        public HealthPlanQuestionnaireViewModel()
+        {
+            HeaderColor = "#FFFFFFFF";
+            HeaderVisibility = true;
+            HeaderState = true;
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+        public ObservableCollection<Question> AllQuestions
+        {
+            get { return GetValue(() => AllQuestions); }
+            set { SetValue(() => AllQuestions, value); }
+        }
+        public ArrayList QuestionWithoutDependency
+        {
+            get { return GetValue(() => QuestionWithoutDependency); }
+            set { SetValue(() => QuestionWithoutDependency, value); }
+        }
+        public Hashtable DependentQuestion
+        {
+            get { return GetValue(() => DependentQuestion); }
+            set { SetValue(() => DependentQuestion, value); }
+        }
+
+        public Int32 CurrentCategoryCount
+        {
+            get { return GetValue(() => CurrentCategoryCount); }
+            set { SetValue(() => CurrentCategoryCount, value); }
+        }
+
+        private void SetHeader()
+        {
+            HeaderColor = CurrentQuestion.Category.color;
+            HeaderTitle = CurrentQuestion.Category.name;
+            KeyString = "None";
+            FooterVisibility = false;
+            SharingIconVisibility = false;
+        }
+        public void GetHealthPlanQuestion(string ObjectiveId)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                ObservableCollection<Question> ques = new ObservableCollection<Question>();
+                //Get Question Answer From the bellow API
+                var ObjectiveData = HealthPlanServices.GetHealthPlanObjective(UserDetails._id, ObjectiveId, UserDetails.AuthToken.access_token).data.questions;
+                //Get Question From the bellow API
+                var healthplanquestion = HealthPlanServices.GetHealthPlanQuestionaries(UserDetails._id, ObjectiveId, UserDetails.AuthToken.access_token).data;
+                var CategoriesQuestion = GetCategoryQuestion(healthplanquestion.questions, ObjectiveData);
+                if (CategoriesQuestion != null)
+                {
+                    ques.AddRange(GetCategoryQuestion(healthplanquestion.questions, ObjectiveData));
+                }
+                AllQuestions = ques;
+                CurrentQuestion = AllQuestions[0];
+                SetHeader();
+            });
+        }
+
+        private ObservableCollection<Question> GetCategoryQuestion(ObservableCollection<HealthPlanQuestionnaire> questions, List<Answer> oHealthAllQuestion)
+        {
+            ObservableCollection<Question> ques = new ObservableCollection<Question>();
+            foreach (var item in questions)
+            {
+                //Get category Question 
+                if (item.questions != null)
+                {
+                    foreach (var q in item.questions)
+                    {
+                        q.Category = item.category;
+                        if (oHealthAllQuestion.Where(x => x.question == q._id).Any())
+                        {
+                            if (oHealthAllQuestion.Where(x => x.question == q._id).Any())
+                            {
+                                var _UserAnswer = oHealthAllQuestion.Where(a => a.question == q._id).FirstOrDefault();
+                                if (_UserAnswer.answer != null)
+                                {
+                                    if (_UserAnswer.answer.GetType() == typeof(Newtonsoft.Json.Linq.JArray))
+                                    {
+                                        var ArrayAnaswer = (Newtonsoft.Json.Linq.JArray)_UserAnswer.answer;
+                                        foreach (var _a in ArrayAnaswer)
+                                        {
+
+                                            var ss = _a.ToString().Replace("[", "").Replace("]", "").Trim();
+                                            Answer a = new Answer();
+                                            a.date = Convert.ToString(DateTime.Now.Ticks);
+                                            a.key_string = q.key_string;
+                                            a.element_type = q.element_type;
+                                            a.question = q._id;
+                                            a.answer = ss;
+                                            a.answer_overrider = q.answers.Where(x => x._id.Equals(ss)).Select(x => x.answer_overrider).FirstOrDefault();
+                                            q.SelectedAnswers.Add(a);
+
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if ((String)_UserAnswer.answer != "none")
+                                        {
+                                            q.SelectedAnswers = new ObservableCollection<Answer>(oHealthAllQuestion.Where(x => x.question == q._id));
+                                        }
+                                        else if ((String)_UserAnswer.answer == "none" && q.element_type == 4)
+                                        {
+                                            q.SelectedAnswers = new ObservableCollection<Answer>(oHealthAllQuestion.Where(x => x.question == q._id));
+                                            q.SelectedAnswers[0].response = Convert.ToString(q.SelectedAnswers[0].response) == "none" ? "" : Convert.ToString(q.SelectedAnswers[0].response);
+                                        }
+                                    }
+
+                                }
+                            }
+
+                            ques.Add(q);
+                        }
+                    }
+                    if (item.subcategories != null)
+                    {
+                        foreach (var subcategory in item.subcategories)
+                        {
+                            if (subcategory.questions != null)
+                            {
+                                foreach (var q in subcategory.questions)
+                                {
+                                    q.Category = item.category;
+                                    q.SubCategory = subcategory.subcategory;
+                                    q.SelectedAnswers = new ObservableCollection<Answer>();
+                                    if (oHealthAllQuestion.Where(x => x.question == q._id).Any())
+                                    {
+                                        var _UserAnswer = oHealthAllQuestion.Where(a => a.question == q._id).FirstOrDefault();
+                                        if (_UserAnswer.answer != null)
+                                        {
+                                            if (_UserAnswer.answer.GetType() == typeof(Newtonsoft.Json.Linq.JArray))
+                                            {
+                                                var ArrayAnaswer = (Newtonsoft.Json.Linq.JArray)_UserAnswer.answer;
+                                                foreach (var _a in ArrayAnaswer)
+                                                {
+
+                                                    var ss = _a.ToString().Replace("[", "").Replace("]", "").Trim();
+                                                    Answer a = new Answer();
+                                                    a.date = Convert.ToString(DateTime.Now.Ticks);
+                                                    a.key_string = q.key_string;
+                                                    a.element_type = q.element_type;
+                                                    a.question = q._id;
+                                                    a.answer = ss;
+                                                    a.answer_overrider = q.answers.Where(x => x._id.Equals(ss)).Select(x => x.answer_overrider).FirstOrDefault();
+                                                    q.SelectedAnswers.Add(a);
+
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if ((String)_UserAnswer.answer != "none")
+                                                {
+                                                    q.SelectedAnswers = new ObservableCollection<Answer>(oHealthAllQuestion.Where(x => x.question == q._id));
+                                                }
+                                                else if ((String)_UserAnswer.answer == "none" && q.element_type == 4)
+                                                {
+                                                    q.SelectedAnswers = new ObservableCollection<Answer>(oHealthAllQuestion.Where(x => x.question == q._id));
+                                                    q.SelectedAnswers[0].response = Convert.ToString(q.SelectedAnswers[0].response) == "none" ? "" : Convert.ToString(q.SelectedAnswers[0].response);
+                                                }
+                                            }
+
+                                        }
+                                        ques.Add(q);
+
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
+            }
+            return ques;
+        }
+    }
+}

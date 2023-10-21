@@ -1,0 +1,267 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.StrategyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+                xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+                xmlns:con="clr-namespace:RTH.Windows.Views.Converters"
+             mc:Ignorable="d" FontSize="15"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Background="{StaticResource DashboardBGColor}"
+             xmlns:bo="clr-namespace:RTH.Business.Objects;assembly=RTH.Business.Objects">
+    <UserControl.Resources>
+        <con:NullStringToVisibilityConverter x:Key="VisibilityConverter" />
+        <con:ImageUrlConverter x:Key="imgUrlConv"/>
+    </UserControl.Resources>
+    <Grid Name="grdRoot">
+        <Grid Name="grdMain" Visibility="{Binding IsHealthPlanPosted, FallbackValue=Visible, Converter={StaticResource ReverseBooleanToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Vertical" Background="{Binding CurrentHPO.category.color, FallbackValue=#00ffffff}">
+                <TextBlock Name="icQuestions" Text="{Binding CurrentHPO.objective_title}" Height="35" FontSize="18" Padding="30,5"/>
+                <Grid>
+                    <ItemsControl HorizontalAlignment="Right" Margin="0 0 30 0" ItemsSource="{Binding HealthplanQuestionnaire.questionnaires}" >
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type bo:Questionnaire}">
+                                <Image Source="{Binding image_name, Converter={StaticResource imgUrlConv}, ConverterParameter=48}" Height="48" Width="48" Margin="5"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </Grid>
+            </StackPanel>
+            <Grid Grid.Row="1" 
+              Name="grdFocusedScope"  
+              FocusManager.IsFocusScope="True" 
+              KeyboardNavigation.ControlTabNavigation="Once"
+              KeyboardNavigation.TabNavigation="Cycle"
+                 Focusable="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid Name="EditStrategyGrid" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Background="White">
+                        <TextBlock Height="Auto" 
+                               Padding="30,5" 
+                               Visibility="{Binding ErrorMessage,Converter={StaticResource VisibilityConverter}}"
+                               Foreground="Red" 
+                               Text="{Binding ErrorMessage}" />
+                        <TextBox BorderThickness="0" Name="txtNewStrategy" Padding="30,5" VerticalContentAlignment="Center"
+                         Height="{Binding ElementName=icQuestions,Path=ActualHeight}"  />
+                    </StackPanel>
+                    <UniformGrid Grid.Row="2"  Columns="2" Height="{Binding ElementName=icQuestions,Path=ActualHeight}" >
+                        <Button Background="#4C000000" Content="Save" Command="{Binding AddStrategyCommand}" CommandParameter="{Binding ElementName=txtNewStrategy,Path=Text}" BorderThickness="0" Style="{StaticResource ButtonDefaultStyle}" />
+                        <Button Background="{Binding Path=CurrentQuestion.Category.color}" Content="Cancel" Click="Button_Click" BorderThickness="0" Style="{StaticResource ButtonDefaultStyle}"  />
+                    </UniformGrid>
+                </Grid>
+                <Grid  Name="strategyContainer">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter  Property="Background" >
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="White" Opacity="0.2"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Background="WhiteSmoke">
+                            <TextBlock Margin="30 10 10 10" Text="{Binding Source={x:Static Root:App.SharedValues},FallbackValue='By doing?',  Path=LanguageResource.by_doing}"/>
+                        </Grid>
+                        <Button Grid.Row="1" VerticalContentAlignment="Center" Name="btnCstomeStrategy"
+                            VerticalAlignment="Center" Command="{Binding EditStrategyCommand,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor}}"
+                            BorderThickness="0" Background="Transparent">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Border Padding="30,5" Background="#34FFFFFF">
+                                        <Grid>
+                                            <TextBlock HorizontalAlignment="Left" Text="Add your own strategy"  VerticalAlignment="Center" TextWrapping="Wrap" FontStyle="Italic"/>
+                                            <Image Source="/Assets/plus-icon-white.png" Margin="3 3 0 3" Height="30"  HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    <Rectangle Name="tutorialEdit" Grid.Row="1" Fill="Transparent" VerticalAlignment="Top" HorizontalAlignment="Right" Height="40" Width="40" Margin="0,0,65,0"/>
+                    <ScrollViewer Style="{StaticResource ExtendedScrollViewer}" Background="Transparent" Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding HealthplanQuestionnaire.strategies}" 
+                                      Name="strategyConrol"
+                                      BorderThickness="0" Background="{x:Null}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid >
+                                        <Grid.Style>
+                                            <Style TargetType="Grid">
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter  Property="Background" >
+                                                            <Setter.Value>
+                                                                <SolidColorBrush Color="White" Opacity="0.2"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>                                        <Border Padding="30,5" BorderThickness="0" Margin="0,1,0,0" Background="#34FFFFFF">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock TextWrapping="Wrap" Padding="0,-5" Background="Transparent"
+                                                               Text="{Binding strategy_text}"
+                                                               VerticalAlignment="Center">
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="MouseLeftButtonDown">
+                                                    <i:InvokeCommandAction Command="{Binding CheckedCommand,RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor}}" 
+                                                                           CommandParameter="{Binding ElementName=tBtn}" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                                </TextBlock>
+                                                <Button Name="btnDelete" Visibility="{Binding strategy_id,Converter={StaticResource VisibilityConverter},ConverterParameter=Not}"   Margin="0,0,10,0" Background="Transparent"
+                                                                 Grid.Column="1" VerticalContentAlignment="Center" VerticalAlignment="Center" 
+                                                                 BorderThickness="0">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Image Source="/Assets/ic_health_cross.png"  Height="30" />
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+
+                                                </Button>
+                                                <Button Grid.Column="2" VerticalContentAlignment="Center" Height="30"
+                                                            VerticalAlignment="Center" Margin="0,0,10,0"
+                                                            Command="{Binding EditStrategyCommand,RelativeSource={RelativeSource  AncestorType=UserControl, Mode=FindAncestor}}" Background="Transparent"
+                                                            CommandParameter="{Binding strategy_text}"                                                               
+                                                                BorderThickness="0">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Image Source="/Assets/ic_health_edit.png" Margin="3" />
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+
+                                                </Button>
+                                                <ToggleButton Name="tBtn" Tag="{Binding strategy_id}" Click="tBtn_Click"  BorderThickness="0" Width="30" Height="30" Background="Transparent" Grid.Column="3">
+                                                    <ToggleButton.Template>
+                                                        <ControlTemplate TargetType="ToggleButton">
+                                                            <Grid>
+                                                                <Ellipse Fill="White"
+                                                                         HorizontalAlignment="Stretch"
+                                                                         VerticalAlignment="Stretch"/>
+                                                                <Ellipse Name="check" 
+                                                                         Fill="#46C1B6" 
+                                                                         VerticalAlignment="Stretch" 
+                                                                         HorizontalAlignment="Stretch" 
+                                                                         Margin="5" 
+                                                                         Visibility="Collapsed"/>
+                                                            </Grid>
+                                                            <ControlTemplate.Triggers>
+                                                                <DataTrigger Binding="{Binding strategy_status}" Value="1">
+                                                                    <Setter  Property="IsChecked" Value="true" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ElementName=tBtn,Path=IsChecked}" Value="true" >
+                                                                    <Setter TargetName="check"  Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </ToggleButton.Template>
+                                                </ToggleButton>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+
+                <Grid Grid.Row="1" HorizontalAlignment="Stretch" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Button   
+                    Height="{Binding ElementName=icQuestions,Path=ActualHeight}" Focusable="True" TabIndex="3" Name="btnBack" BorderThickness="0" Grid.Column="0" 
+                          Style="{StaticResource ButtonDefaultStyle}"  HorizontalAlignment="Stretch" Background="{Binding Path=CurrentQuestion.Category.color}" 
+                        Command="{Binding Path=PreviousCommand, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}" 
+                        CommandParameter="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                      Margin="0 0 -2 0">
+                        <Button.Content>
+                            <Grid Background="#4C000000" Margin="-1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Path Width="16"  Height="16" Margin="30,0" Data="M1,8 L16,8 M8,1 L1,8 8,16" StrokeThickness="2" 
+                          Stroke="#fff" />
+                                <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.prev_button}" Foreground="White" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </Button.Content>
+                    </Button>
+
+                    <Button  Height="{Binding ElementName=icQuestions,Path=ActualHeight}" Focusable="True"
+                         TabIndex="2" Name="btnSubmit" Style="{StaticResource ButtonDefaultStyle}"  BorderThickness="0"
+                    Grid.Column="1" 
+                    HorizontalAlignment="Stretch"
+                    Background="{Binding Path=CurrentQuestion.Category.color}"
+                    Command="{Binding Path=SetCommand, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"
+                    CommandParameter="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                        <Button.Content>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Path Width="16" Height="16" Margin="30,0" Data="M1,8 L16,8 M8,1 L15,8 8,16" StrokeThickness="2"  HorizontalAlignment="Right"  
+                          Stroke="#fff" />
+                                <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.set_button}"
+                                   Foreground="White" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </Button.Content>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Grid>
+        <Grid Name="grdSuccess" 
+              Visibility="{Binding IsHealthPlanPosted, FallbackValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}" 
+              IsVisibleChanged="grdSuccess_IsVisibleChanged">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Canvas Grid.RowSpan="3" Name="cv"></Canvas>
+            <TextBlock FontSize="30" Foreground="White" Name="txtHealthPlan" Text="{Binding CurrentHPO.objective_title}" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Opacity="0"/>
+            <TextBlock FontSize="30" FontWeight="Bold" Foreground="White" Text="{Binding Source={x:Static Root:App.SharedValues},FallbackValue='Objective Set',  Path=LanguageResource.objective_set}" VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Grid.Row="1"/>
+            <Path Name="pathTick" Data="M5,10 20,25 40,-5" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" StrokeThickness="3" Stroke="White" Visibility="Collapsed"/>
+        </Grid>
+    </Grid>
+</local:ViewBase>

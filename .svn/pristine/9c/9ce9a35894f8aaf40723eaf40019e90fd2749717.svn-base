@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="RTH.Windows.Views.Controls.LineofMen" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctrls="clr-namespace:RTH.Windows.Views.UserControls"
+             xmlns:ctl="clr-namespace:RTH.Windows.Views.Controls"
+             MaxHeight="150" MinHeight="150">
+    <Grid>
+        <ScrollViewer Name="scrView" IsEnabled="False" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden">
+            <ItemsControl Name="menSquad" Margin="2,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1" HorizontalAlignment="Left" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Image Source="/RTH.Windows.Views;component/Assets/person.png" Margin="-13,10" Opacity="0.4"
+                                   RenderOptions.BitmapScalingMode="HighQuality" Stretch="Uniform" />
+                            <TextBlock Text="{Binding}" Foreground="White" Grid.Row="1" 
+                                       Margin="-7,0" HorizontalAlignment="Left" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

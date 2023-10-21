@@ -1,0 +1,169 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.Custom;
+using RTH.Helpers;
+using RTH.Helpers.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Security;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Services
+{
+    public static class UserService
+    {
+        /// <summary>
+        /// Date                     Name            Descriptrion
+        /// 14-Dec-2015              Pawan            Service call for user registration
+        /// 
+        /// </summary>
+        /// <param name="oUser"></param>
+        /// <returns></returns>
+        public static User RegisterUser(User oUser)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("confirm", oUser.confirm);
+            nvc.Add("password", oUser.SecurePassword.Copy().Value());
+            nvc.Add("username", oUser.username);
+            nvc.Add("email", oUser.email);
+            nvc.Add("language", oUser.language);
+            nvc.Add("name", oUser.name);
+            nvc.Add("device_type", "3");
+            nvc.Add("device_id", "windows");
+            SecureString UserPassword = oUser.SecurePassword.Copy();
+            oUser = Http.ExecuteGET<User>(APIMethod.RegisterUser, nvc);
+            if (!string.IsNullOrEmpty(oUser._id))
+            {
+                oUser.AuthToken = GetOAuthToken(oUser.email, UserPassword);
+            }
+            return oUser;
+        }
+
+        public static User RegisterUserWithSocialLogin(User oUser)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("confirm", oUser.confirm);
+            nvc.Add("password", oUser.SecurePassword.Value());
+            nvc.Add("username", oUser.username);
+            nvc.Add("email", oUser.email);
+            nvc.Add("language", oUser.language);
+            nvc.Add("name", oUser.name);
+            nvc.Add("id", oUser.socialmedia_id);
+            nvc.Add("type", oUser.type);
+            nvc.Add("device_type", "3");
+            nvc.Add("device_id", "windows");
+
+            SecureString UserPassword = oUser.SecurePassword.Copy();
+            oUser = Http.ExecuteGET<User>(APIMethod.SocialRegistration, nvc);
+            if (!string.IsNullOrEmpty(oUser._id))
+            {
+                oUser.AuthToken = GetOAuthToken(oUser.email, UserPassword);
+            }
+            return oUser;
+        }
+        /// <summary>
+        /// Date                     Name            Descriptrion
+        /// 14-Dec-2015              Pawan           user to Call services for Login
+        /// 
+        /// </summary>
+        /// <param name="oUser"></param>
+        /// <returns></returns>
+        public static User UserLogin(User oUser)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("email", oUser.email);
+            nvc.Add("password", oUser.SecurePassword.Value());
+            nvc.Add("device_type", "3");
+            nvc.Add("device_id", "windows");
+            SecureString UserPassword = oUser.SecurePassword;
+            oUser = Http.ExecuteGET<User>(APIMethod.UserLogin, nvc);
+            if (!string.IsNullOrEmpty(oUser._id))
+            {
+                oUser.AuthToken = GetOAuthToken(oUser.email, UserPassword);
+            }
+            //else
+            //{
+            //    throw new Helpers.Exceptions.LoginException(oUser.message);
+            //}
+
+            return oUser;
+        }
+
+        public static User ForGotPassword(User oUserLogin)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("responsecode", oUserLogin.responsecode);
+            nvc.Add("email", oUserLogin.email);
+            nvc.Add("password", oUserLogin.SecurePassword.ToString());
+            return Http.ExecutePOST<User>("apis/user/forgotpassword", nvc, null, "application/x-www-form-urlencoded");
+        }
+
+        public static User RequestAnAccessCode(User oUser)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("email", oUser.email);
+            return Http.ExecutePOST<User>("apis/user/forgotpassword/requestCode", nvc, null, "application/x-www-form-urlencoded");
+
+        }
+
+        private static AuthToken GetOAuthToken(string email, SecureString password)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("grant_type", "password");
+            nvc.Add("client_id", "5416abeb5f0f21080024fe71");
+            nvc.Add("client_secret", "0101b05c-119536e6");
+            nvc.Add("username", email);
+            nvc.Add("password", password.ToString());
+            //NameValueCollection nvcHeaders = new NameValueCollection();
+            //nvcHeaders.Add("Content-Type", "application/x-www-form-urlencoded");
+            return Http.ExecutePOST<AuthToken>("oauth/token", nvc, null, "application/x-www-form-urlencoded");
+        }
+        public static User ValidateSocialLogin(string userId, string type, SecureString password)
+        {
+            String QueryString = userId + "/" + type + "?device_type=3&device_id=windows";
+
+            User oUser = Http.ExecuteGET<User>(APIAccess.GetMethodUri(APIMethod.ValidateSocialLogin) + QueryString, null);
+            if (!string.IsNullOrEmpty(oUser._id)) oUser.AuthToken = GetOAuthToken(oUser.email, password);
+            return oUser;
+
+        }
+
+        public static User UpdateUserProfile(User oUserLogin, string accessToken)
+        {
+            var response = Http.ExecutePOST<Response<User>, User>("apis/put_user_profile/" + oUserLogin._id, oUserLogin, null, accessToken);
+            if (response.data is User)
+            {
+                return response.data;
+            }
+            else
+            {
+                throw new LoginException(response.message);
+            }
+
+        }
+
+        public static DeactivateAccount GetDeactivationQuestionAnswers(string strLanguage)
+        {
+
+            DeactivateAccount objDeactivationList;
+            NameValueCollection nvc = new NameValueCollection();
+
+            if (strLanguage == null)
+                strLanguage = "en";
+
+            objDeactivationList = Http.ExecuteGET<DeactivateAccount>("apis/get_deactivation/" + strLanguage, nvc);
+
+            return objDeactivationList;
+
+
+        }
+
+        public static User DeactivateUserProfile(User oUserLogin, DeactivateAnswer objAnswer, string accessToken)
+        {
+            return Http.ExecutePOST<User, DeactivateAnswer>("apis/users/deactivate_profile/" + oUserLogin._id, objAnswer, null, accessToken);
+        }
+
+    }
+}

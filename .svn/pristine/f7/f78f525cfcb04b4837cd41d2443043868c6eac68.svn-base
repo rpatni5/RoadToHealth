@@ -1,0 +1,134 @@
+﻿using RTH.Business.Objects.JSON;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ImageSlider.xaml
+    /// </summary>
+    public partial class ImageSlider : UserControl
+    {
+        public ImageSlider()
+        {
+            InitializeComponent();           
+        }
+        protected override void  OnContentChanged(object oldContent, object newContent)
+        {
+            _tmrMain.Interval = new TimeSpan(0, 0,3);
+            _tmrMain.Tick += new EventHandler(SetSlider);
+            _tmrMain.Start();
+        }
+
+        private void SetSlider(object sender, EventArgs e)
+        {
+            //Prepare a list of images   
+            //Initialize the first Image-control (i.e. display the very first image)
+            if (Products != null)
+            {
+                if (Products.Count > 1)
+                {
+                    Product = Products[_intCurrentImageIndex];
+                    _tmr.Interval = new TimeSpan(0, 0,3);
+                    _tmr.Tick += new EventHandler(Timer_Tick);
+                    _tmr.Start();
+                    _tmrMain.Stop();
+                }
+                else if (Products.Count == 1)
+                {
+                    Product = Products[_intCurrentImageIndex];
+                    _tmrMain.Stop();
+                }
+                //this.Closing += new System.ComponentModel.CancelEventHandler(Window_Closing);
+            }
+        }
+
+        //The timer that will handle the transitions
+        private DispatcherTimer _tmr = new DispatcherTimer();
+        private DispatcherTimer _tmrMain = new DispatcherTimer();
+        //The list of images to loop through
+        //private List<BitmapImage> _lstImages = new List<BitmapImage>();
+        //The list-index of the currently visible image
+        private int _intCurrentImageIndex = 0;
+        void Timer_Tick(object sender, EventArgs e)
+        {
+            Grid imgSet;
+            Grid imgOther;
+            Storyboard sb;
+
+            //Get the image to work on, depending on which image is currently up front,
+            //plus the Storyboard that'll fade in and roll down the current image and
+            //hide the other one.
+            if ((int)img1.GetValue(Panel.ZIndexProperty) == 1)
+            {
+                imgSet = img2;
+                imgOther = img1;
+                sb = (Storyboard)this.FindResource("RollInImg2_FadeOutImg1");
+            }
+            else
+            {
+                imgSet = img1;
+                imgOther = img2;
+                sb = (Storyboard)this.FindResource("RollInImg1_FadeOutImg2");
+            }
+
+            //Either get the next image's index or start over with the first image.
+            if (_intCurrentImageIndex + 1 >= Products.Count)
+                _intCurrentImageIndex = 0;
+            else
+                _intCurrentImageIndex++;
+
+            //Set the source of the image to fade in ...
+            Product = Products[_intCurrentImageIndex];
+
+            //Reverse the ZIndex of both images
+            imgSet.SetValue(Panel.ZIndexProperty, 1);
+            imgOther.SetValue(Panel.ZIndexProperty, 0);
+
+            //The second animation targets the RenderTransform's TranslateTransform.
+            //We want the image to roll down from the top to the bottom, so let's use the reversed value of 
+            //the Window's ActualHeight to have the control be moved in from outside of the Window.
+            DoubleAnimation da = (DoubleAnimation)sb.Children[1];
+            da.From = this.ActualWidth;
+
+            //Start the transition
+            sb.Begin();
+        }
+
+        public List<ProductData> Products
+        {
+            get { return (List<ProductData>)GetValue(ProductsProperty); }
+            set { SetValue(ProductsProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for Products.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ProductsProperty =
+            DependencyProperty.Register("Products", typeof(List<ProductData>), typeof(ImageSlider), new PropertyMetadata(null));
+        public ProductData Product
+        {
+            get { return (ProductData)GetValue(ProductProperty); }
+            set { SetValue(ProductProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for Product.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ProductProperty =
+            DependencyProperty.Register("Product", typeof(ProductData), typeof(ImageSlider), new PropertyMetadata(null));
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.Uri.AbsoluteUri);
+        }
+    }
+}

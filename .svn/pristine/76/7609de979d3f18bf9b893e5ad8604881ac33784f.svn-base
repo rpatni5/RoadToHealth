@@ -1,0 +1,172 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Business.Objects.JSON;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class DashboardViewModel : ViewModelBase
+    {
+        #region Global Properties
+        public List<DiseaseData> Diseases
+        {
+            get { return GetValue(() => this.Diseases); }
+            set { SetValue(() => Diseases, value); }
+        }
+        public double DementiaScore
+        {
+            get { return GetValue(() => this.DementiaScore); }
+            set { SetValue(() => DementiaScore, value); }
+        }
+        public double CardioScore
+        {
+            get { return GetValue(() => this.CardioScore); }
+            set { SetValue(() => CardioScore, value); }
+        }
+        public double DiabetesScore
+        {
+            get { return GetValue(() => this.DiabetesScore); }
+            set { SetValue(() => DiabetesScore, value); }
+        }
+        public double LungsScore
+        {
+            get { return GetValue(() => this.LungsScore); }
+            set { SetValue(() => LungsScore, value); }
+        }
+        public double CancerScore
+        {
+            get { return GetValue(() => this.CancerScore); }
+            set { SetValue(() => CancerScore, value); }
+        }
+        public double TotalScore
+        {
+            get { return GetValue(() => this.TotalScore); }
+            set { SetValue(() => TotalScore, value); }
+        }
+        #endregion
+
+        #region Instance
+        static private DashboardViewModel _instance;
+        public static DashboardViewModel Instance
+        {
+            get
+            {
+                if (_instance == null) _instance = new DashboardViewModel();
+                return _instance;
+            }
+        }
+        #endregion
+
+        #region Constructor
+        public DashboardViewModel()
+        {
+            Init();
+        }
+        #endregion
+
+        User user;
+        void Init()
+        {
+            LoginData();
+            if (user != null)
+            {
+                LoadMainScores();
+                LoadTimelines();
+                GetQuestionaires(user.language);
+            }
+        }
+
+        private void LoadMainScores()
+        {
+            TotalScore = 0;
+            TotalScore = user.score;
+            DiabetesScore = AssignScore(ConfigurationManagers.DiabetesId);
+            CardioScore = AssignScore(ConfigurationManagers.CardioId);
+            DementiaScore = AssignScore(ConfigurationManagers.DementiaId);
+            LungsScore = AssignScore(ConfigurationManagers.LungsId);
+            CancerScore = AssignScore(ConfigurationManagers.CancerId);
+
+
+        }
+        private double AssignScore(string Id)
+        {
+            ScoreHistory score = user.score_history.FirstOrDefault(x => x.questionnaire == Id);
+            return score != null ? score.total_score : 0;
+        }
+
+        private void LoginData()
+        {
+            user = RTH.Business.Services.UserService.UserLogin(new User() { email = "rp@gmail.com", password = "ravipatni!" });
+            //user = ViewModelBase.UserDetails;
+        }
+        private void SetHeader(Datum headerData)
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Visible;
+            GlobalData.Default.HeaderIcon = string.Concat(ConfigurationManagers.ImagePath, headerData.image_logo_grey);
+            GlobalData.Default.HeaderState = false;
+            GlobalData.Default.HeaderColor = headerData.background_colour;
+            GlobalData.Default.HeaderTitle = headerData.key_string.ToPascal();
+        }
+        private void GetQuestionaires(string language)
+        {
+            List<DiseaseData> lstDiseases = new List<DiseaseData>();
+            Questionnaires QuestionnaireData = RTH.Business.Services.DashboardService.GetQuestionaires(ConfigurationManagers.ClientId, language);
+            SetHeader(QuestionnaireData.data.FirstOrDefault());
+            if (QuestionnaireData != null)
+            {
+                QuestionnaireData.data.ForEach(c =>
+                {
+                    DiseaseData diseaseData = new DiseaseData();
+                    diseaseData.ID = c._id;
+                    diseaseData.BgColor = c.background_colour;
+                    diseaseData.KeyString = c.key_string.ToPascal();
+                    ScoreHistory scoreHistory = user.score_history.FirstOrDefault(x => x.questionnaire == c._id);
+                    if (scoreHistory != null)
+                    {
+                        diseaseData.BgImagePath = string.Concat(ConfigurationManagers.ImagePath, c.image_logo_color);
+                        diseaseData.InnerText = scoreHistory.total_score.ToString("0");
+                        diseaseData.CoverImagePath = scoreHistory.optimum_score <= 20 ? @"/Assets/mainimages/ic_hra_outer_circle_red.png" : scoreHistory.optimum_score <= 60 ? @"/Assets/mainimages/ic_hra_outer_circle_amber.png" : @"/Assets/mainimages/ic_hra_outer_circle_green.png";
+                        diseaseData.Summery = string.Empty;
+                        diseaseData.StatusText = "Completed";
+                    }
+                    else
+                    {
+                        diseaseData.BgImagePath = string.Concat(ConfigurationManagers.ImagePath, c.image_logo_grey);
+                        diseaseData.InnerText = string.Empty;
+                        diseaseData.CoverImagePath = @"/Assets/mainimages/ic_hra_outer_circle.png";
+                        diseaseData.Summery = c.summary;
+                        diseaseData.StatusText = "InComplete";
+                    }
+                    lstDiseases.Add(diseaseData);
+                });
+                Diseases = lstDiseases;
+            }
+        }
+
+        private void LoadTimelines()
+        {
+            UserTimelines = RTH.Business.Services.DashboardService.GetTimelines(user._id, user.timezone_offset.ToString(), (DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds.ToString(), 0.ToString(), user.AuthToken.access_token);
+        }
+
+        public UserTimeline UserTimelines
+        {
+            get
+            {
+                return GetValue(() => UserTimelines);
+            }
+            set
+            {
+                SetValue(() => UserTimelines, value);
+            }
+        }
+
+    }
+}

@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ResultView.xaml
+    /// </summary>
+    public partial class ResultView : ViewBase
+    {
+        public ResultView()
+        {
+            InitializeComponent();
+            DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ViewBase)).AddValueChanged(scoreSummaries, (o, e) =>
+            {
+                var heightAnim = new DoubleAnimation();
+                heightAnim.From = 0;
+                heightAnim.To = grdScore.ActualHeight;
+                heightAnim.Duration = new Duration(TimeSpan.FromSeconds(1));
+
+                Storyboard storyboard = new Storyboard();
+
+                storyboard.Children.Add(heightAnim);
+                Storyboard.SetTarget(heightAnim, scoreSummaries);
+                Storyboard.SetTargetProperty(heightAnim, new PropertyPath(ItemsControl.HeightProperty));
+                storyboard.Begin();
+            });
+        }
+    }
+}

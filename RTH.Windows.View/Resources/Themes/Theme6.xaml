@@ -1,0 +1,17 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="DiabetesColor" Color="#28abe3"/>
+    <SolidColorBrush x:Key="CancerColor" Color="#967fb5"/>
+    <SolidColorBrush x:Key="CardioColor" Color="#ad3155"/>
+    <SolidColorBrush x:Key="DementiaColor" Color="#f9b041"/>
+    <SolidColorBrush x:Key="LungColor" Color="#00a285"/>
+
+    
+
+    <LinearGradientBrush x:Key="CoachBGColor" StartPoint="1,0" EndPoint="0,1">
+        <GradientStop Color="#28abe3" Offset="0.0" />
+        <GradientStop Color="#00a285" Offset="1.0" />
+    </LinearGradientBrush>
+
+
+</ResourceDictionary>

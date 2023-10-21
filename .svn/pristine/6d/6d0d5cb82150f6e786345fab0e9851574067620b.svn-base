@@ -1,0 +1,57 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+  
+        private RelayCommand m_updateEmail1;
+
+        private RelayCommand m_updatePassword1;
+
+        public RelayCommand UpdateEmail1 { get { return m_updateEmail1 ?? (m_updateEmail1 = new RelayCommand((o) => UpdateEmailAction1(o), (o) => true)); } }
+
+        public RelayCommand UpdatePassword1 { get { return m_updatePassword1 ?? (m_updatePassword1 = new RelayCommand((o) => UpdatePasswordAction1(o), (o) => true)); } }
+
+        public void UpdateEmailAction1(object o)
+        {
+            var SettingsViewModel = this.ViewModel as SettingsViewModel;
+
+            if(SettingsViewModel.UpdateEmailData())
+            { 
+                Properties.Settings.Default.Email = SettingsViewModel.updatedemail;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        public void UpdatePasswordAction1(object o)
+        {
+            var SettingsViewModel = this.ViewModel as SettingsViewModel;
+
+            var passwords = (Array)o;
+
+            PasswordBox oldPasswordObj = passwords.GetValue(0) as PasswordBox;
+            PasswordBox newPasswordObj = passwords.GetValue(1) as PasswordBox;
+            PasswordBox confPasswordObj = passwords.GetValue(2) as PasswordBox;
+
+            if (SettingsViewModel.UpdatePasswordData(Properties.Settings.Default.Password,oldPasswordObj.Password, newPasswordObj.Password, confPasswordObj.Password))
+            {
+
+                Properties.Settings.Default.Password = newPasswordObj.Password;
+                Properties.Settings.Default.Save();
+
+            }
+        }
+                
+
+    }
+}

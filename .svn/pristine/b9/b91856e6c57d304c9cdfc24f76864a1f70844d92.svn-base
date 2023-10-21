@@ -1,0 +1,71 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class DevicesServicesViewModel : ViewModelBase
+    {
+        public DevicesServicesViewModel()
+        {
+            if (UserDetails.sociallogins != null && UserDetails.sociallogins.Any())
+            {
+                foreach (Sociallogin sl in UserDetails.sociallogins)
+                {
+                    if (sl.socialmedia_type.ToLower() == GlobalData.FACEBOOOK) IsFacebookConnected = true;
+                    if (sl.socialmedia_type.ToLower() == GlobalData.TWITTER) IsTwitterConnected = true;
+                }
+            }
+            //IsFacebookConnected = UserDetails.sociallogins
+        }
+
+        public bool IsFacebookConnected { get; set; }
+        public bool IsTwitterConnected { get; set; }
+
+
+        RelayCommand _connectToFacebookCommand;
+        RelayCommand _connectToTwitterCommand;
+
+
+        public Action ConnectToFacebook { get; set; }
+        public Action ConnectToTwitter { get; set; }
+        public RelayCommand ConnectToFacebookCommand
+        {
+            get
+            {
+                return _connectToFacebookCommand ?? (_connectToFacebookCommand = new RelayCommand(
+                    cp =>
+                    {
+                        if (!IsFacebookConnected) ConnectToFacebook();
+                    },
+                    b =>
+                    {
+
+                        if(ConnectToFacebook == null) ErrorMessage = "Please provide 'ConnectToFacebook' action";
+                        return ConnectToFacebook != null;
+                    }));
+            }
+        }
+
+        public RelayCommand ConnectToTwitterCommand
+        {
+            get
+            {
+                return _connectToTwitterCommand ?? (_connectToTwitterCommand = new RelayCommand(
+                    cp =>
+                    {
+                        if (!IsTwitterConnected) ConnectToTwitter();
+                    },
+                    b =>
+                    {
+                        if (ConnectToTwitter == null) ErrorMessage = "Please provide 'ConnectToTwitter' action";
+                        return ConnectToTwitter != null;
+                    }));
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+﻿using RTH.Windows.Views.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for DashboardSideMenuView.xaml
+    /// </summary>
+    public partial class DashboardMenu : UserControl
+    {
+        public DashboardMenu()
+        {
+            InitializeComponent();
+            this.DataContext = this;
+            if (!System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
+            {
+                SetMenuItemData();
+            }       
+        }
+
+
+
+        public List<QuealthMenuItem> QuealthMenuItems
+        {
+            get { return (List<QuealthMenuItem>)GetValue(QuealthMenuItemsProperty); }
+            set { SetValue(QuealthMenuItemsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for QuealthMenuItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty QuealthMenuItemsProperty =
+            DependencyProperty.Register("QuealthMenuItems", typeof(List<QuealthMenuItem>), typeof(DashboardMenu), new PropertyMetadata(null));
+            
+        private void SetMenuItemData()
+        {
+            List<QuealthMenuItem> lstQMenu = new List<QuealthMenuItem>();
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/ic_menu_dash.png", HoverIcon = "/RTH.Windows.Views;component/Assets/ic_menu_dash_blue.png", PressedIcon = "/RTH.Windows.Views;component/Assets/ic_menu_dash.png", MenuTitle = App.SharedValues.LanguageResource.dashboard,ResultView="DashboardView" });
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/ic_menu_foq.png", HoverIcon = "/RTH.Windows.Views;component/Assets/ic_menu_foq_blue.png", PressedIcon = "/RTH.Windows.Views;component/Assets/ic_menu_foq_selected.png", MenuTitle = App.SharedValues.LanguageResource.friends_of_q, ResultView = "FriendsOfQView" });
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/ic_menu_settings.png", HoverIcon = "/RTH.Windows.Views;component/Assets/ic_menu_settings_blue.png", PressedIcon = "/RTH.Windows.Views;component/Assets/ic_menu_dash.png", MenuTitle = App.SharedValues.LanguageResource.settings, ResultView = "SettingsView" });
+            lstQMenu.Add(new QuealthMenuItem() { DefaultIcon = "/RTH.Windows.Views;component/Assets/ic_menu_settings.png", HoverIcon = "/RTH.Windows.Views;component/Assets/ic_menu_settings_blue.png", PressedIcon = "/RTH.Windows.Views;component/Assets/ic_menu_dash.png", MenuTitle = "Log Out", ResultView = "HomeView" });
+          
+            QuealthMenuItems = lstQMenu;
+        }
+    }
+}

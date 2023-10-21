@@ -1,0 +1,60 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.Views.Enums
+{
+    public enum ViewEnum
+    {
+        None,
+        DashboardView,
+        ForgotPasswordView,
+        HomeView,
+        InsightsView,
+        LoginView,
+        UserRegistrationView,
+        ResultView,
+        FaceBookAuthenticationView,
+        QuestionNavigatorView,
+        SettingsView,
+        FriendsOfQView,
+        RelatedProducts,
+        FBUserRegistrationView,
+        ProductCategoriesView,
+        HealthAreasView,
+        DeactivateView,
+        TermsAndConditionsView,
+        TwitterAuthenticationView,
+        TwitterPost,
+        TwitterConnect,
+        PolicyView,
+        AllQScoreView,
+        AboutUsView,
+        MWHealthierView,
+        DevicesServicesView,
+        ProductSummaryView,
+        SupportView,
+        FaceBookSharingToWallView,
+        ShowCoaches,
+        HealthReportView,
+        HealthPlanView,
+        HealthPlanQuestionnaireView,
+        StrategyView,
+        HealthPlanComplete,
+        QuealthCoachView,
+        UserRegistrationProfileView,
+        MotivationView,
+        HealthAgendaView
+
+    }
+
+    public enum AppVersions
+    {
+        Default = 0,
+        Latest = 1,
+        Older = 2,
+        UpdateRequired = 3,
+    }
+}

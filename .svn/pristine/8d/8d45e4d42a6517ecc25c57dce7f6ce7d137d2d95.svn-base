@@ -1,0 +1,174 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
+
+namespace RTH.Windows.Views.Helpers
+{
+    public static class TextBlockHelper
+    {
+        private class Token
+        {
+            public Token() { Attributes = new NameValueCollection(); }
+
+            public String Name { get; set; }
+            public int Index { get; set; }
+            public int Length { get; set; }
+            public String Inline { get; set; }
+            public NameValueCollection Attributes { get; set; }
+            public int EndIndex { get { return Index + Length; } }
+        }
+
+        public static Regex tokenPattern = new Regex(@"<(?<tokenName>\w+)[^>]*>(?<inlines>.*?)(?:</\1>)|<(?<tokenName>\w+)[^>]*>", RegexOptions.Compiled);
+        public static Regex attribPattern = new Regex(@"(?<name>\w+)=['""]?(?<value>\w+)", RegexOptions.Compiled);
+
+        public static string GetFormattedText(DependencyObject obj)
+        {
+            return (string)obj.GetValue(FormattedTextProperty);
+        }
+
+        public static void SetFormattedText(DependencyObject obj, string value)
+        {
+            obj.SetValue(FormattedTextProperty, value);
+        }
+
+        public static readonly DependencyProperty FormattedTextProperty = DependencyProperty.RegisterAttached("FormattedText",
+            typeof(string), typeof(TextBlockHelper), new UIPropertyMetadata("", FormattedTextChanged));
+
+        static Inline Traverse(string value)
+        {
+            string[] sections = SplitIntoSections(value);
+
+            if (sections.Length.Equals(1))
+            {
+                string section = sections[0];
+                Token token; // E.g <Bold>
+                if (GetTokenInfo(section, out token))
+                {
+                    // Get the content to further examination
+                    string content = token.Inline;
+                    switch (token.Name.ToLower())
+                    {
+                        case "h3":
+                            var h3 = Traverse(content);
+                            h3.FontSize = 20;
+                            return h3;
+                        case "h2":
+                            var h2 = Traverse(content);
+                            h2.FontSize = 22;
+                            return h2;
+                        case "h1":
+                            var h1 = Traverse(content);
+                            h1.FontSize = 24;
+                            return h1;
+                        case "h4":
+                            var h4 = Traverse(content);
+                            h4.FontSize = 18;
+                            return h4;
+                        case "b": return new Bold(Traverse(content));
+                        case "i": return new Italic(Traverse(content));
+                        case "u": return new Underline(Traverse(content));
+                        case "br": return new LineBreak();
+                        case "div": return Traverse(content);
+                        case "font":
+                            var foreColor = ColorConverter.ConvertFromString(token.Attributes["ForeColor"]);
+                            var backColor = ColorConverter.ConvertFromString(token.Attributes["BackColor"]);
+                            var font = Traverse(content);
+                            if (foreColor != null) font.Foreground = new SolidColorBrush((Color)foreColor);
+                            if (backColor != null) font.Background = new SolidColorBrush((Color)backColor);
+                            return font;
+                        default:
+                            return new Run(section);
+                    }
+                }
+                else return new Run(section);
+            }
+            else
+            {
+                Span span = new Span();
+                foreach (string section in sections)
+                    span.Inlines.Add(Traverse(section));
+                return span;
+            }
+        }
+
+        /// <summary>
+        /// Examines the passed string and find the first token, where it begins and where it ends.
+        /// </summary>
+        /// <param name="value">The string to examine.</param>
+        /// <param name="token">The found token.</param>
+        /// <returns>True if a token was found.</returns>
+        static bool GetTokenInfo(string value, out Token token)
+        {
+            token = null;
+            if (tokenPattern.IsMatch(value) == false) return false;
+
+            var tokenInfo = tokenPattern.Match(value); ;
+            token = new Token
+            {
+                Name = tokenInfo.Groups["tokenName"].Value,
+                Index = tokenInfo.Index,
+                Inline = tokenInfo.Groups["inlines"].Value,
+                Length = tokenInfo.Length
+            };
+
+            if (attribPattern.IsMatch(tokenInfo.Value))
+            {
+                foreach (Match item in attribPattern.Matches(tokenInfo.Value))
+                {
+                    token.Attributes.Add(item.Groups["name"].Value, item.Groups["value"].Value);
+                }
+            }
+
+            return true;
+        }
+
+        static string[] SplitIntoSections(string value)
+        {
+            List<string> sections = new List<string>();
+
+            while (!string.IsNullOrEmpty(value))
+            {
+                Token token;
+                if (GetTokenInfo(value, out token))
+                {
+                    if (token.Index > 0)
+                        sections.Add(value.Substring(0, token.Index));
+
+                    sections.Add(value.Substring(token.Index, token.Length));
+                    value = value.Substring(token.EndIndex); // Trim away
+                }
+                else // No tokens, just add the text
+                {
+                    sections.Add(value);
+                    value = null;
+                }
+            }
+
+            return sections.ToArray();
+        }
+
+        private static void FormattedTextChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            string value = e.NewValue as string;
+            TextBlock textBlock = sender as TextBlock;
+
+            var unformattedText = value;
+            while (tokenPattern.IsMatch(unformattedText))
+            {
+                unformattedText = tokenPattern.Replace(unformattedText, "$2");
+            }
+            textBlock.Text = unformattedText;
+
+            if (textBlock != null)
+            {
+                textBlock.Inlines.Clear();
+                textBlock.Inlines.Add(Traverse(value));
+            }
+        }
+    }
+}

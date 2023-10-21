@@ -1,0 +1,34 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class TermsAndConditionsViewModel : ViewModelBase
+    {
+        #region Global Properties
+        public PrivatePolicy.Data TermsData
+        {
+            get { return GetValue(() => this.TermsData); }
+            set { SetValue(() => TermsData, value); }
+        }
+        #endregion Global Properties
+        public TermsAndConditionsViewModel()
+        {
+            Init();
+        }
+        private async void Init()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                TermsData = RTH.Business.Services.PolicyService.GetTermsAndConditions(Lang ?? "en");
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+    }
+}

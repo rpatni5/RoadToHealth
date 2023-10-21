@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels.Enums
+{
+    public enum ViewEnum
+    {
+        DashboardView,
+        ForgotPasswordView,
+        HomeView,
+        InsightsView,
+        LoginView,
+        UserRegistrationView,
+        ResultView,
+        FaceBookAuthenticationView,
+        QuestionNavigatorView
+
+    }
+
+    public enum QuestionType
+    {
+        SingleSelect = 0,
+        InputType = 4,
+        DateType = 6,
+        MultiSelect = 7,
+
+    }
+}

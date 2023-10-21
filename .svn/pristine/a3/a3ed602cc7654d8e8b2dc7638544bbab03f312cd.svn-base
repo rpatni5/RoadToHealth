@@ -1,0 +1,87 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class QuestionNavigatorViewModel : ViewModelBase
+    {
+        public QuestionNavigatorViewModel()
+        {
+            GetQuestionnaire();
+        }
+        void SetHeader()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Visible;
+            GlobalData.Default.HeaderIcon = string.Concat(ConfigurationManagers.ImagePath, Questionnaire.image_logo_grey);
+            GlobalData.Default.HeaderState = false;
+            GlobalData.Default.HeaderColor = Questionnaire.background_colour;
+            GlobalData.Default.HeaderTitle = Questionnaire.title.ToPascal();
+        }
+        private async void GetQuestionnaire()
+        {
+            //if (UserDetails.score_history != null && UserDetails.score_history.Count > 0)
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Questionnaire = QuestionnaireService.GetQuestionnaire(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+                AllQuestions = Questionnaire.GetQuestions();
+                CurrentCategory = Questionnaire.questions.FirstOrDefault().category;
+                CurrentQuestion = Questionnaire.questions.FirstOrDefault(q => q.category == CurrentCategory).questions.FirstOrDefault();
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                CurrentQuestion.Category = CurrentCategory;
+                SetHeader();
+                GlobalData.Default.LoaderVisibility = false;
+            });
+
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+
+        public Category CurrentCategory
+        {
+            get { return GetValue(() => CurrentCategory); }
+            set { SetValue(() => CurrentCategory, value); }
+        }
+        public HRA Questionnaire
+        {
+            get { return GetValue(() => Questionnaire); }
+            set
+            {
+                SetValue(() => Questionnaire, value);
+                HeaderLabel = Questionnaire.title;
+            }
+        }
+
+        public ObservableCollection<Question> AllQuestions {
+            get { return GetValue(() => AllQuestions); }
+            set { SetValue(() => AllQuestions, value); }
+        }
+
+        public void MoveToQuestion(int moveIndex)
+        {
+            ObservableCollection<Question> questions = Questionnaire.GetQuestions();
+            CurrentQuestion = questions[questions.IndexOf(CurrentQuestion) + moveIndex];
+            CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+            CurrentQuestion.Category = CurrentCategory = Questionnaire.GetCategories().FirstOrDefault(c => c.questions.Contains(CurrentQuestion)).subcategory;
+        }
+
+        public void SubmitQuestionnaire()
+        {
+
+        }
+    }
+}

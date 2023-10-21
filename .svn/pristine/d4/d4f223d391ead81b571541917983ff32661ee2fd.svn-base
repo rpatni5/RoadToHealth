@@ -1,0 +1,756 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Windows.Views.Controls;
+using RTH.Windows.Views.Enums;
+using RTH.Windows.Views.Helpers;
+using RTH.Windows.Views.Objects;
+using RTH.Windows.Views.UserControls;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private ICommand m_backCommand;
+        private Stack<ViewEnum> m_viewStack = new Stack<ViewEnum>();
+        private DispatcherTimer _tmr = new DispatcherTimer();
+
+        public ICommand BackCommand
+        {
+            get
+            {
+                return m_backCommand ?? (m_backCommand = new RelayCommand((o) => OnBackCommand(o), (o) => CanGoBack(o)));
+            }
+        }
+
+        private bool CanGoBack(object o)
+        {
+            return m_viewStack.Count > 0;
+        }
+
+        private void OnBackCommand(object o)
+        {
+            var lastView = m_viewStack.Pop();
+            if (lastView == ViewEnum.QuestionNavigatorView)
+            {
+                lastView = m_viewStack.Pop();
+            }
+
+            this.LoadView2(lastView, viewTransition: Transition.RightWithFade);
+        }
+
+        HomeViewModel homeViewModel;
+        public MainWindow()
+        {
+            InitializeComponent();
+            App.SharedValues.LanguageResource.PropertyChanged += OnLanguageResourceChanged;
+            this.ViewModel = homeViewModel = new ViewModels.HomeViewModel();
+            App.SharedValues.WindowMain = this;
+            App.Current.MainWindow = this;
+            GlobalData.Default.LastVisitedDiseaseID = Properties.Settings.Default.LastVisitedHRAID;
+            if (GlobalData.lstTrackNavigation == null) { GlobalData.lstTrackNavigation = new List<TrackNavigation>(); }
+            SetMenuItemData();
+            tutorialOverlay.IsVisibleChanged += TutorialOverlay_IsVisibleChanged;
+        }
+
+        private void OnLanguageResourceChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            //if (e.PropertyName == "LanguageResource")
+            //{
+            SetMenuItemData();
+            //}
+        }
+
+        private void TutorialOverlay_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue.Equals(true)) SetTutorial();
+        }
+
+        public MainWindow(ViewEnum defaultView, bool animate = false)
+            : this()
+        {
+            LoadView(defaultView, animate);
+        }
+
+        public ViewModelBase ViewModel
+        {
+            get { return (ViewModelBase)GetValue(ViewModelProperty); }
+            set { SetValue(ViewModelProperty, value); }
+        }
+
+        public static readonly DependencyProperty ViewModelProperty =
+            DependencyProperty.Register("ViewModel", typeof(ViewModelBase), typeof(MainWindow), new PropertyMetadata(null));
+
+        public ViewEnum CurrentView
+        {
+            get { return (ViewEnum)GetValue(CurrentViewProperty); }
+            set { SetValue(CurrentViewProperty, value); }
+        }
+
+        public static readonly DependencyProperty CurrentViewProperty =
+            DependencyProperty.Register("CurrentView", typeof(ViewEnum), typeof(MainWindow), new PropertyMetadata(ViewEnum.None));
+
+        public UserControls.ViewBase CurrentViewObject
+        {
+            get { return (UserControls.ViewBase)GetValue(CurrentViewObjectProperty); }
+            set { SetValue(CurrentViewObjectProperty, value); }
+        }
+
+        public static readonly DependencyProperty CurrentViewObjectProperty =
+            DependencyProperty.Register("CurrentViewObject", typeof(UserControls.ViewBase), typeof(MainWindow), new PropertyMetadata(null));
+
+        private RelayCommand m_RenderView;
+        private RelayCommand m_SetLanguageCommand;
+        private RelayCommand m_MenuButtonCheckedCommand;
+        private RelayCommand m_MenuButtonUncheckedCommand;
+        private RelayCommand m_UpdateLanguageCommand;
+        private RelayCommand m_UpdateCountryCommand;
+        private RelayCommand m_ViewResultCommand;
+        private RelayCommand _viewHealthAreaCommand;
+        private RelayCommand _viewHRACommand;
+        private RelayCommand _ShareCommand;
+
+        public RelayCommand ShareCommand
+        {
+            get
+            {
+                return _ShareCommand ?? (_ShareCommand = new RelayCommand((o) => OnShareCommand(o), (o) => true));
+            }
+        }
+
+        private void OnShareCommand(object o)
+        {
+            if (o == null)
+            {
+                ShareButton.ContextMenu.DataContext = this;
+                ShareButton.ContextMenu.PlacementTarget = ShareButton;
+                ShareButton.ContextMenu.Placement = PlacementMode.Bottom;
+                ShareButton.ContextMenu.IsOpen = true;
+            }
+            else if (o.Equals("FB"))
+            {
+                LoadView(ViewEnum.FaceBookSharingToWallView);
+            }
+            else if (o.Equals("TW"))
+            {
+                LoadView(ViewEnum.TwitterPost);
+            }
+            else if (o.Equals("EM"))
+            {
+
+                string message = string.Format("mailto:?subject={0}&body={1}", ViewModel.SharingData.name, Uri.EscapeUriString(string.Format("Hi,{3}{0}{3}{1}{3}{2}", ViewModel.SharingData.title, ViewModel.SharingData.description, ViewModel.SharingData.url, Environment.NewLine)));
+                Process.Start(message);
+            }
+        }
+
+        public RelayCommand ViewHRACommand
+        {
+            get
+            {
+                return _viewHRACommand ?? (_viewHRACommand = new RelayCommand(
+                    ve =>
+                    {
+                        if (ve != null) GlobalData.Default.ClickedHRA = ve as DiseaseData;
+                        OnLoadHRAViewModel();
+                    }, (t) => true));
+            }
+        }
+        public RelayCommand ViewResultCommand
+        {
+            get
+            {
+                return m_ViewResultCommand ?? (m_ViewResultCommand = new RelayCommand(
+                    ve =>
+                    {
+                        if (ve != null) GlobalData.Default.ClickedHRA = ve as DiseaseData;
+                        OnLoadResultViewModel();
+                    }, (t) => true));
+            }
+        }
+
+        public RelayCommand ViewHealthAreaCommand
+        {
+            get
+            {
+                return _viewHealthAreaCommand ?? (_viewHealthAreaCommand = new RelayCommand(
+                    ve =>
+                    {
+                        if (ve != null) GlobalData.Default.ClickedHRA = ve as DiseaseData;
+                        OnLoadHealthAreaViewModel();
+                    }, (t) => true));
+            }
+        }
+
+        private void OnLoadHealthAreaViewModel()
+        {
+            LoadView(ViewEnum.HealthAreasView);
+        }
+
+        private void OnLoadResultViewModel()
+        {
+            LoadView(ViewEnum.ResultView);
+        }
+        private void OnLoadHRAViewModel()
+        {
+            ViewModelLocator.Get<DashboardViewModel>().RefreshUserData();
+            LoadView(ViewEnum.QuestionNavigatorView);
+        }
+
+        public RelayCommand LoadViewModel
+        {
+            get
+            {
+                return m_RenderView ?? (m_RenderView = new RelayCommand(
+                    ve => OnLoadViewModel(ve), (t) => true));
+            }
+        }
+        public RelayCommand SetLanguageCommand
+        {
+            get
+            {
+                return m_SetLanguageCommand ?? (m_SetLanguageCommand = new RelayCommand(
+                    ve => OnSetLanguage(ve), (t) => true));
+            }
+        }
+        public RelayCommand UpdateLanguageCommand
+        {
+            get
+            {
+                return m_UpdateLanguageCommand ?? (m_UpdateLanguageCommand = new RelayCommand(
+                    ve => OnUpdateLanguage(ve), (t) => true));
+            }
+        }
+        public RelayCommand UpdateCountryCommand
+        {
+            get
+            {
+                return m_UpdateCountryCommand ?? (m_UpdateCountryCommand = new RelayCommand(
+                    ve => OnUpdateCountry(ve), (t) => true));
+            }
+        }
+        public RelayCommand MenuButtonCheckedCommand
+        {
+            get
+            {
+                return m_MenuButtonCheckedCommand ?? (m_MenuButtonCheckedCommand = new RelayCommand(
+                    ve => OnMenuButtonChecked(ve), (t) => true));
+            }
+        }
+        public RelayCommand MenuButtonUncheckedCommand
+        {
+            get
+            {
+                return m_MenuButtonUncheckedCommand ?? (m_MenuButtonUncheckedCommand = new RelayCommand(
+                    ve => OnMenuButtonUnchecked(ve), (t) => true));
+            }
+        }
+        /// <summary>
+        /// menu toggle button checked
+        /// </summary>
+        private void OnMenuButtonUnchecked(object ve)
+        {
+            Animate(250, 0);
+        }
+        /// <summary>
+        /// menu toggle button unchecked
+        /// </summary>      
+        private void OnMenuButtonChecked(object ve)
+        {
+            Animate(0, 250);
+        }
+        /// <summary>
+        /// to animate from one position to another
+        /// </summary>
+        /// <param name="from"> starting position</param>
+        /// <param name="to"> ending position</param>
+        private void Animate(double from, double to)
+        {
+            DoubleAnimation da = new DoubleAnimation();
+            da.From = from;
+            da.To = to;
+            da.Duration = new Duration(TimeSpan.FromSeconds(.5));
+            this.SideMenu.BeginAnimation(Button.WidthProperty, da);
+        }
+        private void OnSetLanguage(object param)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                if (param != null)
+                {
+                    var x = homeViewModel.GetLanguageVariables(param as string).data;
+                    App.SharedValues.SetLanguage(x);
+                    ViewModelBase.AppMessages = x as Variable;
+                    ViewModelBase.Lang = param as string;
+                }
+            });
+        }
+        private void OnUpdateLanguage(object param)
+        {
+            var x = homeViewModel.GetLanguageVariables(param as string ?? "en").data;
+            App.SharedValues.SetLanguage(x);
+            ViewModelBase.AppMessages = x as Variable;
+            ViewModelBase.Lang = param as string;
+            (this.ViewModel as SettingsViewModel).UpdateLanguage(param as string);
+        }
+
+        private void OnUpdateCountry(object param)
+        {
+            ViewModelBase.Country = param as string;
+            (this.ViewModel as SettingsViewModel).UpdateCountry(param as string);
+        }
+
+        public void LoadView(ViewEnum view, bool animate = false, object param = null, bool rightAnimate = false)
+        {
+            if (this.transition.Content == null)
+            {
+                /*Track Navigation*/
+                HeaderMenu.HideMenu();
+                m_viewStack.Push(this.CurrentView);
+
+
+                this.LoadView2(view, animate, param, rightAnimate ? Transition.RightWithFade : Transition.Default);
+                return;
+            }
+
+            if (this.transition.Content != null && this.transition.GetChild<UserControls.ViewBase>().CanUnload())
+            {
+                HeaderMenu.HideMenu();
+                m_viewStack.Push(this.CurrentView);
+                this.LoadView2(view, animate, param, rightAnimate ? Transition.RightWithFade : Transition.Default);
+            }
+
+        }
+
+        private void LoadView2(ViewEnum view, bool animate = false, object param = null, Transition viewTransition = Transition.Default)
+        {
+
+            if (Array.IndexOf(GlobalData.Default.UITrack, view.ToString()) >= 0)
+            {
+                int Screen = 1;
+                if (view == ViewEnum.AllQScoreView || CurrentView == ViewEnum.AllQScoreView)
+                {
+                    Screen = 0;
+                }
+                ViewModelBase.ExecuteTrackNavigation(this.CurrentView.ToString(), view.ToString(), Screen);
+            }
+
+            //set some necessary prop            
+            CurrentView = view;
+            switch (view)
+            {
+                case ViewEnum.LoginView:
+                    this.CurrentViewObject = ViewLocator.GetNew<LoginView>(); break;
+
+                case ViewEnum.UserRegistrationView:
+                    this.CurrentViewObject = ViewLocator.GetNew<UserRegistrationView>(); break;
+
+                case ViewEnum.ForgotPasswordView:
+                    this.CurrentViewObject = ViewLocator.GetNew<ForgotPasswordView>(); break;
+
+                case ViewEnum.HomeView:
+                    this.CurrentViewObject = ViewLocator.Get<HomeView>();
+                    (this.CurrentViewObject as HomeView).Animate = animate;
+                    viewTransition = Transition.RightWithFade;
+                    break;
+
+                case ViewEnum.InsightsView:
+                    viewTransition = Transition.Fade;
+                    this.CurrentViewObject = ViewLocator.Get<InsightsView>(); break;
+                case ViewEnum.DashboardView:
+                    viewTransition = Transition.Fade;
+                    this.CurrentViewObject = ViewLocator.GetNew<DashboardView>();
+                    break;
+
+                case ViewEnum.ResultView:
+                    viewTransition = Transition.Fade;
+                    this.CurrentViewObject = ViewLocator.GetNew<ResultView>();
+                    if (param != null && param is bool)
+                        (this.CurrentViewObject as ResultView).Animate = (bool)param;
+                    else (this.CurrentViewObject as ResultView).Animate = false;
+                    break;
+
+                case ViewEnum.HealthAreasView:
+                    viewTransition = Transition.Fade;
+                    this.CurrentViewObject = ViewLocator.GetNew<HealthAreasView>(); break;
+
+                case ViewEnum.FaceBookAuthenticationView:
+                    this.transition.AllowTransitions = false;
+                    this.CurrentViewObject = ViewLocator.GetNew<FaceBookAuthenticationView>();
+                    (this.CurrentViewObject as FaceBookAuthenticationView).SetViewModelProperty(false);
+                    if (param != null && (bool)param)
+                    {
+                        (this.CurrentViewObject as FaceBookAuthenticationView).SetViewModelProperty(true);
+                    }
+                    break;
+
+                case ViewEnum.QuestionNavigatorView:
+                    this.CurrentViewObject = ViewLocator.GetNew<QuestionNavigatorView>(); break;
+
+                case ViewEnum.FriendsOfQView:
+                    this.CurrentViewObject = ViewLocator.Get<FriendsOfQView>();
+                    (this.CurrentViewObject as FriendsOfQView).PerformTask("foq");
+                    break;
+
+                case ViewEnum.RelatedProducts:
+                    this.CurrentViewObject = ViewLocator.Get<FriendsOfQView>();
+                    (this.CurrentViewObject as FriendsOfQView).PerformTask("products");
+                    break;
+
+                case ViewEnum.SettingsView:
+                    this.CurrentViewObject = ViewLocator.GetNew<SettingsView>(); break;
+
+                case ViewEnum.FBUserRegistrationView:
+                    this.CurrentViewObject = ViewLocator.GetNew<FBUserRegistrationView>();
+                    this.transition.AllowTransitions = false; break;
+
+                case ViewEnum.TwitterAuthenticationView:
+                    this.transition.AllowTransitions = false;
+                    this.CurrentViewObject = ViewLocator.Get<TwitterAuthenticationView>();
+                    (this.CurrentViewObject as TwitterAuthenticationView).PerformTask();
+                    //(this.CurrentViewObject.ViewModel as TwitterAuthenticationViewModel).PerformTask();
+                    break;
+
+                case ViewEnum.TwitterPost:
+                    var _sharingData = this.ViewModel.SharingData;
+                    this.CurrentViewObject = ViewLocator.Get<TwitterAuthenticationView>();
+                    (this.CurrentViewObject as TwitterAuthenticationView).PerformTask(TwitterTasks.PostTweet, _sharingData);
+                    break;
+
+                case ViewEnum.TwitterConnect:
+                    this.transition.AllowTransitions = false;
+                    this.CurrentViewObject = ViewLocator.Get<TwitterAuthenticationView>();
+                    (this.CurrentViewObject as TwitterAuthenticationView).PerformTask(TwitterTasks.Connect);
+                    break;
+
+                case ViewEnum.DevicesServicesView:
+                    this.CurrentViewObject = ViewLocator.Get<DevicesServicesView>(); break;
+
+                case ViewEnum.ProductCategoriesView:
+                    CurrentViewObject = ViewLocator.Get<ProductCategoriesView>(); break;
+
+                case ViewEnum.DeactivateView:
+                    this.CurrentViewObject = ViewLocator.GetNew<DeactivateView>(); break;
+
+                case ViewEnum.TermsAndConditionsView:
+                    this.CurrentViewObject = ViewLocator.Get<TermsAndConditionsView>(); break;
+
+                case ViewEnum.PolicyView:
+                    this.CurrentViewObject = ViewLocator.Get<PolicyView>(); break;
+
+                case ViewEnum.AllQScoreView:
+                    this.CurrentViewObject = ViewLocator.Get<AllQScoreView>();
+                    viewTransition = Transition.Fade; break;
+
+                case ViewEnum.AboutUsView:
+                    this.CurrentViewObject = ViewLocator.Get<AboutUsView>(); break;
+
+                case ViewEnum.MWHealthierView:
+                    this.CurrentViewObject = ViewLocator.Get<MWHealthierView>(); break;
+
+                case ViewEnum.ProductSummaryView:
+                    this.CurrentViewObject = ViewLocator.Get<ProductSummaryView>();
+                    if (param != null)
+                    {
+                        (this.CurrentViewObject as ProductSummaryView).SetProduct(param as Product);
+                    }
+                    break;
+
+                case ViewEnum.SupportView:
+                    this.CurrentViewObject = ViewLocator.Get<ContactUsView>(); break;
+
+                case ViewEnum.FaceBookSharingToWallView:
+                    this.transition.AllowTransitions = false;
+                    var _shareFBData = this.ViewModel.SharingData;
+                    this.CurrentViewObject = ViewLocator.GetNew<FaceBookSharingToWallView>();
+                    (this.CurrentViewObject as FaceBookSharingToWallView).fbShareData = _shareFBData; break;
+
+                case ViewEnum.ShowCoaches:
+                    this.CurrentViewObject = ViewLocator.GetNew<ShowCoachesView>(); break;
+
+                default:
+                    break;
+            }
+
+            this.transition.LoadControl(new ContentControl { Content = this.CurrentViewObject }, viewTransition);
+            this.transition.AllowTransitions = true;
+            ViewModel = this.CurrentViewObject.ViewModel;
+        }
+
+        private void OnLoadViewModel(object viewModel, object param = null)
+        {
+            this.Opacity = 1;
+            HeaderMenu.HideMenu();
+            var ve = (ViewEnum)Enum.Parse(typeof(ViewEnum), viewModel as string);
+            LoadView(ve, param: param);
+        }
+
+        private void MainWin_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Properties.Settings.Default.LastVisitedHRAID = GlobalData.Default.LastVisitedDiseaseID;
+            Properties.Settings.Default.Save();
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            if (ViewModels.Common.GlobalData.Default.LoaderVisibility)
+            {
+                Loader.SetCurrentValue(Popup.IsOpenProperty, ViewModels.Common.GlobalData.Default.LoaderVisibility);
+            }
+        }
+
+        protected override void OnDeactivated(EventArgs e)
+        {
+            base.OnDeactivated(e);
+            if (this.Loader.IsOpen)
+            {
+                this.Loader.SetCurrentValue(Popup.IsOpenProperty, false);
+            }
+        }
+
+        private void Loader_Opened(object sender, EventArgs e)
+        {
+            Loader.Placement = PlacementMode.AbsolutePoint;
+            Loader.HorizontalOffset = this.Left + (ActualWidth - 44) / 2;
+            Loader.VerticalOffset = this.Top + (ActualHeight - 44) / 2;
+        }
+
+        public List<QuealthMenuItem> QuealthMenuItems
+        {
+            get { return (List<QuealthMenuItem>)GetValue(QuealthMenuItemsProperty); }
+            set { SetValue(QuealthMenuItemsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for QuealthMenuItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty QuealthMenuItemsProperty =
+            DependencyProperty.Register("QuealthMenuItems", typeof(List<QuealthMenuItem>), typeof(MainWindow), new PropertyMetadata(null));
+        private void SetMenuItemData()
+        {
+            List<QuealthMenuItem> lstQMenu = new List<QuealthMenuItem>();
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/dashboardico_blk.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/dashboardico_wht.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/dashboardico_blu.png",
+                MenuTitle = App.SharedValues.LanguageResource.dashboard,
+                ResultView = Enums.ViewEnum.DashboardView,
+                ExecuteCommand = MenuNavigationCommand,
+            });
+
+            //lstQMenu.Add(new QuealthMenuItem()
+            //{
+            //    DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/worldhthico_blk.png",
+            //    HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/worldhthico_wht.png",
+            //    PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/worldhthico_blu.png",
+            //    MenuTitle = App.SharedValues.LanguageResource.mtwh,
+            //    ResultView = Enums.ViewEnum.MWHealthierView,
+            //    ExecuteCommand = MenuNavigationCommand
+            //});
+
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/friendsqico_blk.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/friendsqico_wht.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/friendsqico_blu.png",
+                MenuTitle = App.SharedValues.LanguageResource.friends_of_q,
+                ResultView = Enums.ViewEnum.FriendsOfQView,
+                ExecuteCommand = MenuNavigationCommand
+            });
+
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/devicesico_blk.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/devicesico_wht.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/devicesico_blu.png",
+                MenuTitle = App.SharedValues.LanguageResource.devices_services,
+                ResultView = Enums.ViewEnum.DevicesServicesView,
+                ExecuteCommand = MenuNavigationCommand
+            });
+
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/supportico_blk.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/supportico_wht.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/supportico_blu.png",
+                MenuTitle = App.SharedValues.LanguageResource.support,
+                ResultView = Enums.ViewEnum.SupportView,
+                ExecuteCommand = MenuNavigationCommand
+            });
+
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/aboutusico_blk.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/aboutusico_wht.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/aboutusico_blu.png",
+                MenuTitle = App.SharedValues.LanguageResource.about,
+                ResultView = Enums.ViewEnum.AboutUsView,
+                ExecuteCommand = MenuNavigationCommand
+            });
+
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/settingsico_blk.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/settingsico_wht.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/settingsico_blu.png",
+                MenuTitle = App.SharedValues.LanguageResource.settings,
+                ResultView = Enums.ViewEnum.SettingsView,
+                ExecuteCommand = MenuNavigationCommand
+            });
+
+            QuealthMenuItems = lstQMenu;
+        }
+
+        public void SetTutorial()
+        {
+            var tut = this.CurrentViewObject.GetTutorials();
+            if (tut != null)
+            {
+                ShowTutorial(tut);
+            }
+
+        }
+
+        private void ShowTutorial(TutorialContent tut)
+        {
+            var cellRect = new Rect(0, 0, 800, 600);
+            RectangleGeometry rec = new RectangleGeometry(cellRect);
+            RectangleGeometry rec2 = new RectangleGeometry(tut.Bounds, 10, 10);
+            var geo = new CombinedGeometry(GeometryCombineMode.Xor, rec, rec2);
+            tutorialOverlay.Clip = geo;
+            Tutorial = tut;
+            rcWindow.Visibility = Visibility.Hidden;
+            if (tut.HeaderContent != null && tut.HeaderContent.Count > 1)
+            {
+                IterateInnerItems(false);
+            }
+            else
+            {
+                IterateInnerItems(true);
+            }
+        }
+        IEnumerator<string> HeaderContentKey;
+        private void IterateInnerItems(bool setArrowOnce)
+        {
+            if (_tmr.IsEnabled)
+            {
+                _tmr.Tick -= _tmr_Tick;
+                _tmr.Stop();
+            }
+            HeaderContentKey = Tutorial.HeaderContent.Keys.GetEnumerator();
+            if (setArrowOnce)
+            {
+                SetArrowOnce();
+            }
+            else
+            {
+                SetArrow();
+                _tmr.Tick += _tmr_Tick;
+                _tmr.Interval = TimeSpan.FromSeconds(3);
+                _tmr.Start();
+            }
+
+        }
+        private void _tmr_Tick(object sender, EventArgs e)
+        {
+            SetArrow();
+        }
+
+        private void SetArrowOnce()
+        {
+            if (!HeaderContentKey.MoveNext())
+            {
+                HeaderContentKey = Tutorial.HeaderContent.Keys.GetEnumerator();
+                HeaderContentKey.MoveNext();
+            }
+            Tutorial.HeaderText = HeaderContentKey.Current;
+        }
+        private void SetArrow()
+        {
+            if (!HeaderContentKey.MoveNext())
+            {
+                HeaderContentKey = Tutorial.HeaderContent.Keys.GetEnumerator();
+                HeaderContentKey.MoveNext();
+            }
+            Tutorial.HeaderText = HeaderContentKey.Current;
+
+            var cellRect = new Rect(0, 0, 800, 600);
+            var rcWnd = Tutorial.Bounds;
+
+            rcWindow.Visibility = Visibility.Visible;
+
+            RectangleGeometry rec = new RectangleGeometry(cellRect);
+            RectangleGeometry recW = new RectangleGeometry(rcWnd, 10, 10);
+
+            var temp = Tutorial.HeaderContent[HeaderContentKey.Current];
+            temp.Inflate(-10, -10);
+
+            RectangleGeometry rec2 = new RectangleGeometry(temp, 65, 65);
+            var geo = new CombinedGeometry(GeometryCombineMode.Exclude, rec, rec2);
+            tutorialOverlay.Clip = geo;
+
+            var geo2 = new CombinedGeometry(GeometryCombineMode.Exclude, recW, rec2);
+
+            rcWindow.Clip = geo2;
+        }
+        public TutorialContent Tutorial
+        {
+            get { return (TutorialContent)GetValue(TutorialProperty); }
+            set { SetValue(TutorialProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Tutorial.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TutorialProperty =
+            DependencyProperty.Register("Tutorial", typeof(TutorialContent), typeof(MainWindow), new PropertyMetadata(null));
+
+        private RelayCommand _NextTutorialCommand;
+        public RelayCommand NextTutorialCommand
+        {
+            get
+            {
+                return _NextTutorialCommand ?? (_NextTutorialCommand = new RelayCommand((o) => SetTutorial(), (o) => true));
+            }
+        }
+
+        private RelayCommand _SkipTutorialCommand;
+        public RelayCommand SkipTutorialCommand
+        {
+            get
+            {
+                return _SkipTutorialCommand ?? (_SkipTutorialCommand = new RelayCommand((o) => SkipTutorial(), (o) => true));
+            }
+        }
+        private void SkipTutorial()
+        {
+            this.CurrentViewObject.SkipTutorials();
+        }
+
+        private void MainWin_Loaded(object sender, RoutedEventArgs e)
+        {
+            PresentationSource source = PresentationSource.FromVisual(this);
+
+            double dpiX, dpiY;
+            if (source != null)
+            {
+                dpiX = 96.0 * source.CompositionTarget.TransformToDevice.M11;
+                dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
+            }
+        }
+    }
+
+}

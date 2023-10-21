@@ -1,0 +1,129 @@
+﻿using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Linq;
+using System.Security;
+using System.Runtime.InteropServices;
+
+namespace RTH.Helpers
+{
+    public static class EncryptionHelper
+    {
+        private static AesCryptoServiceProvider AESService = new AesCryptoServiceProvider();
+        private static byte[] encPassword = new byte[] { 82, 48, 52, 100, 116, 48, 104, 51, 52, 76, 116, 104 };
+        private static byte[] saltBytes = encPassword.Reverse().ToArray();
+        public static string Encrypt(this string message)
+        {
+            if (!string.IsNullOrEmpty(message))
+            {
+                // Get the bytes of the string
+                byte[] bytesToBeEncrypted = Encoding.UTF8.GetBytes(message);
+                // Hash the password with SHA256
+                var passwordBytes = SHA256.Create().ComputeHash(encPassword);
+                byte[] bytesEncrypted = AES_Encrypt(bytesToBeEncrypted, passwordBytes);
+                string result = Convert.ToBase64String(bytesEncrypted);
+                return result;
+            }
+            return string.Empty;
+        }
+
+        public static string Decrypt(this string message)
+        {
+            if (!string.IsNullOrEmpty(message))
+            {
+                // Get the bytes of the string
+                byte[] bytesToBeDecrypted = Convert.FromBase64String(message);
+                var passwordBytes = SHA256.Create().ComputeHash(encPassword);
+                byte[] bytesDecrypted = AES_Decrypt(bytesToBeDecrypted, passwordBytes);
+                string result = Encoding.UTF8.GetString(bytesDecrypted);
+                return result;
+            }
+            return string.Empty;
+        }
+
+        private static byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes)
+        {
+            byte[] encryptedBytes = null;
+
+            using (RijndaelManaged AES = new RijndaelManaged())
+            {
+                AES.KeySize = 256;
+                AES.BlockSize = 128;
+
+                var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+                AES.Key = key.GetBytes(AES.KeySize / 8);
+                AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                AES.Mode = CipherMode.CBC;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (var cs = new CryptoStream(ms, AES.CreateEncryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
+                        cs.FlushFinalBlock();
+                    }
+                    encryptedBytes = ms.ToArray();
+                }
+            }
+
+            return encryptedBytes;
+        }
+
+        private static byte[] AES_Decrypt(byte[] bytesToBeDecrypted, byte[] passwordBytes)
+        {
+            byte[] decryptedBytes = null;
+
+            using (RijndaelManaged AES = new RijndaelManaged())
+            {
+                AES.KeySize = 256;
+                AES.BlockSize = 128;
+
+                var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+                AES.Key = key.GetBytes(AES.KeySize / 8);
+                AES.IV = key.GetBytes(AES.BlockSize / 8);
+
+                AES.Mode = CipherMode.CBC;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (var cs = new CryptoStream(ms, AES.CreateDecryptor(), CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeDecrypted, 0, bytesToBeDecrypted.Length);
+                        cs.FlushFinalBlock();
+                    }
+                    decryptedBytes = ms.ToArray();
+                }
+            }
+
+            return decryptedBytes;
+        }
+        public static SecureString ToSecureString(this string value)
+        {
+            var secureVal = new SecureString();
+            value.All(ch =>
+            {
+                secureVal.AppendChar(ch);
+                return true;
+            });
+            return secureVal;
+        }
+        public static string Value(this SecureString value)
+        {
+            if (value == null)
+                throw new ArgumentNullException("value");
+
+            IntPtr unmanagedString = IntPtr.Zero;
+            try
+            {
+                unmanagedString = Marshal.SecureStringToGlobalAllocUnicode(value);
+                return Marshal.PtrToStringUni(unmanagedString);
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(unmanagedString);
+            }
+        }
+    }
+}

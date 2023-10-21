@@ -1,0 +1,67 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class ScoreSummary : NotifyBase
+    {
+        public string total_score1;
+        public string total_score2;
+
+        public string date
+        {
+            get { return GetValue(() => date); }
+            set { SetValue(() => date, value); }
+        }
+        public int order
+        {
+            get { return GetValue(() => order); }
+            set { SetValue(() => order, value); }
+        }
+        public string total_score
+        {
+            get { return GetValue(() => total_score); }
+            set
+            {
+                SetValue(() => total_score, value);
+                NotifyPropertyChanged("TotalScoreToDisplay");
+            }
+        }
+
+        public string TotalScoreToDisplay { get { return Math.Round(double.Parse(total_score), 2).ToString(); } }
+        public double optimum_score
+        {
+            get { return GetValue(() => optimum_score); }
+            set
+            {
+                SetValue(() => optimum_score, value);
+                NotifyPropertyChanged("OptimumScoreToDisplay");
+            }
+        }
+
+        public double OptimumScoreToDisplay
+        {
+            get { return Math.Round(optimum_score, 2); }
+        }
+        public string _id
+        {
+            get { return GetValue(() => _id); }
+            set { SetValue(() => _id, value); }
+        }
+        public ObservableCollection<object> sub_diseases
+        {
+            get { return GetValue(() => sub_diseases); }
+            set { SetValue(() => sub_diseases, value); }
+        }
+        public string questionnaire
+        {
+            get { return GetValue(() => questionnaire); }
+            set { SetValue(() => questionnaire, value); }
+        }
+    }
+}

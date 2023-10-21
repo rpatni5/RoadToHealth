@@ -1,0 +1,22 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for MotivationView.xaml
+    /// </summary>
+    public partial class MotivationView : ViewBase
+    {
+        public MotivationView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.GetNew<MotivationViewModel>();
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+    }
+}

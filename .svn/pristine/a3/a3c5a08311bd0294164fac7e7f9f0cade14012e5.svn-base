@@ -1,0 +1,94 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class ResultViewModel : ViewModels.Common.ViewModelBase
+    {
+
+        public ResultViewModel()
+        {
+            PropertyChanged += OnSelectedDiseaseChanged;
+            SelectedDisease = GlobalData.Default.ClickedHRA;
+        }
+
+        private void OnSelectedDiseaseChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "SelectedDisease")
+            {
+                LoadHealthAreasAsync();
+            }
+        }
+
+        public bool Animate
+        {
+            get { return GetValue(() => Animate); }
+            set { SetValue(() => Animate, value); }
+        }
+        public override void Refresh()
+        {
+            SelectedDisease = GlobalData.Default.ClickedHRA;
+        }
+
+        private void LoadHealthAreasAsync()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                SetHeader();
+                Summary = ResultService.GetSummaries(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token).data;
+                ObservableCollection<ScoreSummary> sc = ResultService.GetScoreSummaryDetails(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token);
+                if (sc != null && sc.Any())
+                {
+                    ObservableCollection<ScoreSummary> temp = new ObservableCollection<ScoreSummary>();
+                    for (int i = 0; i <= 7; i++)
+                    {
+                        if (sc.Count > i)
+                        {
+                            temp.Add(sc[i]);
+                        }
+                        else break;
+                    }
+                    ScoreSummaries = temp;
+                    LatestScoreSummary = sc[0];
+                }
+            });
+        }
+
+        void SetHeader()
+        {
+            HeaderVisibility = true;
+            HeaderTitle = SelectedDisease.Title;
+            HeaderColor = SelectedDisease.BgColor;
+            KeyString = SelectedDisease.KeyString;
+            HeaderState = false;
+            GlobalData.Default.LastVisitedDiseaseID = SelectedDisease.ID;
+            FooterVisibility = true;
+        }
+
+        public ObservableCollection<QSummaries> Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+        public ScoreSummary LatestScoreSummary
+        {
+            get { return GetValue(() => LatestScoreSummary); }
+            set { SetValue(() => LatestScoreSummary, value); }
+        }
+
+        public ObservableCollection<ScoreSummary> ScoreSummaries
+        {
+            get { return GetValue(() => ScoreSummaries); }
+            set { SetValue(() => ScoreSummaries, value); }
+        }
+    }
+}

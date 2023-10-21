@@ -1,0 +1,40 @@
+﻿<Window x:Class="RTH.Windows.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Quealth" FontFamily="pack://application:,,,/Fonts/#Lato"
+        Name="MainWin" ResizeMode="NoResize"
+        MinHeight="600" 
+        MinWidth="800" Height="600" Width="800" 
+        WindowStartupLocation="CenterScreen"  WindowStyle="None"  
+        xmlns:helpers="clr-namespace:RTH.Windows.Views.Helpers"
+        xmlns:GD="clr-namespace:RTH.Windows.ViewModels.Common;assembly=RTH.Windows.ViewModels" 
+        xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+        xmlns:ctrls="clr-namespace:RTH.Windows.Views.UserControls" Icon="Assets/favicon.ico" >
+    <Window.Resources>
+        <converters:BoolToOpacityConverter x:Key="BoolToOpacity" />
+        <converters:NotValueConverter x:Key="NotValue"/>
+    </Window.Resources>
+    <Grid IsEnabled="{Binding ElementName=Loader, Path=IsOpen,Converter={StaticResource NotValue}}"  Opacity="{Binding ElementName=Loader, Path=IsOpen, Converter={StaticResource BoolToOpacity}}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>            
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ctrls:DashboardSideMenuView Grid.Row="0" Grid.RowSpan="2"  Width="0" x:Name="GridExpender" Visibility="Visible"/>
+        <ctrls:DashboardHeaderView  x:Name="HeaderMenu" Grid.Row="0" Grid.Column="1"
+                                    Visibility="{Binding Source={x:Static GD:GlobalData.Default}, Path=HeaderVisibility}"
+                                    Title="{Binding Source={x:Static GD:GlobalData.Default},  Path=HeaderTitle}"                                     
+                                    IsInverted="{Binding Source={x:Static GD:GlobalData.Default}, Path=HeaderState}" 
+                                    ColorCode="{Binding Source={x:Static GD:GlobalData.Default}, Path=HeaderColor}"
+                                    ImagePath="{Binding Source={x:Static GD:GlobalData.Default}, Path=HeaderIcon}" />
+        <ContentControl Grid.Column="1" Grid.Row="1" Content="{Binding Path=ViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" />
+        <Popup IsOpen="{Binding Source={x:Static GD:GlobalData.Default},Path=LoaderVisibility}"  x:Name="Loader"
+               AllowsTransparency="True" Placement="Center">           
+                <helpers:AnimatedGIF />          
+        </Popup>
+        
+    </Grid>
+</Window>

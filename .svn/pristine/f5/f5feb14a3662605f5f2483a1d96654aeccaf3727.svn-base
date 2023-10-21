@@ -1,0 +1,214 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Helpers.Messaging;
+using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using System.Windows.Controls;
+using RTH.Windows.Views.UserControls;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+
+        private RelayCommand m_updateEmail1;
+        private RelayCommand m_updatePassword1;
+        private RelayCommand m_rdoDeactivationChange;
+        private RelayCommand m_UpdateCountryCommand1;
+        private RelayCommand m_UpdateLanguageCommand1;
+        private RelayCommand m_PopupOkCommand;
+
+        public RelayCommand UpdateEmail1 { get { return m_updateEmail1 ?? (m_updateEmail1 = new RelayCommand((o) => UpdateEmailAction1(o), (o) => true)); } }
+
+        public RelayCommand UpdatePassword1 { get { return m_updatePassword1 ?? (m_updatePassword1 = new RelayCommand((o) => UpdatePasswordAction1(o), (o) => true)); } }
+
+        public RelayCommand DeactivationChange { get { return m_rdoDeactivationChange ?? (m_rdoDeactivationChange = new RelayCommand((o) => DeactivationChangeAction(o), (o) => true)); } }
+
+        public RelayCommand PopupOkCommand { get { return m_PopupOkCommand ?? (m_PopupOkCommand = new RelayCommand((o) => PopupOkCommandAction(o), (o) => true)); } }
+
+        public RelayCommand UpdateCountryCommand1
+        {
+            get
+            {
+                return m_UpdateCountryCommand1 ?? (m_UpdateCountryCommand1 = new RelayCommand(
+                    ve => OnUpdateCountry1(ve), (t) => true));
+            }
+        }
+
+        public RelayCommand UpdateLanguageCommand1
+        {
+            get
+            {
+                return m_UpdateLanguageCommand1 ?? (m_UpdateLanguageCommand1 = new RelayCommand(
+                    ve => OnUpdateLanguage1(ve), (t) => true));
+            }
+        }
+
+        public async void PopupOkCommandAction(object o)
+        {
+            var SettingsViewModel = this.ViewModel as SettingsViewModel;
+
+            var passwords = (Array)o;
+
+            PasswordBox objPasswordEntered = passwords.GetValue(0) as PasswordBox;
+
+            if (objPasswordEntered.Password == Properties.Settings.Default.Password)
+            {
+                SettingsViewModel.IsPopupVisible = false;
+                SettingsViewModel.ErrorMessage = "";
+
+                // Call the email change method ...
+                // if (SettingsViewModel.UpdateEmailData())
+                bool b = await SettingsViewModel.UpdateEmailData();
+                if (b)
+                {
+
+                    Properties.Settings.Default.Email = SettingsViewModel.updatedemail;
+                    Properties.Settings.Default.Save();
+
+                }
+
+            }
+            else
+            {
+                SettingsViewModel.ErrorMessage = ViewModelBase.AppMessages.wrong_old_password;
+            }
+
+            //if(SettingsViewModel.UpdateEmailData())
+            //{ 
+            //    Properties.Settings.Default.Email = SettingsViewModel.updatedemail;
+            //    Properties.Settings.Default.Save();
+            //}
+        }
+
+        public void UpdateEmailAction1(object o)
+        {
+            var SettingsViewModel = this.ViewModel as SettingsViewModel;
+
+            if (string.IsNullOrEmpty(SettingsViewModel.updatedemail))
+            {
+                SettingsViewModel.ErrorMessage = ViewModelBase.AppMessages.missing_email;
+                GlobalData.Default.LoaderVisibility = false;
+            }
+            else if (!RTH.Helpers.ExtensionMethod.ValidateEmail(SettingsViewModel.updatedemail))
+            {
+                SettingsViewModel.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry;
+                GlobalData.Default.LoaderVisibility = false;
+            }
+            else
+            {
+                SettingsViewModel.IsPopupVisible = true;
+            }
+
+
+            //if(SettingsViewModel.UpdateEmailData())
+            //{ 
+            //    Properties.Settings.Default.Email = SettingsViewModel.updatedemail;
+            //    Properties.Settings.Default.Save();
+            //}
+        }
+
+        public async void UpdatePasswordAction1(object o)
+        {
+            var SettingsViewModel = this.ViewModel as SettingsViewModel;
+
+            var passwords = (Array)o;
+
+            PasswordBox oldPasswordObj = passwords.GetValue(0) as PasswordBox;
+            PasswordBox newPasswordObj = passwords.GetValue(1) as PasswordBox;
+            PasswordBox confPasswordObj = passwords.GetValue(2) as PasswordBox;
+
+            bool blnUpdatePassword = await SettingsViewModel.UpdatePasswordData(Properties.Settings.Default.Password, oldPasswordObj.Password, newPasswordObj.Password, confPasswordObj.Password);
+
+            if (blnUpdatePassword)
+            {
+
+                Properties.Settings.Default.Password = newPasswordObj.Password;
+                Properties.Settings.Default.Save();
+
+                oldPasswordObj.Password = "";
+                newPasswordObj.Password = "";
+                confPasswordObj.Password = "";
+
+            }
+
+        }
+
+        public void DeactivationChangeAction(object o)
+        {
+
+            var objDeactivationViewModel = this.ViewModel as DeactivateViewModel;
+
+            var ctrlList = (Array)o;
+
+            TextBox objTextBox = ctrlList.GetValue(1) as TextBox;
+
+            string id = DeactivateViewModel.objSelectedAnswer._id;
+            string text = DeactivateViewModel.objSelectedAnswer.deactivation_text;
+
+            if (objDeactivationViewModel.DeactivateAccount(objTextBox.Text))
+            {
+
+                Properties.Settings.Default.Email = string.Empty;
+                Properties.Settings.Default.Password = string.Empty;
+                Properties.Settings.Default.Save();
+
+                LoadView(Views.Enums.ViewEnum.HomeView);
+            }
+
+
+
+        }
+
+        private async void OnUpdateCountry1(object param)
+        {
+            var objSettingsViewModel = this.ViewModel as SettingsViewModel;
+
+            if (objSettingsViewModel.IsCountryLoaded)
+            {
+                string str = objSettingsViewModel.country1;
+
+                //ViewModelBase.Country = param as string;
+                // objSettingsViewModel.UpdateCountry(str);
+                bool b = await objSettingsViewModel.UpdateCountryAsyn(str);
+
+                objSettingsViewModel.ErrorMessage =Configurations.COUNTRY_UPDATED;
+
+            }
+
+            objSettingsViewModel.IsCountryLoaded = true;
+        }
+
+        private void OnUpdateLanguage1(object param)
+        {
+            var objSettingsViewModel = this.ViewModel as SettingsViewModel;
+            AsyncCall.Invoke(() =>
+            {
+                if (objSettingsViewModel.IsLanguageLoaded)
+                {
+                    string str = objSettingsViewModel.Language;
+                    objSettingsViewModel.UpdateLanguageAsyn(str);
+                    var x = homeViewModel.GetLanguageVariables(str).data;
+                    Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        App.SharedValues.SetLanguage(x);
+                        ViewModelBase.AppMessages = x as Variable;
+                        ViewModelBase.Lang = str;
+                        ViewModelLocator.PerformCleanUp();
+                        ViewLocator.PerformCleanUp();
+                    }));
+                    objSettingsViewModel.ErrorMessage = Configurations.LANGUAGE_UPDATED;
+
+                }
+
+                objSettingsViewModel.IsLanguageLoaded = true;
+            });
+        }
+
+    }
+}

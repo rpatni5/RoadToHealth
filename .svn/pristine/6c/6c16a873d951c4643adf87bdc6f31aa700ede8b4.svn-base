@@ -1,0 +1,119 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.LatestBPReadingControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             mc:Ignorable="d" 
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             d:DesignHeight="300" d:DesignWidth="300"
+             xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+             xmlns:controls="clr-namespace:RTH.Windows.Views.Controls">
+    <UserControl.Resources>
+        <converters:UnitToAnswerConverter x:Key="UnitToAnswerConverter"/>
+        <Style TargetType="RadioButton" x:Key="LengthRd" BasedOn="{StaticResource OptionSelectorRadioButtonStyle}">
+            <Setter Property="GroupName" Value="Length" ></Setter>
+            <Setter Property="VerticalAlignment" Value="Center" ></Setter>
+            <Setter Property="HorizontalAlignment" Value="Center" ></Setter>
+            <Setter Property="MinWidth" Value="100" ></Setter>
+            <Setter Property="MinHeight" Value="30" ></Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+
+                </Grid.ColumnDefinitions>
+                <RadioButton 
+                 x:Name="rdmmhg"  
+                Grid.Column="0" 
+                Content="{Binding LanguageResource.mmhg, Source={x:Static Root:App.SharedValues}}" 
+                IsChecked="{Binding SelectedAnswers[0].answer, ConverterParameter=mmhg, Converter={StaticResource UnitToAnswerConverter}, FallbackValue=True, Mode=TwoWay}" 
+                Style="{StaticResource LengthRd}"
+                />
+                <RadioButton 
+                x:Name="rd_mmhg10"  
+                Margin="4 0 0 0"
+                     Grid.Column="1"
+                Content="{Binding LanguageResource.mmhg10, Source={x:Static Root:App.SharedValues}}" 
+                IsChecked="{Binding SelectedAnswers[0].answer, ConverterParameter=mmhg10, Converter={StaticResource UnitToAnswerConverter}, Mode=TwoWay}" 
+                Style="{StaticResource LengthRd}"
+                />
+
+            </Grid>
+            <StackPanel Grid.Row="1" >
+                <StackPanel Orientation="Horizontal" Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=rdmmhg}" Margin="5 5 0 0">
+                    <StackPanel Orientation="Vertical">
+                        <Label Content="{Binding LanguageResource.systolic, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center" Margin="0 0 0 0"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox 
+                    Width="200" 
+                    Height="40" 
+                    VerticalAlignment="Top" 
+                    HorizontalAlignment="Left" 
+                    VerticalContentAlignment="Center"
+                    Text="{Binding SelectedAnswers[0].responseBPSystolicMMHG}"/>
+                            <Label Content="{Binding LanguageResource.mmhg, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center" Margin="5 0 0 0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="15 0 0 0">
+                        <Label Content="{Binding LanguageResource.diastolic, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center" Margin="0 0 0 0"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox 
+                    Width="200" 
+                    Height="40" 
+                    VerticalAlignment="Top" 
+                    HorizontalAlignment="Left" 
+                    VerticalContentAlignment="Center"
+                    Text="{Binding SelectedAnswers[0].responseBPDiastolicMMHG}"/>
+                            <Label Content="{Binding LanguageResource.mmhg, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center" Margin="5 0 0 0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, ElementName=rd_mmhg10}" Margin="5 5 0 0">
+                    <StackPanel Orientation="Vertical">
+                        <Label Content="{Binding LanguageResource.systolic, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center" Margin="0 0 0 0"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox 
+                    Width="200" 
+                    Height="40" 
+                    VerticalAlignment="Top" 
+                    HorizontalAlignment="Left" 
+                    VerticalContentAlignment="Center"
+                    Text="{Binding SelectedAnswers[0].responseBPSystolicMMHG10}"/>
+                            <Label Content="{Binding LanguageResource.mmhg10, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="15 0 0 0">
+                        <Label Content="{Binding LanguageResource.diastolic, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center" Margin="0 0 0 0"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBox 
+                    Width="200" 
+                    Height="40" 
+                    VerticalAlignment="Top" 
+                    HorizontalAlignment="Left" 
+                    VerticalContentAlignment="Center"
+                    Text="{Binding SelectedAnswers[0].responseBPDiastolicMMHG10}"/>
+                            <Label Content="{Binding LanguageResource.mmhg10, Source={x:Static Root:App.SharedValues}}" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+        </Grid>
+    </Grid>
+</UserControl>

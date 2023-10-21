@@ -1,0 +1,166 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Converters;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using TheArtOfDev.HtmlRenderer.WPF;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuestionNavigatorView.xaml
+    /// </summary>
+    public partial class QuestionNavigatorView : ViewBase
+    {
+        public QuestionNavigatorView()
+        {
+            InitializeComponent();
+            Loaded += OnViewLoaded;
+        }
+
+        private bool submitted = false;
+        public override bool CanUnload()
+        {
+            if (!submitted)
+            {
+                MessageBoxResult result = MessageBox.Show(App.SharedValues.LanguageResource.hra_warning_message, App.SharedValues.LanguageResource.warning, MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.No)
+                {
+                    return false;
+                }
+                
+            }
+            return true;
+        }
+        private void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            App.Current.MainWindow.Opacity = 1;
+        }
+
+
+        #region Continue button
+        private RelayCommand continueCommand;
+        private RelayCommand m_ShowQuestionHelperCommand;
+        private RelayCommand m_CategoryChangeCommand;
+
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        private async void ExecuteContinueCommand(object obj)
+        {
+            transition.LoadControl(null, Controls.Transition.Right);
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            submitted = await vm.MoveToQuestion(1, Properties.Settings.Default.Password);
+            if (submitted)
+            {
+                Window w = Window.GetWindow(this);
+                ((MainWindow)w).LoadView(Enums.ViewEnum.ResultView, param:true);
+            }
+        }
+
+        #endregion
+        #region Next Button
+        private RelayCommand nextCommand;
+
+        public RelayCommand NextCommand
+        {
+            get
+            {
+                return nextCommand ?? (nextCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        if (
+                        v != null &&
+                        v.CurrentQuestion != null &&
+                        v.CurrentQuestion.HasErrors)
+                        {
+                            v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+                            return false;
+                        }
+                        return true;
+                    }));
+            }
+        }
+
+        #endregion
+        #region Previous Button
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecutePreviousCommand(object obj)
+        {
+            transition.LoadControl(null, Controls.Transition.Right);
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            vm.MoveToQuestionPrevious(-1);
+        }
+        #endregion
+
+
+        #region Category Change
+        public RelayCommand CategoryCahangeCommand
+        {
+            get
+            {
+                return m_CategoryChangeCommand ?? (m_CategoryChangeCommand = new RelayCommand(
+                    vm => ExecuteCategoryChangeCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        private void ExecuteCategoryChangeCommand(object vm)
+        {
+            QuestionNavigatorViewModel oQuestionNavigatorViewModel = this.DataContext as QuestionNavigatorViewModel;
+            oQuestionNavigatorViewModel.LoadCategoryQuestion((string)vm,Properties.Settings.Default.Password);
+            //var a = vm;
+
+        }
+        #endregion
+
+        public RelayCommand ShowQuestionHelperCommand
+        {
+            get
+            {
+                return m_ShowQuestionHelperCommand ?? (m_ShowQuestionHelperCommand = new RelayCommand(
+                    ve => ShowQuestionHelper(ve), (t) => true));
+            }
+        }
+
+        private void ShowQuestionHelper(object ve)
+        {
+            var question = ve as Question;
+            if (transition.HasContent == false)
+            {
+                var htmlPanel = new HtmlPanel();
+                htmlPanel.SetBinding(HtmlPanel.TextProperty, new Binding("summary") { Source = question, Converter = new HtmlConverter() });
+                transition.LoadControl(htmlPanel);
+            }
+            else
+            {
+                transition.LoadControl(null, Controls.Transition.Right);
+            }
+        }
+
+    }
+}

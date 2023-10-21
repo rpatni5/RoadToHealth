@@ -1,0 +1,117 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class ShowCoachViewModel : ViewModelBase
+    {
+        #region Model Property
+        public String WelcomeMessage
+        {
+            get { return GetValue(() => WelcomeMessage); }
+            set { SetValue(() => WelcomeMessage, value); }
+        }
+        public String ChooseText
+        {
+            get { return GetValue(() => ChooseText); }
+            set { SetValue(() => ChooseText, value); }
+        }
+        public String DescriptionText
+        {
+            get { return GetValue(() => DescriptionText); }
+            set { SetValue(() => DescriptionText, value); }
+        }
+        public Coaches CoachesDetails
+        {
+            get; set;
+            //get { return GetValue(() => CoachesDetails); }
+            //set { SetValue(() => CoachesDetails, value); }
+        }
+        public Coache CurrentCoach
+        {
+            get { return GetValue(() => CurrentCoach); }
+            set { SetValue(() => CurrentCoach, value); }
+        }
+
+        public bool ShowLeftButton
+        {
+            get { return GetValue(() => ShowLeftButton); }
+            set { SetValue(() => ShowLeftButton, value); }
+        }
+        public bool ShowRightButton
+        {
+            get { return GetValue(() => ShowRightButton); }
+            set { SetValue(() => ShowRightButton, value); }
+
+        }
+        #endregion
+
+        public ShowCoachViewModel()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                WelcomeMessage = "Welcome to Quealth";
+                ChooseText = "Choose your coach";
+                DescriptionText = ViewModelBase.AppMessages.coach_summary;
+                CoachesDetails = RTH.Business.Services.DashboardService.GetCoaches();
+                CoachesDetails.data.Select(c => { c.image = Configurations.UploadUrlPath + @"coaches/" + c.image; return c; }).ToList();
+                CurrentCoach = (Coache)CoachesDetails.data[0];
+                ShowLeftButton = false;
+                ShowRightButton = true;
+            });
+        }
+        public void ExecuteMove(object ve)
+        {
+            if (Convert.ToInt32(ve) == 1)
+            {
+                var Coach = CoachesDetails.data.Where(x => x._id.Equals(CurrentCoach._id)).FirstOrDefault();
+                CurrentCoach = CoachesDetails.data[CoachesDetails.data.IndexOf((Coache)Coach) + 1];
+                SetVisibilityToNavigationButton();
+            }
+            else {
+                var Coach = CoachesDetails.data.Where(x => x._id.Equals(CurrentCoach._id)).FirstOrDefault();
+                CurrentCoach = CoachesDetails.data[CoachesDetails.data.IndexOf((Coache)Coach) - 1];
+                SetVisibilityToNavigationButton();
+            }
+
+        }
+
+        public async Task<Int32> SaveCoach()
+        {
+            Int32 _status = await SaveCoachData();
+            if (_status == 0)
+            { ViewModelBase.UserDetails.coach = CurrentCoach._id; }
+            return _status;
+        }
+
+        private async Task<Int32> SaveCoachData()
+        {
+            return await AsyncCall.Invoke(() =>
+            {
+                return Business.Services.DashboardService.SaveCoach(ViewModelBase.UserDetails._id, CurrentCoach._id, ViewModelBase.UserDetails.AuthToken.access_token).status;
+            });
+
+        }
+        private void SetVisibilityToNavigationButton()
+        {
+            ShowLeftButton = true;
+            ShowRightButton = true;
+            var Coach = CoachesDetails.data.Where(x => x._id.Equals(CurrentCoach._id)).FirstOrDefault();
+            if (CoachesDetails.data.IndexOf((Coache)Coach) == 0)
+            {
+                ShowLeftButton = false;
+            }
+            if (CoachesDetails.data.IndexOf((Coache)Coach) == CoachesDetails.data.Count - 1)
+            {
+                ShowRightButton = false;
+            }
+        }
+
+
+    }
+}

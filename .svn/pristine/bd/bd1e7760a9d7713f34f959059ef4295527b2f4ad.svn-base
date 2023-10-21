@@ -1,0 +1,17 @@
+﻿<Window x:Class="RTH.Windows.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RTH.Windows.Views" WindowStyle="None" ResizeMode="NoResize"
+        WindowState="Normal" WindowStartupLocation="CenterScreen"
+         xmlns:Root="clr-namespace:RTH.Windows.Views"
+        mc:Ignorable="d" Icon="Assets/favicon.ico" 
+        Title="SplashWindow" Height="600" Width="400">
+    <Grid Background="{DynamicResource DashboardBGColor}">
+        <StackPanel  VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Image Style="{StaticResource SplashQueue}" RenderOptions.BitmapScalingMode="HighQuality"
+                   HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Window>

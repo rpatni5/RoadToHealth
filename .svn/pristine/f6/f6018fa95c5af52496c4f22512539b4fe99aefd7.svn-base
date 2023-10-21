@@ -1,0 +1,154 @@
+﻿using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using System.Linq;
+
+namespace RTH.Windows.Views.Controls
+{
+    /// <summary>
+    /// Interaction logic for ScoreProgressControl.xaml
+    /// </summary>
+    public partial class ScoreProgressControl : UserControl
+    {
+        public ScoreProgressControl()
+        {
+            InitializeComponent();
+            this.hraView.DataContext = this;
+            this.Loaded += ScoreProgressControl_Loaded;
+        }
+
+        private void ScoreProgressControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            StartAnimation();
+        }
+
+
+        public List<DiseaseData> Diseases
+        {
+            get { return (List<DiseaseData>)GetValue(DiseasesProperty); }
+            set { SetValue(DiseasesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Diseases.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DiseasesProperty =
+            DependencyProperty.Register("Diseases", typeof(List<DiseaseData>), typeof(ScoreProgressControl), new PropertyMetadata(null));
+
+
+        public double DiabetesScore
+        {
+            get { return (double)GetValue(DiabetesScoreProperty); }
+            set { SetValue(DiabetesScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for DiabetesScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DiabetesScoreProperty =
+            DependencyProperty.Register("DiabetesScore", typeof(double), typeof(ScoreProgressControl), new PropertyMetadata(0.0));
+
+
+        public double CancerScore
+        {
+            get { return (double)GetValue(CancerScoreProperty); }
+            set { SetValue(CancerScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CancerScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CancerScoreProperty =
+            DependencyProperty.Register("CancerScore", typeof(double), typeof(ScoreProgressControl), new PropertyMetadata(0.0));
+
+
+        public double CardioScore
+        {
+            get { return (double)GetValue(CardioScoreProperty); }
+            set { SetValue(CardioScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CardioScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CardioScoreProperty =
+            DependencyProperty.Register("CardioScore", typeof(double), typeof(ScoreProgressControl), new PropertyMetadata(0.0));
+        public double LungScore
+        {
+            get { return (double)GetValue(LungScoreProperty); }
+            set { SetValue(LungScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for LungScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty LungScoreProperty =
+            DependencyProperty.Register("LungScore", typeof(double), typeof(ScoreProgressControl), new PropertyMetadata(0.0));
+        public double DementiaScore
+        {
+            get { return (double)GetValue(DementiaScoreProperty); }
+            set { SetValue(DementiaScoreProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for DementiaScore.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DementiaScoreProperty =
+            DependencyProperty.Register("DementiaScore", typeof(double), typeof(ScoreProgressControl), new PropertyMetadata(0.0));
+
+        private RelayCommand<object[]> m_LoadViewCommand;
+        public RelayCommand<object[]> LoadViewCommand
+        {
+            get
+            {
+                return m_LoadViewCommand ?? (m_LoadViewCommand = new RelayCommand<object[]>(
+                    ve => LoadView(ve), (t) => true));
+            }
+        }
+
+        private void LoadView(object[] ve)
+        {
+            if (ve != null)
+            {
+                double score = (double)ve[1];
+                string selectedDisease = (string)ve[0];
+                GlobalData.Default.ClickedHRA = Diseases.FirstOrDefault(x => x.KeyString == selectedDisease);
+                if (score > 0)
+                {
+                    App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthAreasView);
+                }
+                else
+                {
+                    App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.DashboardView,param: GlobalData.Default.ClickedHRA);
+
+                }
+            }
+
+        }
+
+        private void StartAnimation()
+        {
+            disbetesProgress.BeginAnimation(ScoreProgressBarControl.ProgressProperty, null);
+            cancerProgress.BeginAnimation(ScoreProgressBarControl.ProgressProperty, null);
+            cardiovProgress.BeginAnimation(ScoreProgressBarControl.ProgressProperty, null);
+            lungProgress.BeginAnimation(ScoreProgressBarControl.ProgressProperty, null);
+            dementiaProgress.BeginAnimation(ScoreProgressBarControl.ProgressProperty, null);
+
+
+            disbetesProgress.SetValue(ScoreProgressBarControl.ProgressProperty, 0.0);
+            cancerProgress.SetValue(ScoreProgressBarControl.ProgressProperty, 0.0);
+            cardiovProgress.SetValue(ScoreProgressBarControl.ProgressProperty, 0.0);
+            lungProgress.SetValue(ScoreProgressBarControl.ProgressProperty, 0.0);
+            dementiaProgress.SetValue(ScoreProgressBarControl.ProgressProperty, 0.0);
+
+            Storyboard qStoryboard = new Storyboard();
+            qStoryboard.Children.Add(SetAnimationObject(0, DiabetesScore, 5, 0, "Progress", disbetesProgress));
+            qStoryboard.Children.Add(SetAnimationObject(0, CancerScore, 5, 0, "Progress", cancerProgress));
+            qStoryboard.Children.Add(SetAnimationObject(0, CardioScore, 5, 0, "Progress", cardiovProgress));
+            qStoryboard.Children.Add(SetAnimationObject(0, LungScore, 5, 0, "Progress", lungProgress));
+            qStoryboard.Children.Add(SetAnimationObject(0, DementiaScore, 5, 0, "Progress", dementiaProgress));
+            qStoryboard.Begin();
+        }
+
+        private DoubleAnimation SetAnimationObject(double from, double to, double duration, double beginTime, string property, UIElement element)
+        {
+            var daObj = new DoubleAnimation(from, to, TimeSpan.FromSeconds(to >= 60 ? 5 : to >= 40 ? 4 : 2));
+            daObj.BeginTime = TimeSpan.FromSeconds(beginTime);
+            Storyboard.SetTarget(daObj, element);
+            Storyboard.SetTargetProperty(daObj, new PropertyPath(property));
+            return daObj;
+        }
+    }
+}

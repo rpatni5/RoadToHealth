@@ -1,0 +1,257 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.UserRegistrationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+            mc:Ignorable="d" Background="White"
+             xmlns:conv="clr-namespace:RTH.Windows.Views.Converters"
+              xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"             
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"             
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <conv:ParameterConvertor x:Key="parameterConvertor" />
+        <conv:FlagIdToImageConverter x:Key="FlagIdToImageConverter" />
+        <conv:VariableConverter x:Key="VariableConverter"/>
+        <conv:LengthToVisibilityConverter x:Key="LengthToVisibility"/>
+        <conv:ParameterConvertor x:Key="ArrayParameter"/>
+        <conv:PasswordStrengthConverter x:Key="PasswordStrength"/>
+        <conv:NullStringToVisibilityConverter x:Key="NullStringToVisibility"/>
+    </UserControl.Resources>
+
+    <Grid Margin="0" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!--<WrapPanel Grid.Row="0">
+            <Button Content="Back" Style="{StaticResource Buttonback}" Command="{Binding cmdBack}" />
+            <Label HorizontalAlignment="Left" Style="{StaticResource LabelLogInText}">Create Account</Label>
+        </WrapPanel>-->
+        <local:OffHeaderView Grid.Row="0" HeaderData="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.create_account}" NavigationView="HomeView"></local:OffHeaderView>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="1">
+            <StackPanel Margin="0" Orientation="Vertical" VerticalAlignment="top" Background="#FFFAFAFA" >
+                <UniformGrid Rows="1">
+                    <Button Style="{StaticResource ButtonFacebook}" 
+                    Command="{Binding Path=LoadViewModel, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                    CommandParameter="FaceBookAuthenticationView"
+                    >
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.create_account_with}" VerticalAlignment="Center"/>
+                                <Image Source="/RTH.Windows.Views;component/Assets/drawable/ic_fb_icon.png" Margin="8"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button Style="{StaticResource ButtonTwiter}" >
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.create_account_with}" VerticalAlignment="Center" />
+                                <Image Source="/RTH.Windows.Views;component/Assets/drawable/ic_twitter_icon.png" Margin="8"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </UniformGrid>
+                <Grid Margin="0 25,0,0">
+                    <Separator Foreground="Wheat" Background="#FFE0E1E2" FontWeight="ExtraBold"/>
+                    <TextBlock Height="Auto" HorizontalAlignment="Center" FontStyle="Italic" Margin="0,-3,0,0" Background="#FFFAFAFA" Foreground="#FFA3A2A2" FontSize="18" Text="or" Padding="7,0" VerticalAlignment="Center"/>
+                </Grid>
+                <Label Name="ErrorMessage" Style="{StaticResource ErrorMessage}" Content="{Binding Path= ErrorMessage}"
+                       Visibility="{Binding ElementName=ErrorMessage,Path=Content,Converter={StaticResource NullStringToVisibility}}"/>
+                <StackPanel Orientation="Vertical" Margin="10">
+                    <TextBlock Name="RegistrationMessage" Style="{StaticResource RegistrationMessage}" FontSize="13"
+                           Text="{Binding Source={x:Static Root:App.SharedValues},Path=LanguageResource.registration_intro}" />
+
+                    <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.full_name}" Style="{StaticResource LabelText}"   />
+
+                    <Grid>
+                        <TextBox Name="FullName" TabIndex="0" Loaded="FullName_Loaded" Style="{StaticResource LoginText}" Text="{Binding Path=name, ValidatesOnDataErrors=True, Converter={StaticResource titleCaseConverter}, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button IsTabStop="False" Name="FullNameClear" Height="20" Width="20" HorizontalAlignment="Right" Margin="10" 
+                            Command="{Binding ControlClearCommand,RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"                                                     
+                            Visibility="{Binding ElementName=FullName,Path=Text.Length,Converter={StaticResource LengthToVisibility},UpdateSourceTrigger=PropertyChanged}">
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource ArrayParameter}">
+                                    <Binding ElementName="FullName" />
+                                    <Binding ElementName="FullNameClear" />
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Ellipse >
+                                        <Ellipse.Fill>
+                                            <ImageBrush ImageSource="/RTH.Windows.Views;component/Assets/ic_clear_ev.png"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.email}" Style="{StaticResource LabelText}"   />
+                    <Grid>
+                        <TextBox  TabIndex="1"  Foreground="{Binding EmailColor}" Name="email"   Style="{StaticResource LoginText}" 
+                                  Text="{Binding Path=email, ValidatesOnDataErrors=True}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="TextChanged">
+                                    <i:InvokeCommandAction Command="{Binding EmailColorCommand,RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"  />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+                        <Button IsTabStop="False" Name="EmailClear" Height="20" Width="20" HorizontalAlignment="Right" Margin="10" 
+                                
+                            Command="{Binding ControlClearCommand,RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"                                                     
+                            Visibility="{Binding ElementName=email,Path=Text.Length,Converter={StaticResource LengthToVisibility},UpdateSourceTrigger=PropertyChanged}">
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource ArrayParameter}">
+                                    <Binding ElementName="email" />
+                                    <Binding ElementName="EmailClear" />
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Ellipse >
+                                        <Ellipse.Fill>
+                                            <ImageBrush ImageSource="/RTH.Windows.Views;component/Assets/ic_clear_ev.png"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.password}" Style="{StaticResource LabelText}"   />
+                    <UniformGrid Rows="1" Margin="5,0,5,10">
+                        <Rectangle Height="6" Fill="#FFFF0409" 
+                                   Visibility="{Binding PasswordStrength,RelativeSource={RelativeSource AncestorType=UserControl, 
+                            Mode=FindAncestor},Converter={StaticResource PasswordStrength},ConverterParameter=One}"/>
+                        <Rectangle Height="6" Fill="#FFFF8B2E"
+                                   Visibility="{Binding PasswordStrength,RelativeSource={RelativeSource AncestorType=UserControl,
+                            Mode=FindAncestor},Converter={StaticResource PasswordStrength},ConverterParameter=Two}"/>
+                        <Rectangle Height="6" Fill="#FF40FD53"   Visibility="{Binding PasswordStrength,RelativeSource={RelativeSource AncestorType=UserControl,
+                            Mode=FindAncestor},Converter={StaticResource PasswordStrength},ConverterParameter=Three}"/>
+                        <Rectangle Height="6" Fill="#FF03A863"   Visibility="{Binding PasswordStrength,RelativeSource={RelativeSource AncestorType=UserControl,
+                            Mode=FindAncestor},Converter={StaticResource PasswordStrength},ConverterParameter=Four}"/>
+                    </UniformGrid>
+                    <Grid>
+                        <PasswordBox  TabIndex="2" Name="password" PasswordChanged="password_PasswordChanged"   Style="{StaticResource LoginPassword}"  />
+                        <Button IsTabStop="False" x:Name="PasswordClear" Height="20" Width="20" HorizontalAlignment="Right" Margin="10,-10,10,0"
+                            Command="{Binding ControlClearCommand,RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"                            
+                             Visibility="{Binding ElementName=password,Path=SecurePassword.Length,Converter={StaticResource LengthToVisibility},UpdateSourceTrigger=PropertyChanged}">
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource ArrayParameter}">
+                                    <Binding ElementName="password" />
+                                    <Binding ElementName="PasswordClear" />
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Ellipse >
+                                        <Ellipse.Fill>
+                                            <ImageBrush ImageSource="/RTH.Windows.Views;component/Assets/ic_clear_ev.png"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.confirm_password}" Style="{StaticResource LabelText}"   />
+                    <Grid>
+                        <PasswordBox  TabIndex="3" Name="confirm"  KeyUp="confirm_KeyUp" Style="{StaticResource LoginPassword}" />
+                        <Button IsTabStop="False" x:Name="ConfirmPasswordClear" Height="20" Width="20" HorizontalAlignment="Right" Margin="10,-10,10,0"
+                            Command="{Binding ControlClearCommand,RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"                            
+                             Visibility="{Binding ElementName=confirm,Path=SecurePassword.Length,Converter={StaticResource LengthToVisibility},UpdateSourceTrigger=PropertyChanged}">
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource ArrayParameter}">
+                                    <Binding ElementName="confirm" />
+                                    <Binding ElementName="ConfirmPasswordClear" />
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Ellipse >
+                                        <Ellipse.Fill>
+                                            <ImageBrush ImageSource="/RTH.Windows.Views;component/Assets/ic_clear_ev.png"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+                    <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.language}" Style="{StaticResource LabelText}"   />
+
+                    <ComboBox  TabIndex="4" BorderThickness="0" Name="cmbLanguage"  ItemsSource="{Binding LanguageList}" 
+                               SelectedValuePath="code" SelectedValue="{Binding Language, Mode=TwoWay}"  >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding SetLanguageCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" 
+                                               CommandParameter="{Binding Language}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <UniformGrid Rows="1" Width="720">
+                                    <TextBlock VerticalAlignment="Center" Text="{Binding Path=name}" Padding="2" FontSize="16" HorizontalAlignment="Left"/>
+                                    <Image Width="40" Height="35" Stretch="Uniform"   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,2"
+                                Source="{Binding Path=flag, Converter={StaticResource FlagIdToImageConverter}}" />
+                                </UniformGrid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Height" Value="{Binding ElementName=cmbLanguage,Path=ActualHeight }"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+
+                    <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.health_guidelines}" Style="{StaticResource LabelText}"   />
+                    <ComboBox  TabIndex="5"  BorderThickness="0" x:Name="HealthGuidelines" ItemsSource="{Binding CountryList}" SelectedValuePath="_id" SelectedValue="{Binding country, Mode=TwoWay}"  >
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <UniformGrid Rows="1" Width="720">
+                                    <TextBlock Text="{Binding Path=country}"  Padding="2" VerticalAlignment="Center" FontSize="16"  HorizontalAlignment="Left"/>
+                                    <Image Width="40" Height="35" Stretch="Uniform"  HorizontalAlignment="Right"
+                                Source="{Binding Path=flag_id, Converter={StaticResource FlagIdToImageConverter}}" VerticalAlignment="Center" Margin="0,2"/>
+                                </UniformGrid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <!--<Setter Property="Width" Value="{Binding ElementName=HealthGuidelines,Path=ActualWidth  }"/>-->
+                                <Setter Property="Height" Value="{Binding ElementName=HealthGuidelines,Path=ActualHeight }"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+
+                </StackPanel>
+                <Button  TabIndex="6" IsDefault="True" Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.sign_up}"                 
+                    Style="{StaticResource ButtonLogin}" 
+                   Command="{Binding Path=UserRegistrationCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}">
+                    <Button.CommandParameter>
+                        <MultiBinding Converter="{StaticResource parameterConvertor}">
+                            <Binding ElementName="password"/>
+                            <Binding ElementName="confirm"/>
+                        </MultiBinding>
+                    </Button.CommandParameter>
+                </Button>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="0,25,0,0">
+                    <TextBlock  Style="{StaticResource RegisterText}" Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.disclaimer}"/>
+                    <TextBlock Padding="2,0,0,0" Style="{StaticResource RegisterText}"  Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.terms_long}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
+                    <TextBlock>
+                        <Hyperlink  Command="{Binding NavigationCommand,RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" CommandParameter="TermsAndConditionsView"  >
+                            <TextBlock Style="{StaticResource RegisterText}" TextDecorations="Underline"  Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.terms_long}" />
+                        </Hyperlink>                            
+                    </TextBlock>
+                    <TextBlock Margin="10,0">
+                        <Hyperlink Command="{Binding NavigationCommand,RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" CommandParameter="PolicyView">
+                            <TextBlock Style="{StaticResource RegisterText}" TextDecorations="Underline"   Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.policy_long}" />
+                        </Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

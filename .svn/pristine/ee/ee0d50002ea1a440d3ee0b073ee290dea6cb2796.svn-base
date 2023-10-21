@@ -1,0 +1,46 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class ResultViewModel : ViewModels.Common.ViewModelBase
+    {
+        public ResultViewModel()
+        {
+            LoadHealthAreasAsync();
+           
+        }
+
+        private async void LoadHealthAreasAsync()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Summary = ResultService.GetSummaries(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token).data;
+                ObservableCollection<ScoreSummary> sc = ResultService.GetScoreSummaryDetails(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+                if (sc != null && sc.Any())
+                    LatestScoreSummary = sc[0];
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+
+        public ObservableCollection<QSummaries> Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+        public ScoreSummary LatestScoreSummary
+        {
+            get { return GetValue(() => LatestScoreSummary); }
+            set { SetValue(() => LatestScoreSummary, value); }
+        }
+    }
+}

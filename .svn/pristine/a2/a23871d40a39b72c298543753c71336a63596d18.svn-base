@@ -1,0 +1,50 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class QuestionNavigatorViewModel : ViewModelBase
+    {
+        public QuestionNavigatorViewModel()
+        {
+            GetQuestionnaire();
+        }
+
+        private void GetQuestionnaire()
+        {
+            //if (UserDetails.score_history != null && UserDetails.score_history.Count > 0)
+            Questionnaire = QuestionnaireService.GetQuestionnaire(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+            CurrentCategory = Questionnaire.questions.FirstOrDefault();
+            CurrentQuestion = CurrentCategory.questions.FirstOrDefault();
+
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+
+        public CategorisedQuestions CurrentCategory
+        {
+            get { return GetValue(() => CurrentCategory); }
+            set { SetValue(() => CurrentCategory, value); }
+        }
+        public HRA Questionnaire
+        {
+            get { return GetValue(() => Questionnaire); }
+            set
+            {
+                SetValue(() => Questionnaire, value);
+                HeaderLabel = Questionnaire.title;
+            }
+        }
+    }
+}

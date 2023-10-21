@@ -1,0 +1,71 @@
+﻿using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Enums;
+using System;
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.UserControls
+{
+    public class ViewBase : UserControl, IMessagingTarget
+    {
+        public ViewModelBase ViewModel { get; private set; }
+        public ViewBase()
+        {
+            Token = Guid.NewGuid();
+            this.Loaded += ViewBase_Loaded;
+            this.Unloaded += ViewBase_Unloaded;
+        }
+
+        public virtual bool CanUnload()
+        {
+            return true;
+        }
+
+        public virtual void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.Message)
+            {
+                MessageBox.Show(e.Data as String);
+            }
+            else if (e.Type == MessageType.LoadView)
+            {
+                ViewEnum ve = (ViewEnum)Enum.Parse(typeof(ViewEnum), e.Data as string);
+                App.SharedValues.WindowMain.LoadView(ve);
+            }
+            else if (e.Type == MessageType.ExecuteBack)
+            {
+                App.SharedValues.WindowMain.BackCommand.Execute(null);
+            }
+        }
+
+        #region properties
+        public Guid Token { get; private set; }
+
+        #endregion properties
+        private void ViewBase_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.Loaded -= ViewBase_Loaded;
+            if (DesignerProperties.GetIsInDesignMode(this) == false)
+            {
+                this.ViewModel = this.DataContext as ViewModelBase;
+                this.ViewModel.ViewToken = this.Token;
+                AppMessages.Register(this, this.Token);
+            }
+        }
+
+        private void ViewBase_Unloaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.Unloaded -= ViewBase_Unloaded;
+            if (DesignerProperties.GetIsInDesignMode(this) == false)
+            {
+                AppMessages.Unregister(this.Token);
+            }
+        }
+        public void ReceiveMessage(Message msg)
+        {
+            Dispatcher.BeginInvoke((Action)(() => { this.OnMessage(msg); }));
+        }
+    }
+}

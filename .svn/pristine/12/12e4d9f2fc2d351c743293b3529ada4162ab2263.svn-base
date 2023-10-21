@@ -1,0 +1,441 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Helpers.Messaging;
+using RTH.Business.Services;
+using RTH.Helpers;
+using System.Security;
+using Newtonsoft.Json;
+
+namespace RTH.Windows.ViewModels
+{
+    public class DashboardViewModel : ViewModelBase
+    {
+        #region Global Properties
+        public List<DiseaseData> Diseases
+        {
+            get { return GetValue(() => this.Diseases); }
+            set { SetValue(() => Diseases, value); }
+        }
+        public List<Answer> Motivations
+        {
+            get { return GetValue(() => this.Motivations); }
+            set { SetValue(() => Motivations, value); }
+        }
+
+
+        public List<string> CoachChatList
+        {
+            get { return GetValue(() => this.CoachChatList); }
+            set { SetValue(() => CoachChatList, value); }
+        }
+        public int TotalHRA
+        {
+            get { return GetValue(() => this.TotalHRA); }
+            set { SetValue(() => TotalHRA, value); }
+        }
+        public bool OverLayVisibility
+        {
+            get { return GetValue(() => this.OverLayVisibility); }
+            set { SetValue(() => OverLayVisibility, value); }
+        }
+
+        public bool AllHraCompleted
+        {
+            get { return GetValue(() => this.AllHraCompleted); }
+            set { SetValue(() => AllHraCompleted, value); }
+        }
+
+        public bool ManageHealthPlan
+        {
+            get { return GetValue(() => this.ManageHealthPlan); }
+            set { SetValue(() => ManageHealthPlan, value); }
+        }
+        #endregion
+
+        #region private properties
+        public Questionnaires QuestionnaireData;
+        #endregion
+        #region Constructor
+        private DashboardViewModel()
+        {
+            PropertyChanged += OnPropertyChanged;
+            LoadMainScores();
+            Init();
+           
+            AsyncCall.Invoke(() =>
+            {
+                //LoadTimelines();   
+                QuestionnaireData = RTH.Business.Services.DashboardService.GetQuestionaires(Configurations.ClientId, UserDetails.language == null ? "en" : UserDetails.language);
+                GetQuestionaires(UserDetails.language == null ? "en" : UserDetails.language);
+
+            });
+            List<string> lst = new List<string>();
+            lst.Add("AtkinsThat’s great! From your selectemotivations we recommend youstart with the Diabetes Assessment.");
+            lst.Add("But it’s up to you. Have a look through the others and choose the one you like the look of.");
+
+            CoachChatList = lst;
+        }
+
+        private void GetMotivation()
+        {
+            MotivationQuestionaire obj = QuestionnaireService.GetHealthAgendaQuestionaire(UserDetails._id)?.FirstOrDefault(x => x.key_string == "your_motivations");
+            if (obj != null)
+            {
+                List<Answer> answer = new List<Answer>();
+                if (obj.element_type == "7")
+                {
+                    answer = JsonConvert.DeserializeObject<List<Answer>>(obj.answer.ToString());
+                }
+                else
+                {
+                    Answer objAnswer = JsonConvert.DeserializeObject<Answer>(obj.answer.ToString());
+                    answer.Add(objAnswer);
+                }
+                Motivations = answer;
+            }
+        }
+
+        private void OnPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "SelectedDisease")
+            {
+                SetHeader();
+            }
+        }
+        #endregion
+
+        public async override void Refresh()
+        {
+            LoadMainScores();
+            await AsyncCall.Invoke(() =>
+             {
+                 LoginData(UserDetails.email, UserDetails.Securepwd);
+                 LoadTimelines();
+                 QuestionnaireData = DashboardService.GetQuestionaires(Configurations.ClientId, UserDetails.language == null ? "en" : UserDetails.language);
+                 GetQuestionaires(UserDetails.language == null ? "en" : UserDetails.language);
+                 return true;
+             }, showLoader: true).ConfigureAwait(true);
+        }
+        private void SetSharingData()
+        {
+            string keyValue = "dashboard";
+            if (SelectedDisease != null)
+            {
+                double score = AssignScore(SelectedDisease.ID);
+                keyValue = score <= 59 ? string.Format("{0}_0_59", SelectedDisease.KeyString) : score <= 79 ? string.Format("{0}_60_79", SelectedDisease.KeyString) :
+                    string.Format("{0}_80_100", SelectedDisease.KeyString);
+            }
+            SharingData = TwitterService.GetSharingData(UserDetails._id, keyValue, UserDetails.AuthToken.access_token);
+            SharingData.thumb_image = Config.ApiUrl + SharingData.thumb_image;
+            SharingData.name = "Quealth";
+        }
+
+        public override void Reset()
+        {
+            LoginData(UserDetails.email, UserDetails.Securepwd);
+            LoadMainScores();
+            Init();
+            AsyncCall.Invoke(() =>
+            {
+                LoadTimelines();
+                QuestionnaireData = RTH.Business.Services.DashboardService.GetQuestionaires(Configurations.ClientId, UserDetails.language == null ? "en" : UserDetails.language);
+                GetQuestionaires(UserDetails.language == null ? "en" : UserDetails.language);
+
+            }, showLoader: false);
+        }
+        private void Init()
+        {
+            HeaderVisibility = false;
+            HeaderState = false;
+            HeaderColor = ViewModelBase.AppHeaderColor;
+            HeaderTitle = string.Empty;
+            KeyString = string.Empty;
+            FooterVisibility = false;
+            SharingIconVisibility = false;
+            HeaderVisibility = true;
+            HeaderState = false;
+            HeaderTitle = "";
+            KeyString = "None";
+
+        }
+
+        private void LoadMainScores()
+        {
+            TotalScore = 0;
+            TotalScore = UserDetails.score;
+            DiabetesScore = AssignScore(Configurations.DiabetesId);
+            CardioScore = AssignScore(Configurations.CardioId);
+            DementiaScore = AssignScore(Configurations.DementiaId);
+            LungsScore = AssignScore(Configurations.LungsId);
+            CancerScore = AssignScore(Configurations.CancerId);
+            //RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.AnimateHRA });
+        }
+        private double AssignScore(string Id)
+        {
+            ScoreHistory score = UserDetails.score_history.FirstOrDefault(x => x.questionnaire == Id);
+            return score != null ? score.total_score : 0.00;
+        }
+        private void SetHeader()
+        {
+            if (SelectedDisease != null)
+            {
+                //KeyString = SelectedDisease.KeyString;
+                //HeaderColor = SelectedDisease.BgColor;
+                //HeaderTitle = SelectedDisease.Title;
+                GlobalData.Default.LastVisitedDiseaseID = SelectedDisease.ID;
+                KeyString = string.Empty;
+                HeaderColor = ViewModelBase.AppHeaderColor;
+                HeaderVisibility = true;
+                HeaderState = false;
+                HeaderTitle = "";
+                KeyString = "None";
+            }
+        }
+
+        private void GetQuestionaires(string language)
+        {
+            List<DiseaseData> lstDiseases = new List<DiseaseData>();
+            AnsweredQuestionnaireIdsArr selectedHRA = new AnsweredQuestionnaireIdsArr();
+            if (UserDetails.answered_questionnaire_ids_arr != null)
+            {
+                selectedHRA = UserDetails.answered_questionnaire_ids_arr.FirstOrDefault(x => x.questionnaire != null && x.success == true);
+            }
+            //ScoreHistory score = UserDetails.score_history.FirstOrDefault(x => x.questionnaire != null);
+            if (selectedHRA != null)
+            {
+                GlobalData.Default.LastVisitedDiseaseID = GlobalData.Default.LastVisitedDiseaseID == string.Empty ? selectedHRA.questionnaire : GlobalData.Default.LastVisitedDiseaseID;
+            }
+            else
+            {
+                GlobalData.Default.LastVisitedDiseaseID = string.Empty;
+            }
+            if (QuestionnaireData != null)
+            {
+                SharingIconVisibility = false;
+                UserDetails.LastHra = false;
+                OverLayVisibility = true;
+                TotalHRA = 0;
+                QuestionnaireData.data.ForEach(c =>
+                {
+                    DiseaseData diseaseData = new DiseaseData();
+                    diseaseData.ID = c._id;
+                    diseaseData.BgColor = c.background_colour;
+                    diseaseData.KeyString = c.key_string;
+                    diseaseData.Title = c.title;
+                    diseaseData.Language = UserDetails.language;
+                    ScoreHistory scoreHistory = UserDetails.score_history.FirstOrDefault(x => x.questionnaire == c._id);
+                    AnsweredQuestionnaireIdsArr hras = null;
+                    if (UserDetails.answered_questionnaire_ids_arr != null)
+                        hras = UserDetails.answered_questionnaire_ids_arr.FirstOrDefault(x => x.questionnaire == c._id);
+                    if (hras != null)
+                    {
+                        diseaseData.Summary = string.Empty;
+                        if (hras.success)
+                        {
+                            //setting extra properties
+                            FooterVisibility = true;
+                            UserDetails.LastHra = true;
+                            OverLayVisibility = false;
+                            SharingIconVisibility = true;
+                            
+                            TotalHRA++;
+                            diseaseData.TotalScore = Math.Floor(scoreHistory.total_score).ToString();
+                            diseaseData.IsCompleted = HRAStatusEnum.Completed;
+                            diseaseData.Summary = c.summary;
+                        }
+                        else
+                        {
+                            diseaseData.IsCompleted = HRAStatusEnum.Redo;
+                            diseaseData.TotalScore = "";
+                        }
+                    }
+                    else
+                    {
+                        diseaseData.TotalScore = string.Empty;
+                        diseaseData.Summary = c.summary;
+                        diseaseData.IsCompleted = HRAStatusEnum.NotCompleted;
+                    }
+                    lstDiseases.Add(diseaseData);
+                });
+
+                GlobalData.Default.ClickedHRA = lstDiseases.FirstOrDefault(x => x.ID == GlobalData.Default.LastVisitedDiseaseID);
+                SelectedDisease = GlobalData.Default.ClickedHRA != null ? new DiseaseData(GlobalData.Default.ClickedHRA) : null;
+                Diseases = lstDiseases;
+                Diseases.ForEach(x => x.IsChecked = false);
+                Disease = Diseases.FirstOrDefault(x => x.IsCompleted == HRAStatusEnum.NotCompleted);
+                if (Disease == null)
+                {
+                    AllHraCompleted = false;
+                }
+                else
+                {
+                    AllHraCompleted = true;
+                }
+                GetMotivation();
+                SetHeader();
+                SetSharingData();
+
+            }
+            ManageHealthPlan = UserDetails.hasHealthObjectives;
+            RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.RefreshComplete });
+        }
+        private void LoadTimelines()
+        {
+            string dateOffset = (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString();
+            UserTimelines = RTH.Business.Services.DashboardService.GetTimelines(UserDetails._id, dateOffset,
+                (DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds.ToString(),
+                0.ToString(),
+                UserDetails.AuthToken.access_token);
+            UserTimelines.engagements.GroupBy(x => Convert.ToDateTime(x.when_required_user).ToShortDateString()).ToList().ForEach(c =>
+            {
+                int index = 0;
+                foreach (var item in c)
+                {
+                    item.Tag = index++;
+                }
+            });
+        }
+        public UserTimeline UserTimelines
+        {
+            get
+            {
+                return GetValue(() => UserTimelines);
+            }
+            set
+            {
+                SetValue(() => UserTimelines, value);
+            }
+        }
+
+        public async void RefreshUserData()
+        {
+            await AsyncCall.Invoke(() =>
+             {
+                 LoginData(UserDetails.email, UserDetails.Securepwd);
+                 return true;
+             });
+        }
+
+        private void LoginData(string Email, SecureString Password)
+        {
+            string strPwd = Password != null && Password.Length > 0 ? Password.Value() : string.Empty;
+            if (!string.IsNullOrEmpty(Email) && !string.IsNullOrEmpty(strPwd) && strPwd != Configurations.DefaultPassword)
+            {
+                ViewModels.LoginViewModel login = new ViewModels.LoginViewModel();
+                var userObj = login.UserLogin(new Business.Objects.User() { email = Email, Securepwd = Password });
+                if (userObj != null)
+                {
+                    UserDetails = userObj;
+                }
+            }
+            else
+            {
+                IDictionary<string, string> vmProperties = GetViewModelSettings();
+                string socialId;
+                string socialType = vmProperties["SocialType"];
+                if (vmProperties["SocialType"] == GlobalData.TWITTER)
+                {
+                    socialId = vmProperties["TwitterUserId"];
+                }
+                else
+                {
+                    socialId = vmProperties["FacebookUserId"];
+                }
+
+                if (!string.IsNullOrEmpty(socialId) && !string.IsNullOrEmpty(socialType))
+                    UserDetails = ValidateSocialLogin(socialId, socialType);
+            }
+        }
+
+        public async override void Refresh(bool withloader)
+        {
+            await AsyncCall.Invoke(() =>
+            {
+                LoginData(UserDetails.email, UserDetails.Securepwd);
+                LoadMainScores();
+                LoadTimelines();
+                QuestionnaireData = RTH.Business.Services.DashboardService.GetQuestionaires(Configurations.ClientId, UserDetails.language == null ? "en" : UserDetails.language);
+                GetQuestionaires(UserDetails.language == null ? "en" : UserDetails.language);
+                return true;
+            }, withloader);
+            RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.AnimateHRA });
+        }
+
+        public List<DiseaseData> GetDiseasesData(string language = "en")
+        {
+            List<DiseaseData> lstDiseases = new List<DiseaseData>();
+            AnsweredQuestionnaireIdsArr selectedHRA = new AnsweredQuestionnaireIdsArr();
+            if (UserDetails.answered_questionnaire_ids_arr != null)
+            {
+                selectedHRA = UserDetails.answered_questionnaire_ids_arr.FirstOrDefault(x => x.questionnaire != null && x.success == true);
+            }
+            //ScoreHistory score = UserDetails.score_history.FirstOrDefault(x => x.questionnaire != null);
+            if (selectedHRA != null)
+            {
+                GlobalData.Default.LastVisitedDiseaseID = GlobalData.Default.LastVisitedDiseaseID == string.Empty ? selectedHRA.questionnaire : GlobalData.Default.LastVisitedDiseaseID;
+            }
+            else
+            {
+                GlobalData.Default.LastVisitedDiseaseID = string.Empty;
+            }
+            if (QuestionnaireData != null)
+            {
+                SharingIconVisibility = false;
+                UserDetails.LastHra = false;
+                OverLayVisibility = true;
+                TotalHRA = 0;
+                QuestionnaireData.data.ForEach(c =>
+                {
+                    DiseaseData diseaseData = new DiseaseData();
+                    diseaseData.ID = c._id;
+                    diseaseData.BgColor = c.background_colour;
+                    diseaseData.KeyString = c.key_string;
+                    diseaseData.Title = c.title;
+                    diseaseData.Language = UserDetails.language;
+                    ScoreHistory scoreHistory = UserDetails.score_history.FirstOrDefault(x => x.questionnaire == c._id);
+                    AnsweredQuestionnaireIdsArr hras = null;
+                    if (UserDetails.answered_questionnaire_ids_arr != null)
+                        hras = UserDetails.answered_questionnaire_ids_arr.FirstOrDefault(x => x.questionnaire == c._id);
+                    if (hras != null)
+                    {
+                        diseaseData.Summary = string.Empty;
+                        if (hras.success)
+                        {
+                            //setting extra properties
+                            FooterVisibility = true;
+                            UserDetails.LastHra = true;
+                            OverLayVisibility = false;
+                            SharingIconVisibility = true;
+
+
+                            TotalHRA++;
+                            diseaseData.TotalScore = Math.Floor(scoreHistory.total_score).ToString();
+                            diseaseData.IsCompleted = HRAStatusEnum.Completed;
+                            diseaseData.Summary = c.summary;
+                        }
+                        else
+                        {
+                            diseaseData.IsCompleted = HRAStatusEnum.Redo;
+                            diseaseData.TotalScore = "";
+                        }
+                    }
+                    else
+                    {
+                        diseaseData.TotalScore = string.Empty;
+                        diseaseData.Summary = c.summary;
+                        diseaseData.IsCompleted = HRAStatusEnum.NotCompleted;
+                    }
+                    lstDiseases.Add(diseaseData);
+                });
+
+            }
+            return lstDiseases;
+
+        }
+    }
+}

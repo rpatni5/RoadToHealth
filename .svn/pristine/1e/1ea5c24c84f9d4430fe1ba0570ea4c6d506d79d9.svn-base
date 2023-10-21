@@ -1,0 +1,36 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class FriendsOfQViewModel: ViewModelBase
+    {
+        public FriendsOfQViewModel()
+        {
+            GlobalData.Default.HeaderVisibility = System.Windows.Visibility.Collapsed;
+            Init();
+            
+        }
+
+        private async void Init()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                GetFriendsOfQ(ViewModelBase.UserDetails._id, ViewModelBase.UserDetails.AuthToken.access_token);
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+
+        public  FriendsOfQ GetFriendsOfQ(string id, string authToken)
+        {
+            return RTH.Business.Services.FriendsOfQService.GetFriendsOfQ(id, authToken);
+        }
+    }
+}

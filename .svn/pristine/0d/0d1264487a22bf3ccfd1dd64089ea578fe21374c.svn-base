@@ -1,0 +1,46 @@
+﻿
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+
+namespace RTH.Windows.Views.Controls
+{
+    public class ChatBox : Label
+    {
+        public ChatBox(string text, bool isResponse, bool isGrayBackground = false)
+        {
+            ControlTemplate template = new ControlTemplate(typeof(ChatBox));
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetValue(MarginProperty, new Thickness(20, 10, 20, 10));
+
+            var txt = new FrameworkElementFactory(typeof(TextBlock));
+            txt.SetValue(FontSizeProperty, 14.0);
+            txt.SetValue(MarginProperty, new Thickness(15));
+            txt.SetValue(TextBlock.TextProperty, text);
+            txt.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
+
+            if (isResponse)
+            {
+                border.SetValue(Border.CornerRadiusProperty, new CornerRadius(15, 15, 0, 15));
+                border.SetValue(BackgroundProperty, new BrushConverter().ConvertFrom("#FF31AAE1"));
+                txt.SetValue(ForegroundProperty, Brushes.White);
+                border.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Right);
+            }
+            else
+            {
+                border.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+                border.SetValue(Border.CornerRadiusProperty, new CornerRadius(15, 15, 15, 0));
+                border.SetValue(BackgroundProperty, Brushes.White);
+                txt.SetValue(ForegroundProperty, Brushes.Black);
+            }
+            if (isGrayBackground)
+                border.SetValue(BackgroundProperty, new BrushConverter().ConvertFrom("#e6e6e6"));
+
+            border.AppendChild(txt);
+            template.VisualTree = border;
+            this.SetValue(TemplateProperty, template);
+            this.SetValue(HorizontalContentAlignmentProperty, HorizontalAlignment.Left);
+        }
+    }
+}

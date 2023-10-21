@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System.Windows;
+using System.Windows.Input;
+using RTH.Business.Services;
+
+namespace RTH.Windows.ViewModels
+{
+    public class AboutUsViewModel : Common.ViewModelBase
+    {
+        #region Global Properties
+        public string AboutUsData
+        {
+            get { return GetValue(() => this.AboutUsData); }
+            set { SetValue(() => AboutUsData, value); }
+        }
+
+        public int SelectedTabId
+        {
+            get { return GetValue(() => this.SelectedTabId); }
+            set { SetValue(() => SelectedTabId, value); }
+        }
+        #endregion Global Properties
+
+        private static AboutUsViewModel _instance;
+        public static AboutUsViewModel Get()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Collapsed;
+            return _instance ?? (_instance = new AboutUsViewModel());
+        }
+        private AboutUsViewModel()
+        {
+            GetAboutUs();
+        }
+
+        public void GetAboutUs()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                AboutUsData = PolicyService.GetAboutUs(UserDetails.language).text;
+            });
+        }
+    }
+}

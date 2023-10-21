@@ -1,0 +1,20 @@
+﻿using System;
+
+namespace RTH.Helpers.Messaging
+{
+    public class Message
+    {
+        public MessageType Type { get; set; }
+        public object Data { get; set; }
+        public bool RemoveLastView { get; set; }
+    }
+
+    public class MessageArgs : EventArgs
+    {
+        public Message Object { get; set; }
+        public MessageArgs(Message args)
+        {
+            this.Object = args;
+        }
+    }
+}

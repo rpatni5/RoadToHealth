@@ -1,0 +1,19 @@
+﻿<Application x:Class="RTH.Windows.Views.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             DispatcherUnhandledException="Application_DispatcherUnhandledException"
+             StartupUri="SplashWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Controls/LabelTextBox.xaml"/>
+                <ResourceDictionary Source="/Resources/User.xaml"/>
+                <ResourceDictionary Source="/Resources/Dashboard.xaml"/>
+                <ResourceDictionary Source="/Resources/Insight.xaml"/>
+                <ResourceDictionary Source="/Resources/ViewTemplates.xaml"/>
+                <ResourceDictionary Source="/Resources/InputQuestionTemplates.xaml"/>
+                <ResourceDictionary x:Name="ThemeResource" Source="Resources/Themes/Theme1.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

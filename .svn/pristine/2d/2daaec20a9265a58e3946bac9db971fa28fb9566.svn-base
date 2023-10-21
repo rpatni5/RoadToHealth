@@ -1,0 +1,103 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System.Windows.Input;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.ViewModels
+{
+    public class DeactivateViewModel : Common.ViewModelBase
+    {
+
+       public static DeactivateAnswer objSelectedAnswer = new DeactivateAnswer();
+
+       public String CustomMessage
+        {
+            get { return GetValue(() => CustomMessage); }
+            set { SetValue(() => CustomMessage, value); }
+        }
+
+        //public string CurrentInput
+        //{
+        //    get
+        //    {
+        //        return _currentInput;
+        //    }
+        //    set
+        //    {
+        //        if (value != _currentInput)
+        //        {
+        //            _currentInput = value;
+        //            OnPropertyChanged();
+        //        }
+        //    }
+        //}
+
+        public static string strDeactivationText = string.Empty;
+
+        //private ICommand m_deactivate;
+        //public ICommand Deactivate { get { return m_deactivate ?? (m_deactivate = new RelayCommand((o) => DeactivateAction(o), (o) => true)); } }
+
+
+        
+        public static void DeactivateAction( DeactivateAnswer objAnswer)
+        {
+
+            User objUser = (User)ViewModelBase.UserDetails;
+
+            if (objAnswer._id == "")
+                objAnswer._id = null;
+
+            RTH.Business.Services.UserService.DeactivateUserProfile(objUser, objAnswer, ViewModelBase.UserDetails.AuthToken.access_token);
+
+        }
+
+        public DeactivateAccount objDeactivationObject;
+        public DeactivateViewModel()
+        {
+
+            HeaderLabel = AppMessages.de_activate_account;
+
+            GetDeactivationQuestionAnswers();
+
+        }
+
+        public void GetDeactivationQuestionAnswers()
+        {
+
+            objDeactivationObject = RTH.Business.Services.UserService.GetDeactivationQuestionAnswers(ViewModelBase.UserDetails.language);
+
+            deactivationquestion = objDeactivationObject.data.question;
+            
+            //DeactivateAnswer objCustomAnswer = new DeactivateAnswer();
+            //objCustomAnswer._id = "0";
+            //objCustomAnswer.deactivation_text = ConfigurationManagers.CUSTOM_DEACTIVATION_TEXT;
+            //objCustomAnswer.blnIsCustomValue = true; 
+            //objDeactivationObject.data.answers.Add(objCustomAnswer);
+
+            deactivationanswer = objDeactivationObject.data.answers;
+
+            this.CustomMessage = ConfigurationManagers.CUSTOM_DEACTIVATION_TEXT;
+
+        }
+
+        public String deactivationquestion
+        {
+            get { return GetValue(() => deactivationquestion); }
+            set { SetValue(() => deactivationquestion, value); }
+        }
+
+        public List<DeactivateAnswer> deactivationanswer
+        {
+            get { return GetValue(() => this.deactivationanswer); }
+            set { SetValue(() => deactivationanswer, value); }
+        }
+
+    }
+}

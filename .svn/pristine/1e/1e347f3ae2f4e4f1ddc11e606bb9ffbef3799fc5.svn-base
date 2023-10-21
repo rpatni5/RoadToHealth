@@ -1,0 +1,59 @@
+﻿using RTH.Helpers;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public class GlobalData : NotifyBase
+    {
+        private GlobalData()
+        {
+
+        }
+        private static GlobalData m_Instance;
+        public static GlobalData Default
+        {
+            get
+            {
+                return m_Instance ?? (m_Instance = new GlobalData());
+            }
+        }
+        public string LastVisitedDiseaseID
+        {
+            get { return GetValue(() => this.LastVisitedDiseaseID); }
+            set { SetValue(() => LastVisitedDiseaseID, value); }
+        }
+
+        public bool LoaderVisibility
+        {
+            get { return GetValue(() => this.LoaderVisibility); }
+            set { SetValue(() => LoaderVisibility, value); }
+        }
+        public List<ProductInfo> Products
+        {
+            get { return GetValue(() => this.Products); }
+            set
+            {
+
+                SetValue(() => Products, value);
+            }
+        }
+
+        public DiseaseData ClickedHRA
+        {
+            get { return GetValue(() => this.ClickedHRA); }
+            set { SetValue(() => ClickedHRA, value); }
+        }
+
+        public const string RED = "#e5332a";
+        public const string AMBER = "#f29100";
+        public const string GREEN = "#76b72a";
+        public const string FACEBOOOK = "facebook";
+        public const string TWITTER = "twitter";
+    }
+}

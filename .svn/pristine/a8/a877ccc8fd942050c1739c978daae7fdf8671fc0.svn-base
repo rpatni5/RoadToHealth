@@ -1,0 +1,186 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class QuestionNavigatorViewModel : ViewModelBase
+    {
+        public QuestionNavigatorViewModel()
+        {
+            GetQuestionnaire();
+            FilledQuestions =new ObservableCollection<Question> (); 
+        }
+        void SetHeader()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Visible;
+            GlobalData.Default.HeaderIcon = string.Concat(ConfigurationManagers.ImagePath, Questionnaire.image_logo_grey);
+            GlobalData.Default.HeaderState = false;
+            GlobalData.Default.HeaderColor = Questionnaire.background_colour;
+            GlobalData.Default.HeaderTitle = Questionnaire.title.ToPascal();
+        }
+        private async void GetQuestionnaire()
+        {
+            //if (UserDetails.score_history != null && UserDetails.score_history.Count > 0)
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Questionnaire = QuestionnaireService.GetQuestionnaire(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+                AllQuestions = Questionnaire.GetQuestions();
+                CurrentCategory = Questionnaire.questions.FirstOrDefault().category;
+                CurrentQuestion = Questionnaire.questions.FirstOrDefault(q => q.category == CurrentCategory).questions.FirstOrDefault();
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                CurrentQuestion.Category = CurrentCategory;
+                SetHeader();
+                GlobalData.Default.LoaderVisibility = false;
+            });
+
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+
+        public Category CurrentCategory
+        {
+            get { return GetValue(() => CurrentCategory); }
+            set { SetValue(() => CurrentCategory, value); }
+        }
+        public HRA Questionnaire
+        {
+            get { return GetValue(() => Questionnaire); }
+            set
+            {
+                SetValue(() => Questionnaire, value);
+                HeaderLabel = Questionnaire.title;
+            }
+        }
+
+        public ObservableCollection<Question> AllQuestions
+        {
+            get { return GetValue(() => AllQuestions); }
+            set { SetValue(() => AllQuestions, value); }
+        }
+        public ObservableCollection<Question> FilledQuestions
+        {
+            get { return GetValue(() => FilledQuestions); }
+            set { SetValue(() => FilledQuestions, value); }
+        }
+
+        public void MoveToQuestion(int moveIndex)
+        {
+            CurrentQuestion.ErrorMessage = "";
+            if (moveIndex == 1 && !ValidateAnswer()) return;
+            ObservableCollection<Question> questions = Questionnaire.GetQuestions();
+            ArrayList SelectedAnswer = new ArrayList();
+            foreach (var item in CurrentQuestion.SelectedAnswers)
+            {
+                SelectedAnswer.Add(Convert.ToString(item.answer));
+            }
+            var GetAllDependentQuestion = (from dependentquestion in questions where dependentquestion.dependency.dependency_question != null select dependentquestion).Where(x => x.dependency.dependency_question == CurrentQuestion._id).ToList();
+            if (GetAllDependentQuestion.Count > 0)
+            {
+                string _questionid = GetDependentQuestionIdHavingAnswer(SelectedAnswer, GetAllDependentQuestion);
+                if (_questionid == null)
+                {
+                    CurrentQuestion = questions[questions.IndexOf(CurrentQuestion) + GetAllDependentQuestion.Count()+1];
+                    CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                    CurrentQuestion.Category = CurrentCategory = Questionnaire.GetCategories().FirstOrDefault(c => c.questions.Contains(CurrentQuestion)).subcategory;
+                    FilledQuestions.Add(CurrentQuestion);
+                }
+                else
+                {
+                    CurrentQuestion = questions.FirstOrDefault(x => x._id == _questionid);
+                    CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                    CurrentQuestion.Category = CurrentCategory = Questionnaire.GetCategories().FirstOrDefault(c => c.questions.Contains(CurrentQuestion)).subcategory;
+                    FilledQuestions.Add(CurrentQuestion);
+                }
+            }
+            else {
+
+                CurrentQuestion = questions[questions.IndexOf(CurrentQuestion) + moveIndex];
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                CurrentQuestion.Category = CurrentCategory = Questionnaire.GetCategories().FirstOrDefault(c => c.questions.Contains(CurrentQuestion)).subcategory;
+                FilledQuestions.Add(CurrentQuestion);
+            }
+        }
+
+        public void MoveToQuestionPrevious(int v)
+        {
+            //FilledQuestions.Add(CurrentQuestion);
+            ObservableCollection<Question> questions = Questionnaire.GetQuestions();
+            if(FilledQuestions.Count()==1)
+            {
+                CurrentQuestion = questions[0];
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                CurrentQuestion.Category = CurrentCategory = Questionnaire.GetCategories().FirstOrDefault(c => c.questions.Contains(CurrentQuestion)).subcategory;
+            }
+            else { 
+            //var PrevQuestion = FilledQuestions.Last()._id;
+            FilledQuestions.Remove(CurrentQuestion);
+            CurrentQuestion = questions.FirstOrDefault(x => x._id == FilledQuestions.Last()._id);
+            CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+            CurrentQuestion.Category = CurrentCategory = Questionnaire.GetCategories().FirstOrDefault(c => c.questions.Contains(CurrentQuestion)).subcategory;
+            }
+
+
+        }
+
+
+        private string GetDependentQuestionIdHavingAnswer(ArrayList selectedAnswer, List<Question> getAllDependentQuestion)
+        {
+            var _questionId = (from a in getAllDependentQuestion select new { a._id, a.dependency.dependency_answer });
+            string _QuestionID = null;
+            foreach (var item in _questionId)
+            {
+                var MatchedAnswer = item.dependency_answer.ToArray().Count() == selectedAnswer.ToArray().Count()
+                            && !item.dependency_answer.ToArray().Except(selectedAnswer.ToArray()).Any()
+                            && !selectedAnswer.ToArray().Except(item.dependency_answer.ToArray()).Any();
+                if (MatchedAnswer)
+                {
+                    _QuestionID = item._id;
+                    break;
+                }
+            }
+            return _QuestionID;
+        }
+
+
+        private bool ValidateAnswer()
+        {
+            if (CurrentQuestion.SelectedAnswers == null || 
+                CurrentQuestion.SelectedAnswers.Count <= 0 || 
+                CurrentQuestion.SelectedAnswers[0].answer == null || 
+                string.IsNullOrEmpty(CurrentQuestion.SelectedAnswers[0].answer.ToString()))
+            {
+                if (CurrentQuestion.element_type == 2 ||
+                    CurrentQuestion.element_type == 3 ||
+                    CurrentQuestion.element_type == 4 ||
+                    CurrentQuestion.element_type == 5 ||
+                    CurrentQuestion.element_type == 6)
+                    CurrentQuestion.ErrorMessage = AppMessages.missing_answer;// Display Error Message
+                else CurrentQuestion.ErrorMessage = AppMessages.missing_option;// Display Error Message
+                return false;
+            }
+            return true;
+        }
+
+
+        public void SubmitQuestionnaire()
+        {
+
+        }
+    }
+}

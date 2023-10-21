@@ -1,0 +1,74 @@
+﻿using System;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+
+namespace RTH.Windows.Views.Controls
+{
+    public partial class LineofMen : UserControl
+    {
+        public double CurrentOffset
+        {
+            get { return (double)GetValue(CurrentOffsetProperty); }
+            set { SetValue(CurrentOffsetProperty, value); }
+        }
+        public static readonly DependencyProperty CurrentOffsetProperty = DependencyProperty.Register("CurrentOffset", typeof(double),
+            typeof(LineofMen), new PropertyMetadata(0.0));
+
+        public double Score
+        {
+            get { return (double)GetValue(ScoreProperty); }
+            set { SetValue(ScoreProperty, value); }
+        }
+
+        public static readonly DependencyProperty ScoreProperty = DependencyProperty.Register("Score", typeof(double),
+            typeof(LineofMen), new PropertyMetadata(0.0, new PropertyChangedCallback(OnScorePropertyChanged)));
+
+        private static void OnScorePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var uc = (d as LineofMen);
+            uc.SetCurrentScore((double)e.OldValue, (double)e.NewValue);
+            //uc.Loaded += (a, b) =>
+            //{
+            //    uc.SetCurrentScore((double)e.OldValue, (double)e.NewValue);
+            //};
+        }
+
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+            if (e.Property == LineofMen.CurrentOffsetProperty)
+            {
+                scrView.ScrollToHorizontalOffset((double)e.NewValue);
+            }
+        }
+
+        public LineofMen()
+        {
+            InitializeComponent();
+            menSquad.ItemsSource = Enumerable.Range(1, 100);
+        }
+
+        private void SetCurrentScore(double fromScore, double toScore, bool animate = false)
+        {
+            var scrollAnim = new DoubleAnimation();
+
+            ContentPresenter item = (ContentPresenter)menSquad.ItemContainerGenerator.ContainerFromItem((int)toScore);
+
+            scrollAnim.From = fromScore;
+            scrollAnim.To = ((scrView.ExtentWidth / 100 * (int)item.Content) - (scrView.ActualWidth / 2) - item.ActualWidth);
+            CircleEase easeFunction = new CircleEase();
+            easeFunction.EasingMode = EasingMode.EaseInOut;
+            scrollAnim.EasingFunction = easeFunction;
+            scrollAnim.Duration = new Duration(TimeSpan.FromSeconds(3));
+
+            Storyboard storyboard = new Storyboard();
+
+            storyboard.Children.Add(scrollAnim);
+            Storyboard.SetTarget(scrollAnim, this);
+            Storyboard.SetTargetProperty(scrollAnim, new PropertyPath(LineofMen.CurrentOffsetProperty));
+            storyboard.Begin();
+        }
+    }
+}

@@ -1,0 +1,31 @@
+﻿using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class CoachingDashboardViewModel : ViewModelBase
+    {
+        public CoachingDashboardViewModel()
+        {
+            SetHeader();
+        }
+        public override void Refresh()
+        {
+            base.Refresh();
+        }
+        void SetHeader()
+        {
+            KeyString = string.Empty;
+            HeaderColor = ViewModelBase.AppHeaderColor;
+            HeaderVisibility = true;
+            HeaderState = false;
+            HeaderTitle = "";
+            KeyString = "None";
+            FooterVisibility = true;
+        }
+    }
+}

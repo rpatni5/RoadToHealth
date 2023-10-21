@@ -1,0 +1,174 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Helpers.Exceptions;
+using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class TwitterAuthenticationViewModel : ViewModelBase
+    {
+        RelayCommand authenticateCommand;
+        IDictionary<string, string> parameters;
+        public TwitterAuthenticationViewModel(bool isPostTweet = false)
+        {
+            _isPostTweet = isPostTweet;
+            _credentials = new TwitterCredentials();
+            _credentials.OAuthToken = new TwitterAuthToken();
+            _credentials.OAuthToken2 = new TwitterAuthToken();
+            GetAuthTokenAndNavigateBrowser();
+        }
+        public void PerformTask(TwitterTasks task)
+        {
+            switch (task)
+            {
+                case TwitterTasks.Authenticate:
+
+                    break;
+                case TwitterTasks.PostTweet:
+                    break;
+                case TwitterTasks.Connect:
+                    break;
+                default:
+                    break;
+            }
+        }
+        IDictionary<string, string> Parameters
+        {
+            get
+            {
+                if (parameters == null)
+                {
+                    parameters = new Dictionary<string, string>();
+                    parameters.Add("oauth_consumer_key", _credentials.ConsumerKey);
+                    if (_credentials.OAuthToken == null) _credentials.OAuthToken = new TwitterAuthToken();
+                    parameters.Add("oauth_token", _credentials.OAuthToken.Token);
+                }
+
+                return parameters;
+            }
+        }
+        public Uri NavigateToUri { get { return GetValue(() => NavigateToUri); } set { SetValue(() => NavigateToUri, value); } }
+        private async void GetAuthTokenAndNavigateBrowser()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                Parameters.Add("oauth_callback", EncodeToProtectMultiByteCharUrls("oob"));
+                Parameters.Remove("oauth_token");
+                string oAuthToken = TwitterService.GetRequestToken(_credentials.ConsumerKey, _credentials.ConsumerSecret, _credentials.AccessToken, Parameters);
+                if (string.IsNullOrEmpty(oAuthToken))
+                {
+                    GlobalData.Default.LoaderVisibility = false;
+                    throw new Exception("Could not obtain Request token");
+                }
+                string[] tokens = oAuthToken.Split('&');
+                Properties.Settings.Default.TwitterToken = _credentials.OAuthToken.Token = tokens[0].Split('=')[1];
+                Properties.Settings.Default.TwitterTokenSecret = _credentials.OAuthToken.TokenSecret = tokens[1].Split('=')[1];
+                Properties.Settings.Default.Save();
+                NavigateToUri = new Uri("http://twitter.com/oauth/authenticate?oauth_token=" + _credentials.OAuthToken.Token);
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+        string EncodeToProtectMultiByteCharUrls(string callback)
+        {
+            return callback == "oob" ? "oob" : new Uri(callback).AbsoluteUri;
+        }
+        public RelayCommand AuthenticateCommand
+        {
+            get
+            {
+                return authenticateCommand ?? (authenticateCommand = new RelayCommand(
+                    (o) =>
+                    {
+                        GetUserDetailsAsync();
+                    },
+                    (o) =>
+                    {
+                        return !string.IsNullOrEmpty(_credentials.Pin) && !string.IsNullOrWhiteSpace(_credentials.Pin);
+                    }));
+            }
+        }
+
+        public async void GetUserDetailsAsync()
+        {
+            string navView = await AsyncCall.Invoke<string>(() =>
+              {
+                  string viewName = string.Empty;
+                  Parameters.Remove("oauth_verifier");
+                  Parameters.Remove("oauth_token");
+                  Parameters.Add("oauth_verifier", _credentials.Pin);
+                  Parameters.Add("oauth_token", _credentials.OAuthToken.Token);
+                  if (TwitterService.GetAccessToken(_credentials, Parameters))
+                  {
+                      Properties.Settings.Default.TwitterToken2 = _credentials.OAuthToken2.Token;
+                      Properties.Settings.Default.TwitterTokenSecret2 = _credentials.OAuthToken2.TokenSecret;
+                      Properties.Settings.Default.Save();
+                      Parameters.Remove("screen_name");
+                      Parameters.Remove("oauth_token");
+                      Parameters.Add("oauth_token", _credentials.OAuthToken2.Token);
+                      Parameters.Add("screen_name", _credentials.OAuthToken2.ScreenName);
+                      Parameters.Remove("oauth_verifier");
+                      TwitterUser tUser = TwitterService.GetUserInfo(_credentials, Parameters);
+                      if (tUser == null) throw new LoginException("Could not fetch Twitter user information");
+                      User oUser = new User();
+                      oUser.name = tUser.name;
+
+                      if (_isPostTweet)
+                      {
+                          string contentUrl = "<a href='https://www.quealth.co/healthierworld.html';'>https://www.quealth.co/healthierworld.html';</a>";
+                          string message = string.Concat("Quealth – Life Changer! I’ve just helped make the world healthier. Find out more…\n", contentUrl);
+                          bool result = PostTweet(message);
+                          if (result)
+                              RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.Message, Data = "Message Posted Successfully." });
+                          else
+                              RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.Message, Data = "Message not Posted!" });
+
+                          viewName = "MWHealthierView";
+                      }
+                      else
+                      {
+                          // Settings are to be saved only after ValidateSocialLogin goes successful. Currently the api is not working, so left as it is.
+                          Properties.Settings.Default.SocialUserId = oUser._id = tUser.id_str;
+                          Properties.Settings.Default.SocialType = oUser.type = "Twitter";
+                          Properties.Settings.Default.Save();
+                          UserDetails = oUser;
+                          oUser = this.ValidateSocialLogin(oUser._id, oUser.type);
+                          Parameters.Remove("screen_name");
+                          if (!string.IsNullOrEmpty(oUser.message) && string.IsNullOrEmpty(oUser._id))
+                          {
+                              viewName = "FBUserRegistrationView";
+                          }
+                          else
+                          {
+                              UserDetails = oUser;
+                              viewName = "DashboardView";
+                          }
+                      }
+
+                  }
+                  return viewName;
+              });
+            if (navView != string.Empty)
+                RTH.Helpers.Messaging.AppMessages.Send(ViewToken, new Message() { Type = MessageType.LoadView, Data = navView });
+        }
+
+
+        TwitterCredentials _credentials;
+        bool _isPostTweet { get { return GetValue(() => _isPostTweet); } set { SetValue(() => _isPostTweet, value); } }
+
+        public bool PostTweet(string message)
+        {
+            string result = TwitterService.PostTweet(message, _credentials, Parameters);
+            if (!string.IsNullOrEmpty(result) && result.ToLower().Contains("forbidden")) return false;
+            return true;
+        }
+    }
+}

@@ -1,0 +1,32 @@
+﻿using System.Windows;
+using RTH.Windows.ViewModels;
+using System;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthAreas.xaml
+    /// </summary>
+    public partial class HealthAreasView : ViewBase
+    {
+        public HealthAreasView()
+        {
+            InitializeComponent();
+            Loaded += OnHealthAreasViewLoaded;
+            gridHealthAdvice.Visibility = Visibility.Collapsed;
+        }
+
+        private void OnHealthAreasViewLoaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var vm = this.ViewModel as HealthAreasViewModel;
+            if (vm.IsLoaded) gridHealthAdvice.Visibility = Visibility.Visible;
+            else vm.Loaded += OnViewModelLoaded;
+        }
+
+        private void OnViewModelLoaded(object sender)
+        {
+            (sender as HealthAreasViewModel).Loaded -= OnViewModelLoaded;
+            Dispatcher.BeginInvoke((Action)(() => gridHealthAdvice.Visibility = Visibility.Visible));
+        }
+    }
+}

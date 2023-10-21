@@ -1,0 +1,29 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.ViewModels
+{
+    public class MotivationViewModel : ViewModelBase
+    {
+        public MotivationViewModel()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                GetQuestionaire();
+            });
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+        public void GetQuestionaire()
+         {
+
+            //Conversation hra = QuestionnaireService.GetMotivatonQuestionaire(UserDetails.language, UserDetails.AuthToken.access_token);
+            MotivationResponse hra = QuestionnaireService.GetMotivatonQuestionaire("en", "nSHd3Z5BJ1TnwkLNGYLQlk68aYjmrUoWlaNFMHNJIoM=");
+        }
+    }
+}

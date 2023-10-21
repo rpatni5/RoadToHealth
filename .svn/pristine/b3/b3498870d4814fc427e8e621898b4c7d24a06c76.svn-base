@@ -1,0 +1,189 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Configuration;
+using RTH.Windows.ViewModels.Objects;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public static class ConfigurationManagers
+    {
+        public static string ImagePath
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["BaseAPiConnection"] != null ?string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], ConfigurationManager.AppSettings["ImageUrl"]) : string.Empty;
+            }
+        }
+        public static string UploadUrlPath
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["BaseAPiConnection"] != null ? string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], ConfigurationManager.AppSettings["UploadUrl"]) : string.Empty;
+            }
+        }
+
+        public const string DementiaId = "54bd0b493c0ac6fe880b7e62";
+        public const string CardioId = "54192bbc6330920800fe70cd";
+        public const string DiabetesId = "537f675a2140f60800de4531";
+        public const string LungsId = "548b2333ae8f826f1898a78f";
+        public const string CancerId = "54192ba46330920800fe70c8";
+
+        public static DiseaseData ClickedHRA { get; set; }
+
+        public static string ClientId
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["client_id"] != null ? ConfigurationManager.AppSettings["client_id"] : string.Empty;
+            }
+        }
+
+        public static string BACK_GREEN
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["back-green"] != null ? ConfigurationManager.AppSettings["back-green"] : string.Empty;
+            }
+        }
+
+        public static string BACK_GREEN_VALUE
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["back-green-value"] != null ? ConfigurationManager.AppSettings["back-green-value"] : string.Empty;
+            }
+        }
+
+        public static string BACK_AMBER
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["back-amber"] != null ? ConfigurationManager.AppSettings["back-amber"] : string.Empty;
+            }
+        }
+
+        public static string BACK_AMBER_VALUE
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["back-amber-value"] != null ? ConfigurationManager.AppSettings["back-amber-value"] : string.Empty;
+            }
+        }
+
+        public static string BACK_RED
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["back-red"] != null ? ConfigurationManager.AppSettings["back-red"] : string.Empty;
+            }
+        }
+
+        public static string BACK_RED_VALUE
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["back-red-value"] != null ? ConfigurationManager.AppSettings["back-red-value"] : string.Empty;
+            }
+        }
+
+        public static string STATIC_CODE_G
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["static_code_g"] != null ? ConfigurationManager.AppSettings["static_code_g"] : string.Empty;
+            }
+        }
+
+        public static string STATIC_CODE_A
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["static_code_a"] != null ? ConfigurationManager.AppSettings["static_code_a"] : string.Empty;
+            }
+        }
+
+        public static string STATIC_CODE_R
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["static_code_r"] != null ? ConfigurationManager.AppSettings["static_code_r"] : string.Empty;
+            }
+        }
+
+        public static string HAPPY_SMILY
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["happy_smily"] != null ? ConfigurationManager.AppSettings["happy_smily"] : string.Empty;
+            }
+        }
+
+        public static string THINKING_SMILY
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["thinking_smily"] != null ? ConfigurationManager.AppSettings["thinking_smily"] : string.Empty;
+            }
+        }
+        public static string SAD_SMILY
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["sad_smily"] != null ? ConfigurationManager.AppSettings["sad_smily"] : string.Empty;
+            }
+        }
+
+        public static string CUSTOM_DEACTIVATION_TEXT
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["custom_deactivation_text"] != null ? ConfigurationManager.AppSettings["custom_deactivation_text"] : string.Empty;
+            }
+        }
+
+        public static string SELECT_DEACTIVATION_REASON
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["select_deactivation_reason"] != null ? ConfigurationManager.AppSettings["select_deactivation_reason"] : string.Empty;
+            }
+        }
+        
+        public static string NORMAL_USER_TYPE
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["normal_user_type"] != null ? ConfigurationManager.AppSettings["normal_user_type"] : string.Empty;
+            }
+        }
+
+        public static string NAME_UPDATED
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["name_updated"] != null ? ConfigurationManager.AppSettings["name_updated"] : string.Empty;
+            }
+        }
+
+        public static string EMAIL_UPDATED
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["email_updated"] != null ? ConfigurationManager.AppSettings["email_updated"] : string.Empty;
+            }
+        }
+
+        public static string PASSWORD_UPDATED
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["password_updated"] != null ? ConfigurationManager.AppSettings["password_updated"] : string.Empty;
+            }
+        }
+
+
+    }
+}

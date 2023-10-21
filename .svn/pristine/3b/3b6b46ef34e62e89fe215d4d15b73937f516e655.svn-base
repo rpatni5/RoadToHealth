@@ -1,0 +1,142 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ResultView.xaml
+    /// </summary>
+    public partial class ResultView : ViewBase
+    {
+        Storyboard sb = null;
+        public ResultView()
+        {
+            InitializeComponent();
+            Loaded += OnLoaded;
+        }
+        double graphHeight = 0;
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            gridResultMain.Visibility = Visibility.Collapsed;
+            graphHeight = ragContainer.ActualHeight;
+            var vm = this.ViewModel as ResultViewModel;
+
+            if (vm.IsLoaded)
+            {
+                ExecuteAnimationIfRequired(vm);
+            }
+            else
+            {
+                LoadedEventHandler handler = null;
+                handler = (obj) =>
+                {
+                    vm.Loaded -= handler;
+                    Dispatcher.BeginInvoke((Action)(() => ExecuteAnimationIfRequired(vm)));
+                };
+                vm.Loaded += handler;
+            }
+        }
+
+        private void ExecuteAnimationIfRequired(ResultViewModel vm)
+        {
+            if (vm != null)
+            {
+                double score = 0;
+                double.TryParse(vm.LatestScoreSummary.total_score, out score);
+                if (vm.Animate)
+                {
+                    vm.Animate = false;
+                    sb = new Storyboard(); ;
+                    //Prepare all the animations
+                    PrepareScaleTransformAndLineofMenAnimation();
+                    lineOfMen.PrepareAnimation((int)Math.Round(score));
+                    resultGraph.PrepareHeightAnimation(4, 1, graphHeight);
+                    resultRAG.PrepareRAGSlideAnimation(5, 1);
+                    //Begin all the animations
+                    RunScaleTransformAndLineOfMenAnimation();
+                    lineOfMen.BeginScoreAnimation();
+                    resultGraph.BeginHeightAnimation();
+                    resultRAG.BeginRAGAnimation();
+                }
+                else
+                {
+                    gridResultMain.Visibility = Visibility.Visible;
+                    lineOfMen.SetScore((int)Math.Round(score));
+                    resultGraph.ResetLayout(graphHeight);
+                    resultRAG.ResetLayout();
+                }
+            }
+        }
+
+        private void RunScaleTransformAndLineOfMenAnimation()
+        {
+            sb.Completed += OnAnimationCompleted;
+            sb.Begin();
+        }
+
+        private void OnAnimationCompleted(object sender, EventArgs e)
+        {
+            gridQscore.Visibility = Visibility.Visible;
+        }
+
+        private void PrepareScaleTransformAndLineofMenAnimation()
+        {
+            gridQscore.Visibility = Visibility.Collapsed;
+            gridResultDisplay.RenderTransformOrigin = new Point(0.5, 0.5);
+            gridResultDisplay.RenderTransform = new ScaleTransform(2.5, 2.5);
+            gridResultMain.Visibility = Visibility.Visible;
+
+            var scaleXAnimation = new DoubleAnimationUsingKeyFrames();
+            scaleXAnimation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            scaleXAnimation.KeyFrames = new DoubleKeyFrameCollection();
+            scaleXAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3))));
+            Storyboard.SetTarget(scaleXAnimation, gridResultDisplay);
+            Storyboard.SetTargetProperty(scaleXAnimation, new PropertyPath("RenderTransform.(ScaleTransform.ScaleX)"));
+
+            var scaleYAnimation = new DoubleAnimationUsingKeyFrames();
+            scaleYAnimation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            scaleYAnimation.KeyFrames = new DoubleKeyFrameCollection();
+            scaleYAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3))));
+            Storyboard.SetTarget(scaleYAnimation, gridResultDisplay);
+            Storyboard.SetTargetProperty(scaleYAnimation, new PropertyPath("RenderTransform.(ScaleTransform.ScaleY)"));
+
+            sb.Children.Add(scaleXAnimation);
+            sb.Children.Add(scaleYAnimation);
+            //sb.Begin();
+        }
+        //
+        //
+        //
+        //
+        //
+        //
+
+        //
+
+        //
+        //
+        //
+        //
+        //
+
+    }
+}
+

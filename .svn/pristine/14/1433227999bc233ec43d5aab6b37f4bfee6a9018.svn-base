@@ -1,0 +1,21 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for TermsAndConditionsView.xaml
+    /// </summary>
+    public partial class TermsAndConditionsView : ViewBase
+    {
+        public TermsAndConditionsView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<TermsAndConditionsViewModel>();
+            base.LoadViewModel();
+        }
+    }
+}

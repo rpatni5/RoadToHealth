@@ -1,0 +1,53 @@
+﻿using System.Collections.Generic;
+using System.Windows.Media;
+using System.Configuration;
+using RTH.Helpers;
+
+namespace RTH.Business.Objects.JSON
+{
+    public partial class FriendsOfQ
+    {
+
+    }
+    public partial class ProductType
+    {
+        public string ProductImage
+        {
+            get
+            {
+                return string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], this.image);
+            }
+        }
+    }
+    public partial class ProductData : NotifyBase
+    {
+        public string ThumbIcon
+        {
+            get
+            {
+                return string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], this.thumb_image);
+            }
+        }
+
+        public string MainImage
+        {
+            get
+            {
+                return string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], this.main_image);
+            }
+        }
+
+        public Dictionary<string, bool> DiseaseIcons { get; set; }
+    }
+
+    public partial class Client
+    {
+        public string LogoImage
+        {
+            get
+            {
+                return string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], this.image);
+            }
+        }
+    }
+}

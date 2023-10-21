@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects.JSON
+{
+    public class HealthAgenda
+    {
+        public List<string> low_risk { get; set; }
+        public List<string> medium_risk { get; set; }
+        public List<string> high_risk { get; set; }
+    }
+}

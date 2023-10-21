@@ -1,0 +1,13 @@
+﻿namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for AboutUsView.xaml
+    /// </summary>
+    public partial class AboutUsView : ViewBase
+    {
+        public AboutUsView()
+        {
+            InitializeComponent();
+        }
+    }
+}

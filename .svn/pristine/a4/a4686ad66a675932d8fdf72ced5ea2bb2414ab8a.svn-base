@@ -1,0 +1,73 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.Helpers
+{
+    public static class BrowserBehavior
+    {
+        static String tempFileName = string.Empty;
+        public static readonly DependencyProperty HtmlProperty = DependencyProperty.RegisterAttached(
+            "Html",
+            typeof(string),
+            typeof(BrowserBehavior),
+            new FrameworkPropertyMetadata(OnHtmlChanged));
+
+        [AttachedPropertyBrowsableForType(typeof(WebBrowser))]
+        public static string GetHtml(WebBrowser d)
+        {
+            return (string)d.GetValue(HtmlProperty);
+        }
+
+        public static void SetHtml(WebBrowser d, string value)
+        {
+            d.SetValue(HtmlProperty, value);
+        }
+
+        static void OnHtmlChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            WebBrowser wb = d as WebBrowser;
+            string stratTags = "<html><head><style> h1 {font-size:1.4em;font-weight:bold;font-family:Times New Roman; }" +
+            "h2 { font-size: 1.3em; font-weight: bold;font-family:Times New Roman; }h3 { font-size: 1.2em; font-weight: bold;font-family:Times New Roman; }" +
+            "h4 { font-size: 1.1em; font-weight: bold;font-family:Times New Roman; }h5 { font-size: 1.0em; font-weight: bold;font-family:Times New Roman; }" + " h6 { font-size: .9em; font-weight: bold;font-family:Times New Roman; }" +
+            "body{overflow: auto; font-size:14px;	font-family:verdana;}</style> </head><body>";
+            string endTags = "</body></html>";
+            if (wb != null && !string.IsNullOrEmpty(e.NewValue.ToString()))
+            {
+                tempFileName = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName() + ".html");
+                System.IO.File.WriteAllText(tempFileName, string.Concat(stratTags, e.NewValue as string, endTags), Encoding.UTF8);
+                wb.Navigate(tempFileName);
+            }
+
+        }
+        /// <summary>
+        /// Attached property to be able to create a bindable source property
+        /// </summary>
+        public static readonly DependencyProperty BindableSourceProperty =
+        DependencyProperty.RegisterAttached("BindableSource", typeof(string), typeof(BrowserBehavior), new UIPropertyMetadata(null, BindableSourcePropertyChanged));
+
+        public static string GetBindableSource(DependencyObject obj)
+        {
+            return (string)obj.GetValue(BindableSourceProperty);
+        }
+
+        public static void SetBindableSource(DependencyObject obj, string value)
+        {
+            obj.SetValue(BindableSourceProperty, value);
+        }
+
+        public static void BindableSourcePropertyChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+        {
+            WebBrowser browser = o as WebBrowser;
+            if (browser != null)
+            {
+                string uri = e.NewValue as string;
+                browser.Navigate(!String.IsNullOrEmpty(uri) ? new Uri(uri) : null);
+            }
+        }
+    }
+}

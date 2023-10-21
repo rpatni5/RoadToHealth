@@ -1,0 +1,27 @@
+﻿using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+        private RelayCommand m_CategoriesCommand;
+        public RelayCommand CategoriesCommand
+        {
+            get
+            {
+                return m_CategoriesCommand ?? (m_CategoriesCommand = new RelayCommand(
+                    ve => ExecuteCategories(ve), (t) => true));
+            }
+        }
+
+        private void ExecuteCategories(object ve)
+        {
+            LoadView(ViewModels.Enums.ViewEnum.ProductCategoriesView);
+        }
+    }
+}

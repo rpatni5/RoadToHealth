@@ -1,0 +1,131 @@
+﻿using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+        private RelayCommand m_CategoriesCommand;
+        public RelayCommand CategoriesCommand
+        {
+            get
+            {
+                return m_CategoriesCommand ?? (m_CategoriesCommand = new RelayCommand(
+                    ve => ExecuteCategories(ve), (t) => true));
+            }
+        }
+
+        private RelayCommand m_ProductSummaryCommand;
+        public RelayCommand ProductSummaryCommand
+        {
+            get
+            {
+                return m_ProductSummaryCommand ?? (m_ProductSummaryCommand = new RelayCommand(
+                    ve => ExecuteProductSummary(ve), (t) => true));
+            }
+        }
+
+        private RelayCommand<object[]> m_NavigateToUrlCommand1;
+        public RelayCommand<object[]> NavigateToUrlCommand1
+        {
+            get
+            {
+                return m_NavigateToUrlCommand1 ?? (m_NavigateToUrlCommand1 = new RelayCommand<object[]>(
+                    ve => NavigateToUrl1(ve), (t) => true));
+            }
+        }
+
+        private void NavigateToUrl1(object[] ve)
+        {
+
+            ViewModelBase.ExecuteTrackNavigation("products", "products-" + ve[1] as string + "-clicked", 1);
+            System.Diagnostics.Process.Start(ve[0] as string);
+        }
+        private RelayCommand m_NavigateToUrlCommand;
+
+        public RelayCommand NavigateToUrlCommand
+        {
+            get
+            {
+                return m_NavigateToUrlCommand ?? (m_NavigateToUrlCommand = new RelayCommand(
+                    ve => NavigateToUrl(ve), (t) => true));
+            }
+        }
+
+        private void NavigateToUrl(object ve)
+        {
+            System.Diagnostics.Process.Start(ve as string);
+        }
+
+
+        private void ExecuteProductSummary(object ve)
+        {
+            if (ve != null)
+            LoadView(Enums.ViewEnum.ProductSummaryView, param: ve);
+            
+        }
+
+        private void ExecuteCategories(object ve)
+        {
+            ProductInfo productInfo = (ProductInfo)ve;
+            if (string.IsNullOrEmpty(productInfo.ID))
+                LoadView(Views.Enums.ViewEnum.ProductCategoriesView);
+        }
+
+        private RelayCommand m_NavigationCommand;
+        public RelayCommand NavigationCommand
+        {
+            get
+            {
+                return m_NavigationCommand ?? (m_NavigationCommand = new RelayCommand(
+                    ve => OnLoadViewModel(ve, GlobalData.Default.LastVisitedDiseaseID), (t) => true));
+            }
+        }
+
+        private RelayCommand m_MenuNavigationCommand;
+        public RelayCommand MenuNavigationCommand
+        {
+            get
+            {
+                return m_MenuNavigationCommand ?? (m_MenuNavigationCommand = new RelayCommand(
+                    ve => OnMenuNavigationCommand(ve), (t) => true));
+            }
+        }
+        private RelayCommand m_HideMenuCommand;
+        public RelayCommand HideMenuCommand
+        {
+            get
+            {
+                return m_HideMenuCommand ?? (m_HideMenuCommand = new RelayCommand(
+                    ve => OnNavigateMenu(ve), (t) => true));
+            }
+        }
+
+        private void OnNavigateMenu(object ve)
+        {
+            HeaderMenu.HideMenu();
+        }
+
+        private void OnMenuNavigationCommand(object ve)
+        {
+            HeaderMenu.HideMenu();
+            if(Enums.ViewEnum.TermsAndConditionsView == (Enums.ViewEnum)ve)
+            {
+                LoadView((Enums.ViewEnum)ve,true);
+            }
+            if (this.CurrentView == (Enums.ViewEnum)ve)
+            {
+                ViewModelBase.UserDetails.Securepwd = Properties.Settings.Default.SecurePwd;
+                this.ViewModel.Refresh(true);
+            }
+            else {
+                LoadView((Enums.ViewEnum)ve);
+            }
+        }
+    }
+}

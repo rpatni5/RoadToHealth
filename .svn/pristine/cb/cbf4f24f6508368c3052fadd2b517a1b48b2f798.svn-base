@@ -1,0 +1,208 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using TheArtOfDev.HtmlRenderer.WPF;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuestionNavigatorView.xaml
+    /// </summary>
+    public partial class QuestionNavigatorView : UserControl
+    {
+        public QuestionNavigatorView()
+        {
+            InitializeComponent();
+            //tbtnShowHelp.Visibility = Visibility.Hidden;
+            Loaded += OnViewLoaded;
+        }
+
+        private void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            App.Current.MainWindow.Opacity = 1;
+        }
+
+
+        #region Continue button
+        private RelayCommand continueCommand;
+
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        //QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        //return
+                        //v != null &&
+                        //v.CurrentQuestion != null &&
+                        //v.CurrentQuestion.SelectedAnswers != null &&
+                        //v.CurrentQuestion.SelectedAnswers[0].answer != null &&
+                        //(v.CurrentQuestion.element_type != 4 ||
+                        // v.CurrentQuestion.element_type == 4 &&
+                        //    (v.CurrentQuestion.SelectedAnswers[0].response != null ||
+                        //     v.CurrentQuestion.SelectedAnswers[0].response1 != null ||
+                        //     v.CurrentQuestion.SelectedAnswers[0].response2 != null));
+                        return true;
+
+                    }));
+            }
+        }
+
+        private void ExecuteContinueCommand(object obj)
+        {
+            transition.LoadControl(null, animateToRight: true);
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            vm.MoveToQuestion(1);
+        }
+
+        #endregion
+
+        #region Next Button
+        private RelayCommand nextCommand;
+
+        public RelayCommand NextCommand
+        {
+            get
+            {
+                return nextCommand ?? (nextCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        //QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        //return
+                        //v != null &&
+                        //v.CurrentQuestion != null &&
+                        //v.CurrentQuestion.SelectedAnswers != null &&
+                        //v.CurrentQuestion.SelectedAnswers[0].answer != null &&
+                        //(v.CurrentQuestion.element_type != 4 ||
+                        // v.CurrentQuestion.element_type == 4 &&
+                        //    (v.CurrentQuestion.SelectedAnswers[0].response != null ||
+                        //     v.CurrentQuestion.SelectedAnswers[0].response1 != null ||
+                        //     v.CurrentQuestion.SelectedAnswers[0].response2 != null));
+
+                        QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        if (
+                        v != null &&
+                        v.CurrentQuestion != null &&
+                        v.CurrentQuestion.HasErrors)
+                        {
+                            v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+                            return false;
+                        }
+                        //if (
+                        //v != null &&
+                        //v.CurrentQuestion != null)
+                        //    v.CurrentQuestion.ErrorMessage = "";
+                        return true;
+                    }));
+            }
+        }
+
+        #endregion
+
+        #region Previous Button
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecutePreviousCommand(object obj)
+        {
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            vm.MoveToQuestionPrevious(-1);
+        }
+        #endregion
+        #region Submit Button
+        private RelayCommand submitCommand;
+
+        public RelayCommand SubmitCommand
+        {
+            get
+            {
+                return submitCommand ?? (submitCommand = new RelayCommand(
+                    vm => ExecuteSubmitCommand(vm), (vm) =>
+                    {
+                        //QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        //return
+                        //v != null &&
+                        //v.CurrentQuestion != null &&
+                        //v.CurrentQuestion.SelectedAnswers != null &&
+                        //v.CurrentQuestion.SelectedAnswers[0].answer != null &&
+                        //(v.CurrentQuestion.element_type != 4 ||
+                        // v.CurrentQuestion.element_type == 4 &&
+                        //    (v.CurrentQuestion.SelectedAnswers[0].response != null ||
+                        //     v.CurrentQuestion.SelectedAnswers[0].response1 != null ||
+                        //     v.CurrentQuestion.SelectedAnswers[0].response2 != null));
+                        return true;
+                    }));
+            }
+        }
+
+        private async void ExecuteSubmitCommand(object obj)
+        {
+
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            QuestionnairesResponse oQuestionnairesResponse = await vm.SubmitQuestionnaire(Properties.Settings.Default.Password);
+            if (oQuestionnairesResponse.status == 0)
+            {
+                Window w = Window.GetWindow(this);
+                ((MainWindow)w).LoadView(Enums.ViewEnum.DashboardView);
+            }
+        }
+
+        #endregion
+
+
+        private RelayCommand m_ShowQuestionHelperCommand;
+
+        public RelayCommand ShowQuestionHelperCommand
+        {
+            get
+            {
+                return m_ShowQuestionHelperCommand ?? (m_ShowQuestionHelperCommand = new RelayCommand(
+                    ve => ShowQuestionHelper(ve), (t) => true));
+            }
+        }
+
+        private void ShowQuestionHelper(object ve)
+        {
+            var question = ve as Question;
+            if (transition.HasContent == false)
+            {
+                transition.LoadControl(new HtmlPanel
+                {
+                    Text = question.summary,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalAlignment = HorizontalAlignment.Stretch
+                });
+            }
+            else
+            {
+                transition.LoadControl(null, animateToRight: true);
+            }
+        }
+
+
+    }
+}

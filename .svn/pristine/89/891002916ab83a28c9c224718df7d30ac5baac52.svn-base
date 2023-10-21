@@ -1,0 +1,68 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthAreasViewModel : ViewModels.Common.ViewModelBase
+    {
+        public HealthAreasViewModel()
+        {
+            Summary = ResultService.GetSummaries(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token).data;
+            if (Summary != null && Summary.Any()) Overview = new HealthArea { summary = Summary[0].content + Summary[1].content };
+            PHADetails = HealthAreasService.GetPHA(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+            ObservableCollection<ScoreSummary> sc = ResultService.GetScoreSummaryDetails(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+            if (sc != null && sc.Any())
+                LatestScoreSummary = sc[0];
+        }
+        public ObservableCollection<QSummaries> Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+
+        public HealthArea Overview
+        {
+            get { return GetValue(() => Overview); }
+            set { SetValue(() => Overview, value); }
+        }
+        public PHA PHADetails
+        {
+            get { return GetValue(() => PHADetails); }
+            set { SetValue(() => PHADetails, value); }
+        }
+
+        public HealthArea CurrentHealthArea
+        {
+            get { return GetValue(() => CurrentHealthArea); }
+            set { SetValue(() => CurrentHealthArea, value); }
+        }
+        private RelayCommand showSummary;
+
+        public RelayCommand ShowSummary
+        {
+            get
+            {
+                return showSummary ?? (showSummary = new RelayCommand(vm =>
+                {
+                    CurrentHealthArea = vm as HealthArea;
+                },
+                vm => { return true; }));
+            }
+        }
+
+        public ScoreSummary LatestScoreSummary
+        {
+            get { return GetValue(() => LatestScoreSummary); }
+            set { SetValue(() => LatestScoreSummary, value); }
+        }
+    }
+
+
+}

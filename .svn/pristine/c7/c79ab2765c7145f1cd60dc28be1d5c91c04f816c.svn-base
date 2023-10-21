@@ -1,0 +1,140 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Controls;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for CoachChatView.xaml
+    /// </summary>
+    public partial class CoachChatView : ViewBase
+    {
+        public CoachChatView()
+        {
+            InitializeComponent();
+        }
+        CoachChatViewModel vm;
+        public override void LoadViewModel()
+        {
+            vm = ViewModelLocator.Get<CoachChatViewModel>();
+            ViewModel = vm;
+            base.LoadViewModel();
+        }
+        List<string> lstChat;
+        ConversationThread currentConversation;
+        public void StartChat(Engagement engagement)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                GetActivity(engagement);
+            }, false);
+        }
+
+        private void GetActivity(Engagement engagement)
+        {
+            currentConversation = vm.GetSpecificActivity(engagement._id);
+            if (currentConversation != null && !string.IsNullOrEmpty(currentConversation.engage_statement))
+            {
+                FetchData(currentConversation.engage_statement);
+                DisplayChat();
+            }
+            else
+            {
+                viewTyping.Visibility = Visibility.Collapsed;
+            }
+        }
+        private void FetchData(string str)
+        {
+            lstChat = str.Split('\n').ToList();
+        }
+        private int chatWaitTime = 2000;
+        int chatItrerator = 0;
+        private void DisplayChat()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                viewTyping.Visibility = Visibility.Visible;
+                chatScroll.ScrollToBottom();
+            });
+
+            chatItrerator = 0;
+            int count = lstChat.Count;
+            for (chatItrerator = 0; chatItrerator < count;)
+            {
+                Thread.Sleep(chatWaitTime);
+                if (chatWaitTime != 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddChatBlock();
+                    });
+                }
+                chatWaitTime = 2000;
+            }
+        }
+        private void AddChatBlock()
+        {
+            try
+            {
+                if (lstChat != null && chatItrerator < lstChat.Count)
+                {
+                    chatScroll.ScrollToBottom();
+                    coachControl.Children.Add(new ChatBox(lstChat[chatItrerator], false));
+                    chatItrerator++;
+                    if (chatItrerator == lstChat.Count)
+                    {
+                        lstChat = null;
+                        viewTyping.Visibility = Visibility.Collapsed;
+                        SwipeOption();
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void SwipeOption()
+        {
+            if (currentConversation.option_list != null && currentConversation.option_list.Count > 0)
+            {
+                currentConversation.option_list.ForEach(c =>
+                {
+                    ChatResponseButton btn = new ChatResponseButton(c.option);
+                    btn.DataContext = c;
+                    btn.Content = c.option;
+                    responseControl.Children.Add(btn);
+                    chatScroll.ScrollToBottom();
+                    btn.Click += btn_Click;
+                });
+            }
+            else
+            {
+
+            }
+
+        }
+
+        private void btn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+    }
+}

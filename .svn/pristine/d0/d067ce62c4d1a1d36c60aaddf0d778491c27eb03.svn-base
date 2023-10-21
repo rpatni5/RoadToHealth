@@ -1,0 +1,81 @@
+﻿using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class MWHealthierViewModel : ViewModelBase
+    {
+        public async Task<bool> SendInvitation()
+        {
+            return await AsyncCall.Invoke(() =>
+             {
+                 EmailColor = "#FF000000";
+                 NameColor = "#FF000000";
+
+                 if (string.IsNullOrEmpty(this.Name))
+                 {
+                     this.ErrorMessage = ViewModelBase.AppMessages.please_enter_name;
+                     return false;
+                 }
+                 if (!ExtensionMethod.ValidateName(this.Name))
+                 {
+                     this.ErrorMessage = ViewModelBase.AppMessages.please_enter_valid_name;
+                     NameColor = "#FFE51400"; return false;
+                 }
+                 if (string.IsNullOrEmpty(this.Email))
+                 {
+                     this.ErrorMessage = ViewModelBase.AppMessages.missing_email;
+                     return false;
+                 }
+                 if (!ExtensionMethod.ValidateEmail(this.Email))
+                 {
+                     EmailColor = "#FFE51400";
+                     this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry;
+                     return false;
+                 }
+                 return true;
+             });
+        }
+
+        #region properties
+        public String EmailColor
+        {
+            get { return GetValue(() => EmailColor); }
+            set
+            {
+                SetValue(() => EmailColor, value);
+            }
+        }
+        public String NameColor
+        {
+            get { return GetValue(() => NameColor); }
+            set
+            {
+                SetValue(() => NameColor, value);
+            }
+        }
+
+        public String Name
+        {
+            get { return GetValue(() => Name); }
+            set
+            {
+                SetValue(() => Name, value);
+            }
+        }
+        public String Email
+        {
+            get { return GetValue(() => Email); }
+            set
+            {
+                SetValue(() => Email, value);
+            }
+        }
+        #endregion
+    }
+}

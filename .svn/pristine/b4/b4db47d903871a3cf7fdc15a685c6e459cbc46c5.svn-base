@@ -1,0 +1,23 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class ScoreSummary : NotifyBase
+    {
+        public string user_Id
+        {
+            get { return GetValue(() => user_Id); }
+            set { SetValue(() => user_Id, value); }
+        }
+        public string questionnaire
+        {
+            get { return GetValue(() => questionnaire); }
+            set { SetValue(() => questionnaire, value); }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels.Objects
+{
+    public class DiseaseData
+    {
+        public string ID { get; set; }
+        public string BgColor { get; set; }
+        public string BgImagePath { get; set; }
+        public string CoverImagePath { get; set; }
+        public string InnerText { get; set; }
+        public string Summery { get; set; }
+        public string StatusText { get; set; }
+        public string KeyString { get; set; }
+    }
+}

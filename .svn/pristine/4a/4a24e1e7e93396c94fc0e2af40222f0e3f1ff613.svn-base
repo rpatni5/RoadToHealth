@@ -1,0 +1,137 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.ResultView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             xmlns:helpers="clr-namespace:RTH.Windows.Views.Helpers"
+             xmlns:ctl="clr-namespace:RTH.Windows.Views.Controls"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             xmlns:Html="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"
+             xmlns:bo="clr-namespace:RTH.Business.Objects;assembly=RTH.Business.Objects"
+             xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+             Background="{DynamicResource ResultBGColor}" Height="Auto" Width="Auto">
+
+    <local:ViewBase.Resources>
+        <converters:HtmlConverter x:Key="htmlConverter" />
+        <converters:StringToNumericConverter x:Key="StrToDouble"/>
+        <converters:ScoreToMarginConverter x:Key="scoreToMarginConverter"/>
+    </local:ViewBase.Resources>
+    <UniformGrid x:Name="gridResultMain" Rows="1" Margin="0,0,0,55">
+        <Grid x:Name="gridResultDisplay">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <!--<Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>-->
+            <Grid Grid.Column="0" Grid.RowSpan="2" Grid.Row="1" Margin="400 0 0 0" Name="ragContainer">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="gridColorColumn" Width="10" HorizontalAlignment="Left" Margin="0 15 0 0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="4*"/>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+                    <Rectangle x:Name="rectGreen" Grid.Column="0" Grid.Row="0" Fill="#76b72a"/>
+                    <Rectangle Grid.Column="0" Grid.Row="1" Fill="#f29100"/>
+                    <Rectangle Grid.Column="0" Grid.Row="2" Fill="#e5332a"/>
+
+                </Grid>
+                <Grid Grid.Column="1">
+                    <Grid Margin="0 15 0 0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="White" Opacity="0.3"/>
+                        </Grid.Background>
+                    </Grid>
+                    <Grid x:Name="grdOptimumScore" Grid.Column="1" Grid.RowSpan="3" Height="30" VerticalAlignment="Bottom">
+                        <Grid.Margin>
+                            <MultiBinding Converter="{StaticResource scoreToMarginConverter}">
+                                <Binding Path="ActualHeight" ElementName="gridColorColumn" />
+                                <Binding Path="LatestScoreSummary.optimum_score" />
+                                <Binding Path="Height" RelativeSource="{RelativeSource Self}"/>
+                            </MultiBinding>
+                        </Grid.Margin>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="28"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Separator Grid.Column="0" Style="{StaticResource SeparatorStyle}" Background="White"/>
+                        <Separator Grid.Column="2" Style="{StaticResource SeparatorStyle}" Background="White"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" >
+                            <TextBlock Width="Auto" FontSize="12" Text="Optimum:" Margin="5" Foreground="White"/>
+                            <TextBlock Width="Auto" FontSize="12" Text="{Binding LatestScoreSummary.OptimumScoreToDisplay}" Margin="5" Foreground="White"/>
+                        </StackPanel>
+                        <!--{Binding Name}-->
+                    </Grid>
+                    <Grid x:Name="grdTotalScore" Height="30" Grid.Column="1" Grid.RowSpan="3" VerticalAlignment="Bottom" >
+                        <Grid.Margin>
+                            <MultiBinding Converter="{StaticResource scoreToMarginConverter}">
+                                <Binding Path="ActualHeight" ElementName="gridColorColumn" />
+                                <Binding Path="LatestScoreSummary.total_score"/>
+                                <Binding Path="Height" RelativeSource="{RelativeSource Self}"/>
+                            </MultiBinding>
+                        </Grid.Margin>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="28"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Separator Grid.Column="0" Style="{StaticResource SeparatorStyle}" Background="White"/>
+                        <Separator Grid.Column="2" Style="{StaticResource SeparatorStyle}" Background="White"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" >
+                            <TextBlock Width="Auto" FontSize="12" Text="Current:" Margin="5" Foreground="White"/>
+                            <TextBlock Width="Auto" FontSize="12" Text="{Binding LatestScoreSummary.TotalScoreToDisplay}" Margin="5" Foreground="White"/>
+                        </StackPanel>
+                        <!--{Binding Name}-->
+
+                    </Grid>
+                </Grid>
+            </Grid>
+            <ctl:LineofMen Grid.Column="0" Grid.ColumnSpan="2" MaxWidth="400" Grid.RowSpan="2" Margin="0 15 0 0"
+                           AnimateLineOfMen="{Binding Animate}" Score="{Binding Path= LatestScoreSummary.total_score , Converter={StaticResource StrToDouble}}"/>
+            <Grid Grid.Row="0" Grid.RowSpan="3" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid x:Name="gridQscore" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+                    <TextBlock x:Name="txtBlockOverviewScore" 
+                			helpers:DecimalTextHelper.DecimalText="{Binding LatestScoreSummary.total_score, StringFormat=0.00}" 
+                			helpers:DecimalTextHelper.LargeTextSize="84.0" 
+                			helpers:DecimalTextHelper.SmallTextSize="16.0" 
+                			Style="{StaticResource OverviewTextBlock}" Background="Transparent" />
+                </Grid>
+                <Grid x:Name="gridCharting" Grid.Row="1" Margin="0 15 0 0">
+                    <ctl:ResultGraph x:Name="resultGraph" ItemsSource="{Binding ScoreSummaries}" AnimateGraph="{Binding Animate}" 
+                                     ControlHeight="{Binding ElementName=gridColorColumn, Path=ActualHeight, Mode=OneWay}"/>
+                </Grid>
+            </Grid>
+
+
+        </Grid>
+        <Grid x:Name="gridHeaderContentAndWebBrowser">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.Background>
+                <SolidColorBrush Color="White" Opacity="0.4"/>
+            </Grid.Background>
+            <TextBlock x:Name="txtBlockHeaderContent" Grid.Row="0" Grid.Column="1"  Background="#F29100" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Foreground="White" 
+                       FontSize="18" Padding="11,10"
+                       Text="{Binding Source={x:Static Root:App.SharedValues}, Path= LanguageResource.quealth_summary}"></TextBlock>
+
+            <ctl:HtmlPanel Grid.Row="1" Grid.Column="1" Html="{Binding Summary[0].content}" />
+        </Grid>
+    </UniformGrid>
+</local:ViewBase>

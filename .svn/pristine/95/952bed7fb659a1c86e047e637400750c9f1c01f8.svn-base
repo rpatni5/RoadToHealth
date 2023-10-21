@@ -1,0 +1,94 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuealthCoachView.xaml
+    /// </summary>
+    public partial class QuealthCoachView : ViewBase
+    {
+        public QuealthCoachView()
+        {
+            InitializeComponent();
+        }
+        DispatcherTimer _tmr = new DispatcherTimer();
+        private bool IsAnimate;
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<TermsAndConditionsViewModel>();
+            IsAnimate = true;
+        }
+        public override void OnViewLoaded()
+        {
+            if (IsAnimate)
+            {
+                AddCoachSuggestion();
+                IsAnimate = false;
+            }
+        }
+
+        private async void AddCoachSuggestion()
+        {
+            List<string> lst = new List<string>();
+            lst.Add("As your health coach it’s going to be my job to help you achieve your health goals.");
+            lst.Add("I’ll be checking in with you regular, offering you useful information and advice, guidance, encouragement and reminders - all totally focussed on your personal health plan. ");
+            lst.Add("To start with, I need a few minutes of your time to get toget to know you a little. It’s what I call undertanding your Health Agenda.");
+            lst.Add("Are you ready to get going?");
+            foreach (var c in lst)
+            {
+                await AsyncCall.Invoke(() =>
+                 {
+                     Thread.Sleep(1);
+                     Dispatcher.Invoke(() =>
+                     {
+                         coachControl.Children.Insert(coachControl.Children.IndexOf(viewTyping), new TextBlock()
+                         {
+                             Text = c,
+                             FontSize = 14.0,
+                             Foreground = Brushes.Gray,
+                             Margin = new Thickness(20, 0, 20, 20),
+                             Background = (SolidColorBrush)(new BrushConverter().ConvertFrom("#e6e6e6")),
+                             Padding = new Thickness(20, 10, 20, 10),
+                             TextWrapping = TextWrapping.Wrap,
+                         });
+                     });
+                     Thread.Sleep(1000);
+
+                     return true;
+                 }, false);
+            }
+
+            viewTyping.Visibility = Visibility.Collapsed;
+            ButtonSignUp();
+        }
+
+        private void ButtonSignUp()
+        {
+            btnGetStarted.SetValue(VisibilityProperty, Visibility.Visible);
+            Storyboard qSB = new Storyboard();
+            ThicknessAnimation da = new ThicknessAnimation(new Thickness(300, 0, 0, 0), new Thickness(0, 0, 0, 0), TimeSpan.FromSeconds(0.50));
+            Storyboard.SetTarget(da, btnGetStarted);
+            Storyboard.SetTargetProperty(da, new PropertyPath(Border.MarginProperty));
+            qSB.Children.Add(da);
+            qSB.Begin();
+        }
+    }
+}

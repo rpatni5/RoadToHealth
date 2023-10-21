@@ -1,0 +1,33 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class CategorySubCategoryColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            Question q = value as Question;
+            if (q == null) return null;
+
+            //if (q.SubCategory == null)
+            //{
+            //    return new SolidColorBrush((Color)ColorConverter.ConvertFromString(q.Category.question_color));
+            //}
+
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(q.Category.question_color));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

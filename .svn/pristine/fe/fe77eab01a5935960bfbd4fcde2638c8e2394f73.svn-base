@@ -1,0 +1,33 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:bo="clr-namespace:RTH.Business.Objects;assembly=RTH.Business.Objects"
+                    xmlns:uc="clr-namespace:RTH.Windows.Views.UserControls">
+    <DataTemplate x:Key="SingleSelect" DataType="{x:Type bo:Question}">
+        <uc:SingleSelectQuestionView DataContext="{Binding}" />
+    </DataTemplate>
+    <DataTemplate x:Key="DateType" DataType="{x:Type bo:Question}">
+        <Grid>
+            <TextBlock Text="Date Type"></TextBlock>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate x:Key="MultiSelect" DataType="{x:Type bo:Question}">
+        <Grid>
+            <TextBlock Text="Multiselect Type"></TextBlock>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="WeightViewTemplate">
+        <Grid>
+            <uc:WeightUserControl DataContext="{Binding}"/>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="HeightViewTemplate">
+        <Grid>
+            <uc:HeightUserControl DataContext="{Binding}"/>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="SimpleTextViewTemplate">
+        <Grid>
+            <uc:SimpleTextUserControl DataContext="{Binding}"/>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

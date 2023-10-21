@@ -1,0 +1,66 @@
+﻿using RTH.Windows.Views.Objects;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.Helpers
+{
+    public interface ITutorialHost
+    {
+        int MaxTutorials { get; }
+        int GetTutorialIndex();
+        string GetTutorialText(string keyString);
+
+    }
+    public static class TutorialHelper
+    {
+        public static TutorialContent GetTutorial(this FrameworkElement child, ITutorialHost parent, string keyString, bool isList = false)
+        {
+            var pt = child.TranslatePoint(new Point(0, 0), App.SharedValues.WindowMain);
+            TutorialContent _t = new TutorialContent();
+
+            _t.Bounds = new Rect(pt.X, pt.Y, child.ActualWidth, child.ActualHeight > 300 ? 300 : child.ActualHeight);
+            _t.CurrentItem = parent.GetTutorialIndex();
+            _t.TotalItem = parent.MaxTutorials;
+            _t.FooterText = parent.GetTutorialText(keyString);
+            _t.KeyString = keyString;
+            _t.HeaderContent = new Dictionary<string, Rect>();
+
+            var trans = child.TransformToVisual(App.SharedValues.WindowMain);
+            var rc = trans.TransformBounds(_t.Bounds);
+
+            _t.Bounds = new Rect (pt, rc.Size);
+
+            if (isList && child is ItemsControl)
+            {
+                var itemsControl = child as ItemsControl;
+                for (int i = 0; i < itemsControl.Items.Count; i++)
+                {
+                    ContentPresenter cp = (ContentPresenter)itemsControl.ItemContainerGenerator.ContainerFromIndex(i);
+                    var pt1 = cp.TranslatePoint(new Point(0, 0), App.SharedValues.WindowMain);
+                    var item = itemsControl.Items[i];
+                    _t.HeaderContent.Add(item.GetType().GetProperty("Title").GetValue(item).ToString(), new Rect(pt1.X, pt1.Y, cp.ActualWidth, cp.ActualHeight));
+                }
+            }
+            else
+            {
+                _t.HeaderContent.Add(string.Empty, _t.Bounds);
+            }
+            return _t;
+        }
+
+        public static void SetTutorialSettings()
+        {
+            Properties.Settings.Default.LastVisitedTutorial = string.Empty;
+            Properties.Settings.Default.Tutorials = true;
+            Properties.Settings.Default.RTutorialsCompleted = false;
+            Properties.Settings.Default.QTutorialsCompleted = false;
+            Properties.Settings.Default.DBTutorialsCompleted = false;
+            Properties.Settings.Default.CTutorialsCompleted = false;
+
+            Properties.Settings.Default.Save();
+        }
+    }
+
+   
+}

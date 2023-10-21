@@ -1,0 +1,30 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System.Diagnostics;
+using System.Windows;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ContactUs.xaml
+    /// </summary>
+    public partial class ContactUsView : ViewBase
+    {
+        public ContactUsView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<ContactUsViewModel>();
+            base.LoadViewModel();
+
+        }    
+
+        //private void OnNavigate(object sender, RequestNavigateEventArgs e)
+        //{
+        //    Process.Start(e.Uri.AbsoluteUri);
+        //    e.Handled = true;
+        //}
+    }
+}

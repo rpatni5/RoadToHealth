@@ -1,0 +1,110 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class FriendsOfQViewModel : ViewModelBase
+    {
+        #region GlobalProperties
+        public FriendsOfQ QFriends
+        {
+            get { return GetValue(() => this.QFriends); }
+            set { SetValue(() => QFriends, value); }
+        }
+
+        public List<ProductInfo> NonFeatureProduct
+        {
+            get { return GetValue(() => this.NonFeatureProduct); }
+            set { SetValue(() => this.NonFeatureProduct, value); }
+        }
+        #endregion
+
+        public FriendsOfQViewModel()
+        {
+            GlobalData.Default.HeaderVisibility = System.Windows.Visibility.Collapsed;
+            Init();
+        }
+        private async void Init()
+        {
+            await Task.Run(() =>
+            {
+                GlobalData.Default.LoaderVisibility = true;
+                QFriends = GetFriendsOfQ(ViewModelBase.UserDetails._id, ViewModelBase.UserDetails.AuthToken.access_token);
+                SetAllProducts();
+                GlobalData.Default.LoaderVisibility = false;
+            });
+        }
+
+        public FriendsOfQ GetFriendsOfQ(string id, string authToken)
+        {
+            return RTH.Business.Services.FriendsOfQService.GetFriendsOfQ(id, authToken);
+        }
+
+        public void SetAllProducts()
+        {
+            if (GlobalData.Default.Products == null)
+            {
+                List<ProductInfo> lstProducts = new List<ProductInfo>();
+                lstProducts.Add(new ProductInfo() { ID = "", Name = "All Categories", IsChecked = true, Products = QFriends.data, ProductImage = string.Format("/RTH.Windows.Views;component/Assets/ic_product_cat.png") });
+                var product = QFriends.data.GroupBy(x => x.product_type._id).ToList();
+                foreach (var item in product)
+                {
+                    ProductInfo productInfo = new ProductInfo();
+                    productInfo.ID = item.Key;
+                    productInfo.Name = item.FirstOrDefault().product_type.name;
+                    productInfo.IsChecked = true;
+                    productInfo.ProductImage = item.FirstOrDefault().product_type.ProductImage;
+                    List<ProductData> productData = new List<ProductData>();
+                    foreach (var i in item)
+                    {
+                        productData.Add(i);
+                    }
+                    productInfo.Products = productData;
+                    lstProducts.Add(productInfo);
+                }
+                GlobalData.Default.Products = lstProducts;
+                NonFeatureProduct = GlobalData.Default.Products;
+            }
+            else
+            {
+                List<ProductInfo> lstProducts = new List<ProductInfo>();
+
+                if (GlobalData.Default.Products.Any(x => x.ID == "" && x.IsChecked == true))
+                {
+                    NonFeatureProduct = GlobalData.Default.Products;
+                }
+                else
+                {
+                    List<ProductData> lstProductData = new List<ProductData>();
+                    GlobalData.Default.Products.Where(x => x.IsChecked == true).ToList().ForEach(c =>
+                    {
+                        c.Products.ForEach(i => {
+                            lstProductData.Add(i);
+                        });                       
+                    });
+                    lstProducts.Add(new ProductInfo() { ID = "", Name = "All Categories", IsChecked = true, Products = lstProductData, ProductImage = string.Format("/RTH.Windows.Views;component/Assets/ic_product_cat.png") });
+
+                    GlobalData.Default.Products.Where(x => x.IsChecked == true).ToList().ForEach(item =>
+                    {
+                        ProductInfo productInfo = new ProductInfo();
+                        productInfo.ID = item.ID;
+                        productInfo.Name = item.Name;
+                        productInfo.IsChecked = true;
+                        productInfo.ProductImage = item.ProductImage;
+                        productInfo.Products = item.Products;
+                        lstProducts.Add(productInfo);
+                    });
+                    NonFeatureProduct = lstProducts;
+                }                
+            }
+
+        }
+    }
+}

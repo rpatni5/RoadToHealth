@@ -1,0 +1,340 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using System.Windows;
+using System.Windows.Input;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.ViewModels
+{
+    public class InsightViewModel : ViewModelBase
+    {
+
+        #region Global Variable Declartion
+
+        private ICommand m_selectedTabChanged;
+
+        #endregion
+
+        public Insight Insights
+        {
+            get { return GetValue(() => this.Insights); }
+            set { SetValue(() => Insights, value); }
+        }
+
+        public List<UserData> UserData
+        {
+            get { return GetValue(() => this.UserData); }
+            set { SetValue(() => UserData, value); }
+        }
+
+        public InsightViewModel()
+        {
+            try
+            {
+                GlobalData.Default.HeaderVisibility = Visibility.Visible;
+                Get_Insights();
+
+                if (this.Insights.message == "")
+                    SelectedTabChangedAction(this.Insights.data.user[0]);
+
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        
+
+        public ICommand SelectedTabChanged { get { return m_selectedTabChanged ?? (m_selectedTabChanged = new RelayCommand((o) => SelectedTabChangedAction(o), (o) => true)); } }
+
+        private void SelectedTabChangedAction(object o)
+        {
+
+            // Get the user object for selected tab 
+            Users objUser = (Users)o;
+            
+            // Get the selected key 
+            string objKey = objUser.key_string.ToString();
+
+            // Create the UserData object to be binded to listbox for the selected tab key
+            List<UserData> lstUserData = new List<UserData>();
+
+            // Get the key values
+            object genderData = this.Insights.data.age_gender.GetPropValue(objKey);
+            object ageGenderData = this.Insights.data.gender.GetPropValue(objKey);
+
+            #region First Row Binding 
+            // 1st Row - User Row
+            // circle color as selected_back_class of user object
+            // imagePath as per calculations on my score of user object
+            // title as user name
+            // subtitle as  my_score  or suffix of user objects
+            // lstUserData.Add(new UserData() { circleColor = "back-green", imagePath = "", title = "User Name", subTitle = genderData.ToChangeType<string>() });
+
+            UserData objFirstRowData = new Business.Objects.UserData();
+
+            // Title as the user name ... 
+            objFirstRowData.title = ViewModelBase.UserDetails.name;  // "User Name", // App.oUser.name,  
+
+            // Circle color as tab color data ... 
+            objFirstRowData.circleColor = objUser.tab_color; //objUser.selected_color,
+
+            // Get the back class and bind image accordingly .... 
+            string imgPath = string.Empty;
+            if (objUser.selected_back_class == ConfigurationManagers.BACK_GREEN)
+                imgPath = ConfigurationManagers.HAPPY_SMILY;
+            else if (objUser.selected_back_class == ConfigurationManagers.BACK_AMBER)
+                imgPath = ConfigurationManagers.THINKING_SMILY;
+            else if (objUser.selected_back_class == ConfigurationManagers.BACK_RED)
+                imgPath = ConfigurationManagers.SAD_SMILY;
+
+            objFirstRowData.imagePath = imgPath;
+
+            // ... Get the Subtitle for user and bind it with subTitle2 UI element ..... 
+            string sSubtitleForUser;
+            if (!string.IsNullOrEmpty( objUser.my_score.ToString()))
+                sSubtitleForUser = objUser.my_score.ToChangeType<string>();
+            else
+                sSubtitleForUser = objUser.suffix;
+
+            objFirstRowData.subTitle = sSubtitleForUser;    
+            lstUserData.Add(objFirstRowData);            
+            #endregion
+
+
+            // It is not 3rd row. Data not matching with live. It should be 2nd row.
+            // 3rd Row - Gender Row ... 
+            // circle color as selected_back_class of user object - need to check, No Image, title as age(from age gender object) + year old + men/women(from age gender object), subtitle as  selected key value from user object
+            // string genderTitle = ((this.Insights.data.gender.male) ? ViewModelBase.AppMessages.men_whole : ViewModelBase.AppMessages.women_whole);
+
+            UserData objSecondRowData = new Business.Objects.UserData();
+
+            string genderTitle = this.Insights.data.age_gender.age.ToString() + " " + ((this.Insights.data.age_gender.male) ? ViewModelBase.AppMessages.year_old_men : ViewModelBase.AppMessages.year_old_women);
+
+            string genderImageColorForSelectedKey = "";
+            string genderCircleColor = "";
+
+            if (this.Insights.data.gender.GetPropValue(objKey + "_rag") != null)
+                genderImageColorForSelectedKey = this.Insights.data.gender.GetPropValue(objKey + "_rag").ToString();
+
+
+            genderCircleColor = GetColor(genderImageColorForSelectedKey);
+            if(genderCircleColor == "")
+                genderCircleColor = objUser.tab_color;
+
+            // ............... New code ...................     
+            objSecondRowData.circleColor = genderCircleColor; // objUser.selected_color,
+            objSecondRowData.imagePath = "";
+            objSecondRowData.title = genderTitle;
+            objSecondRowData.subTitle = genderData.ToChangeType<string>();     
+            lstUserData.Add(objSecondRowData);            
+            // It is not second row. Data not matching with live, it should be 3rd  row.
+            // 2nd Row - Age Gender Row.  OLD INFORMATION 
+            // circle color as selected_back_class of user object - need to check, No Image , title as men/women(from gender object) + as a whole, subtitle as  selected key value from user object
+            // string ageGenderTitle = this.Insights.data.age_gender.age.ToString() + " " + ((this.Insights.data.age_gender.male) ? ViewModelBase.AppMessages.year_old_men : ViewModelBase.AppMessages.year_old_women);
+
+            UserData objThirdRowData = new Business.Objects.UserData();
+
+            string ageGenderTitle = ((this.Insights.data.age_gender.male) ? ViewModelBase.AppMessages.men_whole : ViewModelBase.AppMessages.women_whole);
+            string ageGenderImageColorForSelectedKey = "";
+            string ageGenderCircleColor = "";
+            if (this.Insights.data.age_gender.GetPropValue(objKey + "_rag") != null)
+                ageGenderImageColorForSelectedKey = this.Insights.data.age_gender.GetPropValue(objKey + "_rag").ToString();
+
+            ageGenderCircleColor = GetColor(ageGenderImageColorForSelectedKey);
+            if(ageGenderCircleColor == "")
+                ageGenderCircleColor = objUser.tab_color;
+
+            // ............... New code ...................
+
+            objThirdRowData.circleColor = ageGenderCircleColor; // objUser.selected_color,
+            objThirdRowData.imagePath = "";
+            objThirdRowData.title = ageGenderTitle;
+            objThirdRowData.subTitle = ageGenderData.ToChangeType<string>();
+            lstUserData.Add(objThirdRowData);           
+
+            this.UserData = lstUserData;
+            
+        }
+                
+        public void Get_Insights()
+        {
+
+            // Set the values in insight object for calling the service
+            var objInsight = new RTH.Business.Objects.Insight
+            {
+                // Only User ID value is required. "537f675a2140f60800de4531",0,0,26,true,en, 54cf671a07ed6d99f6af6835
+                questionaireId = "0", ethnicity = "0", age =   0, male = true, language = "0", userId = ViewModelBase.UserDetails._id  
+                
+            };
+
+            try
+            {
+                // Call the insight service
+                Insight objResponseInsights = RTH.Business.Services.InsightService.GetInsights(objInsight, ViewModelBase.UserDetails.AuthToken.access_token);
+               
+                // Message should be empty for loading the controls. Otherwise, there is some issue with insight data.
+                if (objResponseInsights.message == "")
+                {
+                    this.Insights = objResponseInsights;
+
+                    for (int i = 0; i < this.Insights.data.user.Count; i++)
+                    {
+                        this.Insights.data.user[i].key_text = ViewModelBase.AppMessages.GetPropValue(this.Insights.data.user[i].key_string).ToString();
+
+                        if (this.Insights.data.user[i].selected_back_class == ConfigurationManagers.BACK_GREEN)
+                            this.Insights.data.user[i].tab_color = ConfigurationManagers.BACK_GREEN_VALUE;
+                        else if (this.Insights.data.user[i].selected_back_class == ConfigurationManagers.BACK_AMBER)
+                            this.Insights.data.user[i].tab_color = ConfigurationManagers.BACK_AMBER_VALUE;
+                        else if (this.Insights.data.user[i].selected_back_class == ConfigurationManagers.BACK_RED)
+                            this.Insights.data.user[i].tab_color = ConfigurationManagers.BACK_RED_VALUE;
+                        else
+                            this.Insights.data.user[i].tab_color = ConfigurationManagers.BACK_GREEN_VALUE;
+                                                
+                    }
+
+                }
+                else
+                {
+                    MessageBox.Show(objResponseInsights.message);
+                    // throw new Exception();
+                }
+            }
+            catch(System.Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            
+
+            #region static data 
+
+            /*
+
+            // red: #e5332a
+            // green:#76b72a
+            // amber:#f29100
+
+            List<User_1> objUsers = new List<User_1>();
+
+
+            User_1 objUser1 = new User_1();
+            objUser1.suffix = "";
+            objUser1.my_score = "100";
+            objUser1.selected_color = "#2BB673";
+            objUser1.selected_back_class = "back - green";
+            objUser1.key_string = "q_score";
+
+            User_1 objUser2 = new User_1();
+            objUser2.suffix = "Non-smoker";
+            objUser2.my_score = "";
+            objUser2.selected_color = "#2BB673";
+            objUser2.selected_back_class = "back-green";
+            objUser2.key_string = "smoking";
+
+            objUsers.Add(objUser1);
+            objUsers.Add(objUser2);
+
+            // 2nd row 
+            AgeGender objAgeGender = new AgeGender();
+            objAgeGender.male = true;
+            objAgeGender.age = 20;
+            objAgeGender.q_score = 64;
+            objAgeGender.q_score_rag = "g";
+            objAgeGender.bmi = "22.8";
+            objAgeGender.bmi_rag = "a";
+            objAgeGender.waist_girth = "80";
+            objAgeGender.waist_girth_rag = "r";
+            objAgeGender.physical_activity = "1858";
+            objAgeGender.physical_activity_rag = "g";
+            objAgeGender.smoking = "22%";
+            objAgeGender.high_fibre = "Some days (2-4 times a week)";
+            objAgeGender.high_fibre_rag = "g";
+            objAgeGender.refined_carbs = "Most days (5-6 times a week)";
+            objAgeGender.refined_carbs_rag = "g";
+            objAgeGender.healthy_fats = "Once a week";
+            objAgeGender.healthy_fats_rag = "g";
+
+            // 3rd row
+            Gender objGender = new Gender();
+            objGender.male = true;
+            objGender.q_score = 59;
+            objGender.q_score_rag = "a";
+            objGender.bmi = "27.8";
+            objGender.bmi_rag = "r";
+            objGender.waist_girth = "90";
+            objGender.waist_girth_rag = "r";
+            objGender.physical_activity = "1770";
+            objGender.physical_activity_rag = "g";
+            objGender.smoking = "18%";
+            objGender.high_fibre = "Some days (2-4 times a week)";
+            objGender.high_fibre_rag = "g";
+            objGender.refined_carbs = "Most days (2-4 times a week)";
+            objGender.refined_carbs_rag = "g";
+            objGender.healthy_fats = "Once a week";
+            objGender.healthy_fats_rag = "g";
+
+
+            Data objData = new Data();
+            objData.user = objUsers;
+            objData.age_gender = objAgeGender;
+            objData.gender = objGender;
+
+            objInsight.data = objData;
+
+            this.Insights = objInsight;
+
+            //objUsers.ForEach(c => {
+
+            //    if(c.key_string== "q_score")
+            //    {
+            //        lstUserData.subTitle= objInsight.data.age_gender.q_score.ToString(); 
+            //        lstUserData.title= objInsight.data.gender
+
+
+            //    }
+            //    else if (c.key_string == "smoking")
+            //    {
+            //        lstUserData.subTitle = objInsight.data.age_gender.smoking;
+            //    }
+
+            //});
+
+
+            // this.Insights = objInsight;
+
+            */
+
+            #endregion
+
+        }
+        public string GetColor(string strColorCode)
+        {
+
+            if (strColorCode == ConfigurationManagers.STATIC_CODE_G)
+                return ConfigurationManagers.BACK_GREEN_VALUE;
+            else if (strColorCode == ConfigurationManagers.STATIC_CODE_A)
+                return ConfigurationManagers.BACK_AMBER_VALUE;
+            else if (strColorCode == ConfigurationManagers.STATIC_CODE_R)
+                return ConfigurationManagers.BACK_RED_VALUE;
+
+            else if (strColorCode == ConfigurationManagers.BACK_GREEN)
+                return ConfigurationManagers.BACK_GREEN_VALUE;
+            else if (strColorCode == ConfigurationManagers.BACK_AMBER)
+                return ConfigurationManagers.BACK_AMBER_VALUE;
+            else if (strColorCode == ConfigurationManagers.BACK_RED)
+                return ConfigurationManagers.BACK_RED_VALUE;
+
+            else
+                return "";
+            
+        }     
+
+    }
+
+}
+

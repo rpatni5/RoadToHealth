@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Configuration;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public static class ConfigurationManagers
+    {
+        public static string ImagePath
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["BaseAPiConnection"] != null ?string.Concat(ConfigurationManager.AppSettings["BaseAPiConnection"], ConfigurationManager.AppSettings["ImageUrl"]) : string.Empty;
+            }
+        }
+
+        public static string ClientId
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["client_id"] != null ? ConfigurationManager.AppSettings["client_id"] : string.Empty;
+            }
+        }
+
+
+    }
+}

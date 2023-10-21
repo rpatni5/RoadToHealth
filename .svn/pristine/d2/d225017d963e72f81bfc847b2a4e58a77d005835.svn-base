@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<repositories>
+  <repository path="..\RTH.Business.Objects\packages.config" />
+  <repository path="..\RTH.Business.Services\packages.config" />
+  <repository path="..\RTH.Windows.View\packages.config" />
+  <repository path="..\RTH.Windows.ViewModels\packages.config" />
+</repositories>

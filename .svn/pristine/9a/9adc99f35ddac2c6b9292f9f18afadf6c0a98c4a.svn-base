@@ -1,0 +1,305 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+    <SolidColorBrush x:Key="HeaderColorKey" Color="#FF1492B7" />
+    <SolidColorBrush x:Key="ButtonBackground" Color="#FF1492B7"/>
+    <SolidColorBrush x:Key="ButtonBackgroundText" Color="#fff"/>
+
+    <!--<SolidColorBrush x:Key="ButtonLogin" Color="#FF00B1A4"></SolidColorBrush>
+        <SolidColorBrush x:Key="ButtonLoginText" Color="#FFF"></SolidColorBrush>-->
+
+
+    <SolidColorBrush x:Key="ButtonForgot" Color="#FFF"/>
+    <SolidColorBrush x:Key="ButtonForgotBorder" Color="#FF00B1A4"/>
+    <SolidColorBrush x:Key="ButtonForgotText" Color="#FF00B1A4"/>
+
+    <Style TargetType="{x:Type Button}" x:Key="Button_Login">
+        <Setter Property="Background" Value="#FF1492B7" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Margin" Value="0 10 0 0" />
+        <Setter Property="Height" Value="30"  />
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="ButtonLogin">
+        <Setter Property="Background" Value="#FF00B1A4" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontWeight" Value="Bold" />        
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Height" Value="30"  />
+    </Style>
+    <Style TargetType="{x:Type Button}" x:Key="ButtonForgotPassword">
+        <Setter Property="Background" Value="#fff" />
+        <Setter Property="Foreground" Value="#FF00B1A4" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="15" />
+        <Setter Property="Height" Value="30"  />
+    </Style>
+    <Style TargetType="{x:Type Button}" x:Key="ButtonDashboardLogin">
+        <Setter Property="Background" Value="#FF052321" />
+        <Setter Property="Foreground" Value="#FFF" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Height" Value="40"  />
+        <Setter Property="BorderThickness"  Value="0"  />
+        <Setter Property="VerticalAlignment"  Value="Bottom"  />
+
+    </Style>
+    <Style TargetType="{x:Type Button}" x:Key="ButtonDashboardSignup">
+        <Setter Property="Background" Value="#FF19B1A4" />
+        <Setter Property="Foreground" Value="#FFF" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Height" Value="40"  />
+        <Setter Property="VerticalAlignment"  Value="Bottom"  />
+        <Setter Property="BorderThickness"  Value="0"  />
+
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="Buttonback">
+        <Setter Property="Height" Value="20"   />
+        <Setter Property="Width" Value="20"   />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Grid Width="{TemplateBinding Width}">
+                        <Grid.Background>
+                            <ImageBrush ImageSource="/RTH.Windows.Views;component/Assets/ic_back.png"/>
+                        </Grid.Background>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type PasswordBox}" x:Key="NewPassword">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="Background" Value="#ebebeb"/>
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="BorderBrush" Value="#FF1492B7"/>
+        <Setter Property="BorderThickness" Value="0 0 0 1"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="11"/>
+
+    </Style>
+
+    <Style TargetType="{x:Type PasswordBox}" x:Key="LoginPassword">
+        <Setter Property="Background" Value="#fff"  />
+        <Setter Property="Height" Value="30"  />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Margin" Value="10"/>
+        <Setter Property="BorderThickness" Value="0 0 0 0"/>
+        <Setter Property="BorderBrush" Value="#fff"/>
+    </Style>
+
+    <Style TargetType="{x:Type TextBox}" x:Key="LoginText">
+        <Setter Property="Background" Value="#fff"  />
+        <Setter Property="Height" Value="30"  />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Margin" Value="10"/>
+        <Setter Property="BorderThickness" Value="0 0 0 0"/>
+        <Setter Property="BorderBrush" Value="#fff"/>
+    </Style>
+
+    <Style TargetType="{x:Type TextBox}" x:Key="ForgotText">
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="Background" Value="#ebebeb"/>
+
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="BorderBrush" Value="#FF1492B7"/>
+        <Setter Property="BorderThickness" Value="0 0 0 1"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="11"/>
+
+    </Style>
+
+    <Style TargetType="{x:Type Label}" x:Key="SinginHelp">
+        <Setter Property="Height" Value="30"  />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="20"/>
+    </Style>
+
+    <Style TargetType="{x:Type Label}" x:Key="LabelText" >
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="11"/>       
+        <Setter Property="Margin" Value="6" />
+    </Style>
+
+    <Style TargetType="{x:Type Image}" x:Key="HeaderOffImages" >
+        <Setter Property="Source" Value="/RTH.Windows.Views;component/Assets/ic_off_page_header.png" />
+        <Setter Property="Height" Value="50"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="{x:Type Image}" x:Key="SplashQueue" >
+        <Setter Property="Source" Value="/RTH.Windows.Views;component/Assets/ic_splash_text.png" />
+        <Setter Property="Height" Value="50"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="{x:Type Label}" x:Key="LabelHeaderOffText" >
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="#fff"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="13.333"/>
+        <Setter Property="FontStyle" Value="Italic"/>
+        <Setter Property="Margin" Value="0 20 0 0"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+
+
+    </Style>
+
+    <Style TargetType="{x:Type Label}" x:Key="LabelLogInText" >
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="13.333"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="{x:Type Label}" x:Key="RegisterText" >
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="#000"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="11.333"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="Margin" Value="0 0 0 0"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+
+    <Style TargetType="{x:Type Label}" x:Key="ErrorMessage" >
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="#fff"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="Margin" Value="0 0 0 0"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="Red"/>
+
+    </Style>
+    
+    <Style TargetType="{x:Type Button}" x:Key="ButtonFacebook">
+        <Setter Property="Background" Value="#3b5b97" />
+        <Setter Property="Foreground" Value="#fff" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Height" Value="30"  />
+    </Style>
+    <Style TargetType="{x:Type Button}" x:Key="ButtonTwiter">
+        <Setter Property="Background" Value="#66c7ed" />
+        <Setter Property="Foreground" Value="#fff" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Height" Value="30"  />
+    </Style>
+
+    <Style TargetType="{x:Type TextBlock}" x:Key="RegistrationMessage" >
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Foreground" Value="#aaa"/>
+        <Setter Property="FontFamily" Value="Lato-Reg" />
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontStyle" Value="Normal"/>
+        <Setter Property="Margin" Value="5 10 5 5"/>
+        <Setter Property="FontWeight" Value="Medium"/>        
+
+    </Style>
+    <Style x:Key="FocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <SolidColorBrush x:Key="RadioButton.Static.Background" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="RadioButton.Static.Border" Color="#FF707070"/>
+    <Style x:Key="OptionMarkFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="14,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <SolidColorBrush x:Key="RadioButton.MouseOver.Background" Color="#FFF3F9FF"/>
+    <SolidColorBrush x:Key="RadioButton.MouseOver.Border" Color="#FF5593FF"/>
+    <SolidColorBrush x:Key="RadioButton.MouseOver.Glyph" Color="#FF212121"/>
+    <SolidColorBrush x:Key="RadioButton.Disabled.Background" Color="#FFE6E6E6"/>
+    <SolidColorBrush x:Key="RadioButton.Disabled.Border" Color="#FFBCBCBC"/>
+    <SolidColorBrush x:Key="RadioButton.Disabled.Glyph" Color="#FF707070"/>
+    <SolidColorBrush x:Key="RadioButton.Pressed.Background" Color="#FFD9ECFF"/>
+    <SolidColorBrush x:Key="RadioButton.Pressed.Border" Color="#FF3C77DD"/>
+    <SolidColorBrush x:Key="RadioButton.Pressed.Glyph" Color="#FF212121"/>
+    <SolidColorBrush x:Key="RadioButton.Static.Glyph" Color="#FF212121"/>
+    <Style x:Key="QuestionnaireRadioButtonTemplate" TargetType="{x:Type RadioButton}">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
+        <Setter Property="Background" Value="{StaticResource RadioButton.Static.Background}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource RadioButton.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type RadioButton}">
+                    <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="radioButtonBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="100" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1,1,2,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed">
+                            <Grid x:Name="markGrid" Margin="2">
+                                <Ellipse x:Name="optionMark" Fill="{StaticResource RadioButton.Static.Glyph}" MinWidth="6" MinHeight="6" Opacity="0"/>
+                            </Grid>
+                        </Border>
+                        <ContentPresenter x:Name="contentPresenter" Grid.Column="0" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        <Image x:Name="___RTH_Windows_Views_component_Assets_check_blue_sml_png" HorizontalAlignment="Stretch" Margin="5" Source="/RTH.Windows.Views;component/Assets/check-blue-sml.png" Stretch="Uniform" Width="Auto" Grid.Column="1" Visibility="{Binding IsChecked, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource TemplatedParent}}"/>
+
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasContent" Value="true">
+                            <Setter Property="FocusVisualStyle" Value="{StaticResource OptionMarkFocusVisual}"/>
+                            <Setter Property="Padding" Value="4,-1,0,0"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.MouseOver.Background}"/>
+                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.MouseOver.Border}"/>
+                            <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.MouseOver.Glyph}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Disabled.Background}"/>
+                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Disabled.Border}"/>
+                            <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.Disabled.Glyph}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Background" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Pressed.Background}"/>
+                            <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{StaticResource RadioButton.Pressed.Border}"/>
+                            <Setter Property="Fill" TargetName="optionMark" Value="{StaticResource RadioButton.Pressed.Glyph}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="true">
+                            <Setter Property="Opacity" TargetName="optionMark" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="{x:Null}">
+                            <Setter Property="Opacity" TargetName="optionMark" Value="0.56"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

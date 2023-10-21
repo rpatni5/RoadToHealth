@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System.Windows;
+using System.Windows.Input;
+
+
+namespace RTH.Windows.ViewModels
+{
+    public class AboutUsViewModel : Common.ViewModelBase
+    {
+        public AboutUsViewModel()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Collapsed;
+        }
+    }
+}

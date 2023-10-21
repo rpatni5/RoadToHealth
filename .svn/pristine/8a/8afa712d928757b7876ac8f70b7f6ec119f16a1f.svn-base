@@ -1,0 +1,83 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.ContactUsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:controls="clr-namespace:RTH.Windows.Views.Controls"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls" Loaded="ViewBase_Loaded"
+             xmlns:win="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+             xmlns:my="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration">
+    <Grid>
+        <Grid.Resources>
+            <ControlTemplate TargetType="{x:Type Button}" x:Key="supportButton">
+                <Border Padding="0,8" Name="menuBack" Background="Transparent" 
+                        BorderThickness="0,0,0,1" BorderBrush="LightGray">
+                    <Grid   HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>                       
+                        <TextBlock Margin="30,0,0,0" FontSize="16" VerticalAlignment="Center" Name="Title" Grid.Column="0" Text="{TemplateBinding Tag}"/>
+                        <Image  HorizontalAlignment="Right" Stretch="None"  
+                                                        VerticalAlignment="Center" Grid.Column="1" Margin="7,0,30,0"
+                                                        Source="/Assets/blue_arrow.png"/>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="true">
+                        <Setter TargetName="menuBack" Property="Background" Value="#55FFFFFF" />
+                    </Trigger>
+                    <Trigger  Property="IsPressed" Value="True">
+                        <Setter TargetName="Title" Property="Foreground" Value="#FF46C1B7"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="55"/>
+        </Grid.RowDefinitions>
+        <local:OffHeaderView Grid.Row="0" HeaderData="Support"  VerticalAlignment="Top"/>
+
+        <TextBlock Grid.Row="1" 
+                   Padding="30,15,30,0"
+                   FontSize="16"
+                   Foreground="Gray"
+                   TextAlignment="Center"
+                   Text="View support information, create
+a ticket or manage your existing tickets" />
+        <StackPanel Orientation="Vertical" Grid.Row="2" Margin="0,20">
+            <Button Command="{Binding ExecuteCommand}" Tag="Knowledge base" 
+                    Template="{StaticResource supportButton}"
+                            CommandParameter="{Binding ResultView}"/>
+
+            <Button Command="{Binding ExecuteCommand}" Tag="My Tickets" 
+                    Template="{StaticResource supportButton}"
+                            CommandParameter="{Binding ResultView}"/>
+
+            <Button Command="{Binding ExecuteCommand}" Tag="Contact us" 
+                    Template="{StaticResource supportButton}"
+                            CommandParameter="{Binding ResultView}"/>
+
+            <Button Command="{Binding ExecuteCommand}" Tag="Rate Quealth" Template="{StaticResource supportButton}"
+                            CommandParameter="{Binding ResultView}"/>
+
+        </StackPanel>
+    </Grid>
+</local:ViewBase>
+
+
+
+
+
+
+
+
+
+
+
+

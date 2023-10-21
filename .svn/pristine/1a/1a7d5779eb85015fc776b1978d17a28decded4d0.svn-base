@@ -1,0 +1,103 @@
+﻿using RTH.Windows.Views.Enums;
+using RTH.Windows.Views.Objects;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for NavigationView.xaml
+    /// </summary>
+    public partial class NavigationView : UserControl
+    {
+        public NavigationView()
+        {
+            InitializeComponent();
+
+        }
+        public ViewEnum CurrentView
+        {
+            get { return (ViewEnum)GetValue(CurrentViewProperty); }
+            set { SetValue(CurrentViewProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CurrentView.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CurrentViewProperty =
+            DependencyProperty.Register("CurrentView", typeof(ViewEnum), typeof(NavigationView),
+                new PropertyMetadata(ViewEnum.None));
+
+        private void SetMenuItemData()
+        {
+            List<QuealthMenuItem> lstQMenu = new List<QuealthMenuItem>();
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_home_tab.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_home_sel_tab.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_home_sel_tab.png",
+                MenuTitle = "Home",
+                ResultView = Enums.ViewEnum.DashboardView,
+                ExecuteCommand = App.SharedValues.WindowMain.MenuNavigationCommand,
+            });
+
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_plan_tab.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_plan_sel_tab.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_plan_sel_tab.png",
+                MenuTitle = "Plan",
+                ResultView = Enums.ViewEnum.HealthPlanView,
+                ExecuteCommand = App.SharedValues.WindowMain.MenuNavigationCommand,
+            });
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_coach_tab.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_coach_sel_tab.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_coach_sel_tab.png",
+                MenuTitle = "Coach",
+                ResultView = Enums.ViewEnum.None,
+                ExecuteCommand = App.SharedValues.WindowMain.MenuNavigationCommand,
+            });
+            lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_score_tab.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_score_sel_tab.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_score_sel_tab.png",
+                MenuTitle = "Quealth",
+                ResultView = Enums.ViewEnum.ResultView,
+                ExecuteCommand = App.SharedValues.WindowMain.MenuNavigationCommand,
+            }); lstQMenu.Add(new QuealthMenuItem()
+            {
+                DefaultIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_more_tab.png",
+                HoverIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_more_sel_tab.png",
+                PressedIcon = "/RTH.Windows.Views;component/Assets/DashboardMenu/ic_more_sel_tab.png",
+                MenuTitle = "More",
+                ResultView = Enums.ViewEnum.SettingsView,
+                ExecuteCommand = App.SharedValues.WindowMain.MenuNavigationCommand,
+            });
+
+
+
+
+            QuealthMenuItems = lstQMenu;
+        }
+
+
+
+
+        public List<QuealthMenuItem> QuealthMenuItems
+        {
+            get { return (List<QuealthMenuItem>)GetValue(QuealthMenuItemsProperty); }
+            set { SetValue(QuealthMenuItemsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for QuealthMenuItems.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty QuealthMenuItemsProperty =
+            DependencyProperty.Register("QuealthMenuItems", typeof(List<QuealthMenuItem>), typeof(NavigationView), new PropertyMetadata(null));
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            SetMenuItemData();
+        }
+    }
+}

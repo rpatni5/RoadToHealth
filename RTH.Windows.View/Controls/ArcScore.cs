@@ -1,0 +1,174 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Documents;
+using System.Windows.Media;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.Controls
+{
+    public sealed class ArcScore : Shape
+    {
+        public Point EndPoint { get; private set; }
+
+        public double Progress
+        {
+            get { return (double)GetValue(ProgressProperty); }
+            set { SetValue(ProgressProperty, value); }
+        }
+
+        public static readonly DependencyProperty ProgressProperty =
+            DependencyProperty.Register("Progress", typeof(double), typeof(ArcScore),
+            new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public double StartAngle
+        {
+            get { return (double)GetValue(StartAngleProperty); }
+            set { SetValue(StartAngleProperty, value); }
+        }
+
+        public static readonly DependencyProperty StartAngleProperty =
+            DependencyProperty.Register("StartAngle", typeof(double), typeof(ArcScore),
+                new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public double EndAngle
+        {
+            get { return (double)GetValue(EndAngleProperty); }
+            set { SetValue(EndAngleProperty, value); }
+        }
+
+        public static readonly DependencyProperty EndAngleProperty =
+            DependencyProperty.Register("EndAngle", typeof(double), typeof(ArcScore),
+            new FrameworkPropertyMetadata(Math.PI / 2.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public double Radius
+        {
+            get { return (double)GetValue(RadiusProperty); }
+            set { SetValue(RadiusProperty, value); }
+        }
+
+        public static readonly DependencyProperty RadiusProperty =
+            DependencyProperty.Register("Radius", typeof(double), typeof(ArcScore),
+                new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public bool MarkProgress
+        {
+            get { return (bool)GetValue(MarkProgressProperty); }
+            set { SetValue(MarkProgressProperty, value); }
+        }
+        public static readonly DependencyProperty MarkProgressProperty =
+            DependencyProperty.Register("MarkProgress", typeof(bool), typeof(ArcScore), new
+                FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+
+
+
+        public bool ShowArrowCorner
+        {
+            get { return (bool)GetValue(ShowArrowCornerProperty); }
+            set { SetValue(ShowArrowCornerProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowArrowCorner.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowArrowCornerProperty =
+            DependencyProperty.Register("ShowArrowCorner", typeof(bool), typeof(ArcScore), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+
+
+
+        public bool ShowArrow
+        {
+            get { return (bool)GetValue(ShowArrowProperty); }
+            set { SetValue(ShowArrowProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowArrow.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowArrowProperty =
+            DependencyProperty.Register("ShowArrow", typeof(bool), typeof(ArcScore), new PropertyMetadata(false));
+
+
+
+        static ArcScore()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(ArcScore), new FrameworkPropertyMetadata(typeof(ArcScore)));
+        }
+
+        protected override Geometry DefiningGeometry
+        {
+            get
+            {
+                var progress = this.Progress;
+                double multiplier;
+                var center_X = (this.ActualWidth) / 2.0;
+                var center_Y = (this.ActualHeight) / 2.0;
+
+                var center = new Point(center_X, center_Y);
+
+                var gap = StartAngle - EndAngle;
+                multiplier = gap / 100;
+                var endAngle = StartAngle - (progress * multiplier);
+
+                var startAngle = ToRadians(StartAngle);
+                endAngle = ToRadians(endAngle);
+
+                if (Radius == 0)
+                {
+                    Radius = this.ActualHeight / 2.0;
+                }
+
+                Point p0 = center + new Vector(Math.Cos(startAngle), Math.Sin(startAngle)) * Radius;
+                Point p1 = center + new Vector(Math.Cos(endAngle), Math.Sin(endAngle)) * Radius;
+
+                Point outP1 = center + new Vector(Math.Cos(startAngle), Math.Sin(startAngle)) * (Radius + 15);
+                Point outP2 = center + new Vector(Math.Cos(startAngle), Math.Sin(startAngle)) * (Radius + 5);
+
+                Point ppe1 = center + new Vector(Math.Cos(endAngle), Math.Sin(endAngle)) * (46 + 16);
+                Point ppe2 = center + new Vector(Math.Cos(endAngle), Math.Sin(endAngle)) * (47.5 + 15);
+                //pp1.X = pp1.X - 10;
+                //pp1.Y = pp1.Y - 10;
+                this.EndPoint = p1;
+
+                List<PathSegment> segments = new List<PathSegment>(1);
+                List<PathFigure> figures = new List<PathFigure>(1);
+
+                if (this.Progress > 0)
+                {
+                    if (this.ShowArrow)
+                    {
+                        var capSegments = new List<PathSegment>();
+                        LineSegment line = new LineSegment(outP1, true);
+                        capSegments.Add(line);
+                        var lineCap = new PathFigure(outP2, capSegments, false);
+                        figures.Add(lineCap);
+                    }
+                    else if (!this.MarkProgress)
+                    {
+                        segments.Add(new ArcSegment(p1, new Size(Radius, Radius), 0.0, false, SweepDirection.Clockwise, true));
+                    }
+                    else if (this.MarkProgress && (this.Progress != 100 || ShowArrowCorner))
+                    {
+                        var capSegments = new List<PathSegment>();
+
+                        PointCollection myPointCollection = new PointCollection();
+                        myPointCollection.Add(ppe1);
+                        PolyLineSegment myPolygon = new PolyLineSegment();
+                        myPolygon.Points = myPointCollection;
+                        this.StrokeStartLineCap = PenLineCap.Triangle;
+                        this.StrokeThickness = 20.0;
+                        capSegments.Add(myPolygon);
+                        var lineCap = new PathFigure(ppe2, capSegments, false);
+                        figures.Add(lineCap);
+                    }
+                }
+                PathFigure pf = new PathFigure(p0, segments, false);
+                figures.Add(pf);
+                return new PathGeometry(figures, FillRule.Nonzero, null);
+            }
+        }
+
+        #region Private Static
+        private static double ToRadians(double val)
+        {
+            return (Math.PI / 180) * val;
+        }
+        #endregion
+    }
+}

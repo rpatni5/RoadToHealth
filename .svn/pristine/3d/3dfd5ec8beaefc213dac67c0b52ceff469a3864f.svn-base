@@ -1,0 +1,123 @@
+﻿using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Animation;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for us_Dashboard.xaml
+    /// </summary>
+    public partial class DashboardView : UserControl
+    {
+        #region variables
+        string openKeyString = string.Empty;
+        #endregion
+
+        #region properties
+
+        private RelayCommand m_LoadTimeLine;
+        public RelayCommand LoadTimeLine
+        {
+            get
+            {
+                return m_LoadTimeLine ?? (m_LoadTimeLine = new RelayCommand(
+                    ve => OnLoadTimeLine(ve), (t) => true));
+            }
+        }
+
+        private void OnLoadTimeLine(object ve)
+        {
+            var diseaseData = ((Grid)RightPanel.FindResource("SummeryContainer")).DataContext as DiseaseData;
+            diseaseData.IsChecked = false;
+            transition.LoadControl(RightPanel.FindResource("timelineContainer"));
+        }
+        #endregion
+        public DashboardView()
+        {
+            InitializeComponent();
+            transition.LoadControl(RightPanel.FindResource("timelineContainer"));
+        }
+        private void DiseaseButton_Click(object sender, RoutedEventArgs e)
+        {
+            RadioButton button = sender as RadioButton;
+            DiseaseData diseaseData = ConfigurationManagers.ClickedHRA = (DiseaseData)button.DataContext;
+
+            var SummeryContainer = (Grid)RightPanel.FindResource("SummeryContainer");
+            SummeryContainer.DataContext = button.DataContext;
+
+            RedoContainer.DataContext = button.DataContext;
+            if (diseaseData.IsCompleted == false)
+            {
+                if (openKeyString == string.Empty)
+                {
+                    transition.LoadControl(SummeryContainer);
+                }
+                else if (MainScore.Height > 0 || Double.IsNaN(MainScore.Height))
+                {
+                    transition.LoadControl(SummeryContainer);
+                }
+                else if (openKeyString == diseaseData.KeyString)
+                {
+                    transition.LoadControl(RightPanel.FindResource("timelineContainer"));
+                }
+                openKeyString = diseaseData.KeyString;
+            }
+            else
+            {
+                transition.LoadControl(RightPanel.FindResource("timelineContainer"));
+
+                button.IsChecked = false;
+                if (MainScore.Height > 0 || Double.IsNaN(MainScore.Height))
+                {
+                    double totalWidth = this.ActualWidth;
+                    Point position = Mouse.GetPosition(this);
+                    int calWidth = Convert.ToInt32(totalWidth);
+                    int buttonPosition = Convert.ToInt32(position.X);
+                    if (calWidth < 500)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 2, 3);
+                    else if (calWidth < 800)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 1.5, 6);
+                    else if (calWidth < 1100)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 1.4, 15);
+                    else if (calWidth < 1400)
+                        RedoPopup.HorizontalOffset = CalculateOffset(calWidth, buttonPosition * 1.5, 20);
+
+                    RedoPopup.PlacementTarget = button;
+                    Window w = Window.GetWindow(this);
+                    if (RedoPopup.IsOpen)
+                    {
+                        RedoPopup.IsOpen = false;
+                        w.Opacity = 1;
+                    }
+                    else
+                    {
+                        RedoPopup.IsOpen = true;
+                        w.Opacity = .6;
+                    }
+                }
+            }
+        }
+        private double CalculateOffset(int calWidth, double buttonPosition, int offset)
+        {
+            return (calWidth * offset * 1.0) / buttonPosition;
+        }
+        private void Animate(double from, double to)
+        {
+            DoubleAnimation da = new DoubleAnimation();
+            da.From = from;
+            da.To = to;
+            da.Duration = new Duration(TimeSpan.FromSeconds(0.8));
+            RightPanel.BeginAnimation(Grid.WidthProperty, da);
+        }
+        private void RedoPopup_Closed(object sender, EventArgs e)
+        {
+            Window w = Window.GetWindow(this);
+            if (w != null)
+                w.Opacity = 1;
+        }
+    }
+}

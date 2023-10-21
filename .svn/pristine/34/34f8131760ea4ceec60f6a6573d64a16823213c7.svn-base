@@ -1,0 +1,118 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+ 
+    public class Headings
+    {
+        public string q_score { get; set; }
+        public string bmi { get; set; }
+        public string waist_girth { get; set; }
+        public string physical_activity { get; set; }
+        public string smoking { get; set; }
+        public string high_fibre { get; set; }
+        public string refined_carbs { get; set; }
+        public string healthy_fats { get; set; }
+    }
+
+    public class Gender
+    {
+        public bool male { get; set; }
+        public int q_score { get; set; }
+        public string q_score_rag { get; set; }
+        public string bmi { get; set; }
+        public string bmi_rag { get; set; }
+        public string waist_girth { get; set; }
+        public string waist_girth_rag { get; set; }
+        public string physical_activity { get; set; }
+        public string physical_activity_rag { get; set; }
+        public string smoking { get; set; }
+        public string high_fibre { get; set; }
+        public string high_fibre_rag { get; set; }
+        public string refined_carbs { get; set; }
+        public string refined_carbs_rag { get; set; }
+        public string healthy_fats { get; set; }
+        public string healthy_fats_rag { get; set; }
+    }
+
+    public class AgeGender
+    {
+        public bool male { get; set; }
+        public int age { get; set; }
+        public int q_score { get; set; }
+        public string q_score_rag { get; set; }
+        public string bmi { get; set; }
+        public string bmi_rag { get; set; }
+        public string waist_girth { get; set; }
+        public string waist_girth_rag { get; set; }
+        public string physical_activity { get; set; }
+        public string physical_activity_rag { get; set; }
+        public string smoking { get; set; }
+        public string high_fibre { get; set; }
+        public string high_fibre_rag { get; set; }
+        public string refined_carbs { get; set; }
+        public string refined_carbs_rag { get; set; }
+        public string healthy_fats { get; set; }
+        public string healthy_fats_rag { get; set; }
+    }
+
+    public class Users
+    {
+        public string suffix { get; set; }
+        public object my_score { get; set; }
+        public string selected_back_class { get; set; }
+        public string selected_color { get; set; }
+        public string key_string { get; set; }
+
+        #region custom keys
+        public string key_text { get; set; }
+
+        public string tab_color { get; set; }
+        #endregion
+
+    }
+
+    public class Data
+    {
+        public Headings headings { get; set; }
+        public Gender gender { get; set; }
+        public AgeGender age_gender { get; set; }
+        public List<Users> user { get; set; }
+    }
+
+    public class Insight
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+        public Data data { get; set; }
+
+        #region Input Attributes ... will change once more information received ...
+
+        public string questionaireId { get; set; }
+
+        public string ethnicity { get; set; }
+
+        public int age { get; set; }
+
+        public bool male { get; set; }
+
+        public string language { get; set; }
+
+        public string userId { get; set; }
+
+        #endregion
+    }
+
+    public class UserData
+    {
+        public string circleColor { get; set; }
+        public string imagePath { get; set; }
+        public string title { get; set; }
+        public string subTitle { get; set; }      
+    }
+
+}

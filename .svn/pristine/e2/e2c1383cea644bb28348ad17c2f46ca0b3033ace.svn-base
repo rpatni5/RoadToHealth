@@ -1,0 +1,129 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers.Exceptions;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using System.Windows.Threading;
+
+namespace RTH.Windows.Views
+{
+    /// <summary>
+    /// Interaction logic for SplashWindow.xaml
+    /// </summary>
+    public partial class SplashWindow : Window
+    {
+        public SplashWindow()
+        {
+            InitializeComponent();
+            ExecuteSplash();
+        }
+
+        private async Task<bool> LoadPrimaryData()
+        {
+            return await Task.Run(() =>
+            {
+                ViewModels.HomeViewModel homeViewModel = new ViewModels.HomeViewModel();
+                App.SharedValues.LanguageResource = homeViewModel.GetLanguageVariables().data;
+                ViewModelBase.AppMessages = App.SharedValues.LanguageResource;
+
+                var icons = homeViewModel.FetchDiseaseIcons();
+
+                Parallel.ForEach(icons, new ParallelOptions { MaxDegreeOfParallelism = 1 }, icon =>
+                {
+                    Application.Current.Dispatcher.Invoke(delegate
+                    {
+                        BitmapImage bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.UriSource = new Uri(string.Concat(ConfigurationManagers.ImagePath, icon.image_name), UriKind.Absolute);
+                        bitmap.EndInit();
+
+                        BitmapImage bitmapGray = new BitmapImage();
+                        bitmapGray.BeginInit();
+                        bitmapGray.UriSource = new Uri(string.Concat(ConfigurationManagers.ImagePath, icon.image_logo_color), UriKind.Absolute);
+                        bitmapGray.EndInit();
+
+                        App.SharedValues.DiseaseIcons.AddOrUpdate(icon.key_string, bitmap, (k, s) => s);
+                        App.SharedValues.DiseasePlainIcons.AddOrUpdate(icon.key_string, bitmapGray, (k, s) => s);
+                    }, DispatcherPriority.Render);
+                });
+                return true;
+            });
+        }
+
+        private async Task<User> ExecuteUserLogin()
+        {
+            var user = await Task.Run(() =>
+            {
+                string email = Properties.Settings.Default.Email;
+                string password = Properties.Settings.Default.Password;
+                if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+                {
+                    ViewModels.LoginViewModel login = new ViewModels.LoginViewModel();
+                    return login.UserLogin(new Business.Objects.User() { email = email, password = password });
+                }
+                else
+                {
+                    IDictionary<string, string> vmProperties = ViewModelBase.GetViewModelSettings();
+                    string socialId; 
+                    string socialType = vmProperties["SocialType"];
+                    if (vmProperties["SocialType"] == GlobalData.TWITTER)
+                    {
+                        socialId = vmProperties["TwitterUserId"];
+                    }
+                    else
+                    {
+                        socialId = vmProperties["FacebookUserId"];
+                    }
+
+                    if (!string.IsNullOrEmpty(socialId) && !string.IsNullOrEmpty(socialType))
+                        return new ViewModels.LoginViewModel().ValidateSocialLogin(socialId, socialType);
+                }
+                return null;
+            });
+            return user;
+        }
+
+        private async void ExecuteSplash()
+        {
+            MainWindow mainWimdow = null;
+            User oUser = null;
+            try
+            {
+                await LoadPrimaryData();
+                oUser = await ExecuteUserLogin();
+                if (oUser != null && oUser.message == null)
+                {
+                    ViewModelBase.UserDetails = oUser;
+                    mainWimdow = new MainWindow(Views.Enums.ViewEnum.DashboardView);
+                }
+                else
+                {
+                    mainWimdow = new MainWindow(Views.Enums.ViewEnum.HomeView, true);
+                }
+            }
+            catch (LoginException ex)
+            {
+                if (ex.Message.ToLower().Contains("do not match"))
+                    mainWimdow = new MainWindow(Views.Enums.ViewEnum.HomeView);
+            }
+            finally
+            {
+                mainWimdow.Show();
+                this.Close();
+            }
+
+        }
+    }
+}

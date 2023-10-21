@@ -1,0 +1,150 @@
+﻿using System;
+using System.IO;
+using System.Xml;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
+using System.Linq;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+
+namespace RTH.Helpers
+{
+    public static class QuealthSerializer
+    {
+        private static string filename = "local.json";
+        private const string KEY = "random";
+        public static void SerializeObject<T>(T serializableObject, string fileName)
+        {
+            if (serializableObject == null) { return; }
+
+            try
+            {
+                XmlDocument xmlDocument = new XmlDocument();
+                XmlSerializer serializer = new XmlSerializer(serializableObject.GetType());
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    serializer.Serialize(stream, serializableObject);
+                    stream.Position = 0;
+                    xmlDocument.Load(stream);
+                    xmlDocument.Save(fileName);
+                    stream.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                //Log exception here
+            }
+        }
+        public static T DeSerializeObject<T>(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) { return default(T); }
+
+            T objectOut = default(T);
+
+            try
+            {
+                string attributeXml = string.Empty;
+
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.Load(fileName);
+                string xmlString = xmlDocument.OuterXml;
+
+                using (StringReader read = new StringReader(xmlString))
+                {
+                    Type outType = typeof(T);
+
+                    XmlSerializer serializer = new XmlSerializer(outType);
+                    using (XmlReader reader = new XmlTextReader(read))
+                    {
+                        objectOut = (T)serializer.Deserialize(reader);
+                        reader.Close();
+                    }
+
+                    read.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                //Log exception here
+            }
+
+            return objectOut;
+        }
+
+        public static string GenerateKey(IDictionary<string, string> param)
+        {
+            var s = string.Join("|", (
+                from k in param
+                orderby k.Key
+                select k.Value).ToArray());
+
+            HMACSHA1 encrypter = new HMACSHA1(Encoding.Default.GetBytes(KEY));
+            byte[] signBytes = encrypter.ComputeHash(Encoding.Default.GetBytes(s));
+            return Convert.ToBase64String(signBytes);
+        }
+        static object lockObject = new object();
+        public static async void WriteToJsonFileAsync(string responseKey, object objectToWrite)
+        {
+
+            await Task.Run(() =>
+             {
+                 try
+                 {
+                     lock (lockObject)
+                     {
+                         ConcurrentDictionary<string, string> dict = ReadCacheContent();
+                         if (dict == null) dict = new ConcurrentDictionary<string, string>();
+                         dict.AddOrUpdate(responseKey, JsonConvert.SerializeObject(objectToWrite), (t, v) => v);
+
+                         //if (!File.Exists(filename)) File.Create(filename);
+                         using (StreamWriter sw = File.CreateText(filename))
+                         {
+                             sw.Write(JsonConvert.SerializeObject(dict));
+                         }
+                     }
+                 }
+                 catch (Exception ex)
+                 {
+
+                 }
+             });
+        }
+        /// <summary>
+        /// Reads all the items from the Cache File
+        /// </summary>
+        /// <returns></returns>
+        private static ConcurrentDictionary<string, string> ReadCacheContent()
+        {
+            if (!File.Exists(filename)) return null;
+                string content = File.ReadAllText(filename);
+            if (string.IsNullOrEmpty(content)) return null;
+            ConcurrentDictionary<string, string> dict = JsonConvert.DeserializeObject<ConcurrentDictionary<string, string>>(content);
+            if (dict == null) dict = new ConcurrentDictionary<string, string>();
+            return dict;
+        }
+        /// <summary>
+        /// Reads the value of the key provided as parameter
+        /// </summary>
+        /// <returns></returns>
+        private static string ReadCacheContent(string key)
+        {
+            ConcurrentDictionary<string, string> dict = ReadCacheContent();
+            if (dict == null || !dict.Keys.Contains(key)) return null;
+            return dict[key];
+        }
+
+        public static T ReadFromJsonFile<T>(string responseKey)
+        {
+            try
+            {
+                string value = ReadCacheContent(responseKey);
+                if (value == null) return default(T);
+                return JsonConvert.DeserializeObject<T>(value);
+            }
+            catch (Exception ex) { throw ex; }
+        }
+    }
+}

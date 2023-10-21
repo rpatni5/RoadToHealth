@@ -1,0 +1,79 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class HealthQuestionnaireCategory
+    {
+        public string name { get; set; }
+        public string icon { get; set; }
+        public string color { get; set; }
+    }
+    public class HealthQuestion
+    {
+        public string _id { get; set; }
+        public string question { get; set; }
+        public string question_alias { get; set; }
+        public Dependency dependency { get; set; }
+        public int element_type { get; set; }
+        public bool decimals { get; set; }
+        public int decimal_places { get; set; }
+        public List<object> ranges { get; set; }
+        public string summary { get; set; }
+        public string helper_title { get; set; }
+        public string helper_image { get; set; }
+        public int gender { get; set; }
+        public string key_string { get; set; }
+        public List<HealthQuestionsAnswer> answers { get; set; }
+        public int roundVal { get; set; }
+        public List<object> limit { get; set; }
+        public bool is_skipped_in_health_plan { get; set; }
+        public bool is_restricted { get; set; }
+    }
+    public class HealthQuestionsAnswer
+    {
+        public string answer_text { get; set; }
+        public string answer_label { get; set; }
+        public object answer_value { get; set; }
+        public string _id { get; set; }
+        public bool answer_overrider { get; set; }
+    }
+    public class HealthPlanQuestionnaire
+    {
+        public HealthQuestionnaireCategory category { get; set; }
+        public List<HealthQuestion> questions { get; set; }
+        public List<HealthQuestionnaireSubcategory> subcategories { get; set; }
+    }
+    public class HealthQuestionnaireSubcategory
+    {
+        public Category subcategory { get; set; }
+        public List<HealthQuestion> questions { get; set; }
+    }
+    public class Questionnaire
+    {
+        public string _id { get; set; }
+        public string image_name { get; set; }
+    }
+    public class HealthPlanQuestionnaireData
+    {
+        public string _id { get; set; }
+        public string key_string { get; set; }
+        public Category category { get; set; }
+        public string objective_title { get; set; }
+        public string objective_prompt { get; set; }
+        public string updated { get; set; }
+        public List<HealthPlanQuestionnaire> questions { get; set; }
+        public string image_name { get; set; }
+        public List<Strategy> strategies { get; set; }
+        public List<Questionnaire> questionnaires { get; set; }
+    }
+    public class HealthQuestionnaire
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+        public HealthPlanQuestionnaireData data { get; set; }
+    }
+}

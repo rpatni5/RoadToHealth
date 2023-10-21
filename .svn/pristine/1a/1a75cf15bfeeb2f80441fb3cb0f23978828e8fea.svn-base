@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Data;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class TimelineGroupingConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {           
+            DateTime date = System.Convert.ToDateTime(value);
+            return date.ToShortDateString() == DateTime.Now.ToShortDateString() ? "Today" : date.ToShortDateString() ==
+                DateTime.Now.AddDays(-1).ToShortDateString() ? "Yesterday" : date.Day + " " + date.ToLongDateString().Split(' ').ElementAt(1); 
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

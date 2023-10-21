@@ -1,0 +1,47 @@
+﻿<UserControl x:Class="RTH.Windows.Views.Controls.ResultGraph"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.Controls"
+             mc:Ignorable="d" 
+             xmlns:bo="clr-namespace:RTH.Business.Objects;assembly=RTH.Business.Objects"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid Background="Transparent" Grid.Row="2" Name="grdScore"
+                      xmlns:l="clr-namespace:RTH.Windows.Views.Converters"
+                      Height="{Binding ElementName=rect, Path=ActualHeight, Mode=OneWay}">
+        <!--<l:LabelTextBox x:Name="searchText" Width="300" Height="23" />-->
+        <Border>
+            <ItemsControl Height="0" HorizontalAlignment="Center" Name="scoreSummaries" VerticalAlignment="Bottom">
+                <ItemsControl.Resources>
+                    <l:ColumnHeightConverter x:Key="columnHeightConv" />
+                </ItemsControl.Resources>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel IsItemsHost="True" Orientation="Horizontal" FlowDirection="RightToLeft" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type bo:ScoreSummary}">
+                        <Rectangle VerticalAlignment="Bottom" Margin="2 0" Name="rectScore"
+                                           Width="20" Fill="White" Opacity="0.5" ToolTip="{Binding TotalScoreToDisplay}">
+                            <Rectangle.Height>
+                                <MultiBinding Converter="{StaticResource columnHeightConv}">
+                                    <Binding Path="ActualHeight" RelativeSource="{RelativeSource AncestorType=ItemsControl, Mode=FindAncestor}" />
+                                    <Binding Path="total_score" />
+                                </MultiBinding>
+                            </Rectangle.Height>
+                        </Rectangle>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource PreviousData}}" Value="{x:Null}">
+                                <DataTrigger.Setters>
+                                    <Setter TargetName="rectScore" Property="Fill" Value="{Binding Path=DataContext.SelectedDisease.BgColor, RelativeSource={RelativeSource AncestorType=UserControl, Mode=FindAncestor}}"/>
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </Grid>
+</UserControl>

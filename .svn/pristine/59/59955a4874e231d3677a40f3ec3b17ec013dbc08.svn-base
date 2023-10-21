@@ -1,0 +1,64 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for SingleSelectQuestionView.xaml
+    /// </summary>
+    public partial class SingleSelectQuestionView : AnswerBase
+    {
+        public SingleSelectQuestionView() : base()
+        {
+            InitializeComponent();
+            this.element_type = 0;
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            Question q = (Question)e.NewValue;
+            if (this.element_type == q.element_type)
+            {
+                if (q.SelectedAnswers == null || q.SelectedAnswers.Count == 0)
+                {
+                    q.SelectedAnswers = new ObservableCollection<Answer>();
+                    Answer a = new Answer();
+                    a.date = Convert.ToString(DateTime.Now.Ticks);
+                    a.key_string = q.key_string;
+                    a.element_type = q.element_type;
+                    a.question = q._id;
+                    q.SelectedAnswers.Add(a);
+                }
+            }
+        }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            Question q = (DataContext as Question);
+            q.SelectedAnswers[0].answer = (sender as RadioButton).Tag.ToString();
+        }
+
+        private void RadioButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            Question q = (DataContext as Question);
+            if (q.SelectedAnswers == null || !q.SelectedAnswers.Any() || q.SelectedAnswers[0].answer == null || string.IsNullOrEmpty(q.SelectedAnswers[0].answer.ToString())) return;
+            RadioButton rdb = sender as RadioButton;
+            rdb.IsChecked = q.SelectedAnswers[0].answer.ToString() == rdb.Tag.ToString();
+        }
+    }
+}

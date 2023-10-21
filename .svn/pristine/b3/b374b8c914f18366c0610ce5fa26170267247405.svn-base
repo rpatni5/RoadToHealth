@@ -1,0 +1,182 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Globalization;
+using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
+
+namespace RTH.Business.Services
+{
+    public static class TwitterService
+    {
+        #region Private properties and constants
+        const long UnixEpocTicks = 621355968000000000L;
+        const string OAuthVersion = "1.0";
+        const string OAuthSignatureMethod = "HMAC-SHA1";
+        static string TwitterAccessBaseUrl { get { return TwitterConfig.TwitterAccessBaseUrl; } }
+        static string TwitterOAuthBaseurl { get { return TwitterConfig.TwitterOAuthBaseurl; } }
+        #endregion
+        #region Private methods
+
+        // This is the method very critical for the twitter api. Please alter it and inner methods carefully, if you need.
+        private static string GetAuthorizationHeader(string consumerKey, string consumerSecret, IDictionary<string, string> parameters, string requestUrl, string accessToken = "", string method = "GET")
+        {
+            string allParams = BuildEncodedSortedString(consumerKey, parameters);
+            string baseSignatureString = BuildSignatureBaseString(method, requestUrl, allParams);
+            string signingKey = BuildSigningKey(consumerSecret, accessToken);
+            string signature = CalculateSignature(signingKey, baseSignatureString);
+            //parameters.Remove("status");
+            //allParams = BuildEncodedSortedString(consumerKey, parameters);
+            string twitterHeader = BuildEncodedSortedAuthorizationToken(allParams, signature);
+            return twitterHeader;
+        }
+        static string CalculateSignature(string signingKey, string signatureBaseString)
+        {
+            HMACSHA1 encrypter = new HMACSHA1(Encoding.Default.GetBytes(signingKey));
+            byte[] signBytes = encrypter.ComputeHash(Encoding.Default.GetBytes(signatureBaseString));
+            return Convert.ToBase64String(signBytes);
+        }
+        static string BuildSigningKey(string consumerSecret, string oAuthTokenSecret)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture, "{0}&{1}",
+                Uri.EscapeDataString(consumerSecret),
+                Uri.EscapeDataString(oAuthTokenSecret));
+        }
+        private static string BuildSignatureBaseString(string method, string url, string encodedStringParameters)
+        {
+            int paramsIndex = url.IndexOf('?');
+
+            string urlWithoutParams = paramsIndex >= 0 ? url.Substring(0, paramsIndex) : url;
+
+            return string.Join("&", new string[]
+            {
+                method.ToUpper(),
+                Uri.EscapeDataString(urlWithoutParams),
+                Uri.EscapeDataString(encodedStringParameters)
+            });
+        }
+
+        private static string BuildEncodedSortedString(string consumerKey, IDictionary<string, string> parameters)
+        {
+            AddMissingOAuthParameters(parameters);
+            return
+                string.Join("&",
+                    (from parm in parameters
+                     orderby parm.Key
+                     select parm.Key + "=" + Uri.EscapeDataString(parameters[parm.Key]))
+                    .ToArray());
+        }
+        private static void AddMissingOAuthParameters(IDictionary<string, string> parameters)
+        {
+            if (!parameters.ContainsKey("oauth_timestamp"))
+                parameters.Add("oauth_timestamp", GetTimestamp());
+
+            if (!parameters.ContainsKey("oauth_nonce"))
+                parameters.Add("oauth_nonce", GenerateNonce());
+
+            if (!parameters.ContainsKey("oauth_version"))
+                parameters.Add("oauth_version", OAuthVersion);
+
+            if (!parameters.ContainsKey("oauth_signature_method"))
+                parameters.Add("oauth_signature_method", OAuthSignatureMethod);
+        }
+        private static string GenerateNonce()
+        {
+            return Guid.NewGuid().ToString().Replace("-", "");
+        }
+        static string GetTimestamp()
+        {
+            long ticksSinceUnixEpoc = DateTime.UtcNow.Ticks - UnixEpocTicks;
+            double secondsSinceUnixEpoc = new TimeSpan(ticksSinceUnixEpoc).TotalSeconds;
+            return Math.Floor(secondsSinceUnixEpoc).ToString(CultureInfo.InvariantCulture);
+        }
+        private static string BuildEncodedSortedAuthorizationToken(string encodedAndSortedString, string signature)
+        {
+            string[] allParms = (encodedAndSortedString + "&oauth_signature=" + Uri.EscapeDataString(signature)).Split('&');
+            string allParmsString =
+                string.Join(", ",
+                    (from parm in allParms
+                     let keyVal = parm.Split('=')
+                     where (parm.StartsWith("oauth") || parm.StartsWith("x_auth")) && !parm.Contains("screen_name")
+                     orderby keyVal[0]
+                     select keyVal[0] + "=\"" + keyVal[1] + "\"")
+                    .ToList());
+            return "OAuth " + allParmsString;
+        }
+
+        #endregion
+
+        #region Public methods
+        public static string GetRequestToken(string consumerKey, string consumerSecret, string accessToken, IDictionary<string, string> parameters)
+        {
+            string requestUrl = TwitterAccessBaseUrl + APIMethod.TwitterGetRequestToken.GetMethodUri();
+            string twitterHeader = GetAuthorizationHeader(consumerKey, consumerSecret, parameters, requestUrl);
+            return Http.ExecuteTwitterGET(requestUrl, twitterHeader);
+        }
+        public static bool GetAccessToken(TwitterCredentials credentials, IDictionary<string, string> parameters)
+        {
+            if (!parameters.ContainsKey("oauth_verifier")) throw new ArgumentException("oauth_verifier is required.");
+            parameters.Remove("oauth_callback");
+
+            string requestUrl = TwitterAccessBaseUrl + APIMethod.TwitterGetAccessToken.GetMethodUri();
+            string twitterHeader = GetAuthorizationHeader(credentials.ConsumerKey, credentials.ConsumerSecret, parameters, requestUrl);
+            string authToken = Http.ExecuteTwitterGET(requestUrl, twitterHeader);
+            if (!string.IsNullOrEmpty(authToken))
+            {
+                string[] arr = authToken.Split('&');
+                credentials.OAuthToken2.Token = arr[0].Split('=')[1];
+                credentials.OAuthToken2.TokenSecret = arr[1].Split('=')[1];
+                credentials.OAuthToken2.UserId = arr[2].Split('=')[1];
+                credentials.OAuthToken2.ScreenName = arr[3].Split('=')[1];
+            }
+            return true;
+        }
+
+
+        // Please do not alter the following code. In case you need to, please comment any line you need to change - Puneet
+        public static TwitterUser GetUserInfo(TwitterCredentials credentials, IDictionary<string, string> parameters)
+        {
+            if (!parameters.ContainsKey("oauth_token")) throw new ArgumentNullException("oauth_token is required.");
+            if (!parameters.ContainsKey("screen_name")) throw new ArgumentNullException("screen_name is required.");
+            string requestUrl = TwitterOAuthBaseurl + APIMethod.TwitterGetUserInfo.GetMethodUri() + "?screen_name=" + credentials.OAuthToken2.ScreenName;
+            string twitterHeader = GetAuthorizationHeader(credentials.ConsumerKey, credentials.ConsumerSecret, parameters, requestUrl, credentials.OAuthToken2.TokenSecret);
+            TwitterUser userInfo = Http.ExecuteTwitterGET<TwitterUser>(requestUrl, twitterHeader);
+            return userInfo;
+            //string s = Http.ExecuteTwitterGET(requestUrl, twitterHeader);
+            //return null;
+        }
+
+        public static string PostTweet(string message, TwitterCredentials credentials, IDictionary<string, string> parameters)
+        {
+            
+            parameters.Remove("oauth_timestamp");
+            parameters.Remove("screen_name");
+            parameters.Remove("oauth_nonce");
+            parameters.Remove("oauth_version");
+            parameters.Remove("oauth_signature_method");
+            parameters.Remove("status");
+            parameters.Add("status", message); // unencoded value is to be passed here
+            parameters.Remove("oauth_token");
+            parameters.Add("oauth_token", credentials.OAuthToken2.Token);
+
+            string encodedMessage = Uri.EscapeDataString(message); // unencoded value is to be passed here
+            string requestUrl = TwitterOAuthBaseurl + APIMethod.TwitterPostTweet.GetMethodUri();
+            string twitterHeader = GetAuthorizationHeader(credentials.ConsumerKey, credentials.ConsumerSecret, parameters, requestUrl, credentials.OAuthToken2.TokenSecret, "POST");
+            string postResponse = Http.ExecuteTwitterPOST(requestUrl, twitterHeader, new StringContent(string.Format("status={0}", encodedMessage), Encoding.UTF8, "application/x-www-form-urlencoded"));
+            return postResponse;
+        }
+
+        public static ShareData GetSharingData(string userId, string keyString, string accessToken)
+        {
+            return Http.ExecuteGET<SocialSharingData>(string.Format("apis/get_facebook_share/{0}/{1}", userId, keyString), null, accessToken).data;
+        }
+        #endregion
+    }
+}

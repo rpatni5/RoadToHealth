@@ -1,0 +1,28 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+
+namespace RTH.Windows.ViewModels
+{
+   public class HealthAreasViewModel : ViewModels.Common.ViewModelBase
+    {
+        public HealthAreasViewModel()
+        {
+            PHADetails = HealthAreasService.GetPHA(UserDetails._id, ConfigurationManagers.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+        }
+        public PHA PHADetails
+        {
+            get { return GetValue(() => PHADetails); }
+            set { SetValue(() => PHADetails, value); }
+        }
+
+    }
+
+    
+}

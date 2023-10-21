@@ -1,0 +1,32 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Helpers
+{
+    public static class Config
+    {
+        public static string ApiUrl
+        {
+            get
+            {
+#if PRODUCTION
+                return "https://ng-admin-live.roadtohealth.co.uk/";
+#endif
+#if STAG
+                return "https://ng-admin-staging.roadtohealth.co.uk/";
+                 
+#endif
+#if DEBUG
+                return "https://ng-admin-dev.roadtohealth.co.uk/";
+                //return "http://172.24.1.114:3000/";
+#endif
+#if RELEASE
+                return "https://ng-admin-staging.roadtohealth.co.uk/";
+#endif
+            }
+        }
+    }
+}

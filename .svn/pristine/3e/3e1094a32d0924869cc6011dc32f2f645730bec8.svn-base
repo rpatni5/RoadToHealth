@@ -1,0 +1,121 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.NavigationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:converters="clr-namespace:RTH.Windows.Views.Converters"
+             xmlns:ve="RTH.Windows.Views.Enums" 
+             Width="800"
+             xmlns:GD="clr-namespace:RTH.Windows.ViewModels.Common;assembly=RTH.Windows.ViewModels"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             DataContext="{Binding Source={x:Static GD:GlobalData.Default}, Path=ClickedHRA}">
+    <UserControl.Resources>
+        <converters:ObjectToEnableConverter x:Key="objToEnableConverter"/>
+        <Style TargetType="RadioButton">
+            <Setter Property="GroupName" Value="NavGroup"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid>
+                            <Border Padding="4">
+                                <Border.Background>
+                                    <SolidColorBrush Color="Black" Opacity="0.4" />
+                                </Border.Background>
+                                <Label Name="content" 
+                                       Content="{TemplateBinding Content}" 
+                                       Foreground="{TemplateBinding Foreground}" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Padding="0" Opacity="0.7" />
+                            </Border>
+                            <Rectangle Height="3" Name="Nav" VerticalAlignment="Bottom" Visibility="Collapsed" Fill="Transparent" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Nav" Property="Fill" Value="White" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter TargetName="content" Property="Opacity" Value="1" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Nav" Property="Fill" Value="White" />
+                                <Setter TargetName="Nav" Property="Opacity" Value="0.8" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Storyboard x:Key="OnInsightsChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="100,0,466,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnAdviceChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="333,0,233,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnResultsChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="567,0,0,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnDashboardChecked">
+            <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="rectNav">
+                <EasingThicknessKeyFrame KeyTime="0:0:0.5" Value="0,0,700,0"/>
+            </ThicknessAnimationUsingKeyFrames>
+        </Storyboard>
+    </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoRight">
+            <BeginStoryboard Storyboard="{StaticResource OnInsightsChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoMiddle">
+            <BeginStoryboard Storyboard="{StaticResource OnAdviceChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoLeft">
+            <BeginStoryboard Storyboard="{StaticResource OnResultsChecked}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ToggleButton.Checked" SourceName="rdoHome">
+            <BeginStoryboard Storyboard="{StaticResource OnDashboardChecked}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
+    <Grid Height="40">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <RadioButton x:Name="rdoHome" 
+                     Command="{Binding NavigationCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" CommandParameter="DashboardView">
+            <Grid>
+                <!--<Path Height="22" Width="22" Fill="White" Stroke="White" Stretch="None" 
+                      StrokeThickness="0" RenderOptions.BitmapScalingMode="HighQuality"
+                      SnapsToDevicePixels="True">
+                    <Path.Data>
+                        <GeometryGroup>
+                            <RectangleGeometry Rect="0,0,10,10" />
+                            <RectangleGeometry Rect="12,0,10,10" />
+                            <RectangleGeometry Rect="0,12,10,10" />
+                            <RectangleGeometry Rect="12,12,10,10" />
+                        </GeometryGroup>
+                    </Path.Data>
+                </Path>-->
+                <Image  SnapsToDevicePixels="True" RenderOptions.BitmapScalingMode="NearestNeighbor"
+                       Stretch="None" Source="/RTH.Windows.Views;component/Assets/q_logo.png" />
+            </Grid>
+        </RadioButton>
+        <UniformGrid Grid.Column="1" Rows="1" >
+            <RadioButton  x:Name="rdoRight" Command="{Binding NavigationCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" CommandParameter="InsightsView"  Content="{Binding Source={x:Static Root:App.SharedValues},FallbackValue=Insights,  Path=LanguageResource.insights}"/>
+            <RadioButton  x:Name="rdoMiddle" Command="{Binding ViewHealthAreaCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" Content="{Binding Source={x:Static Root:App.SharedValues},FallbackValue=Advice,  Path=LanguageResource.advice}"  IsEnabled="{Binding Path=LastVisitedDiseaseID ,Source={x:Static GD:GlobalData.Default}, Converter={StaticResource objToEnableConverter}}"/>
+            <RadioButton x:Name="rdoLeft" Command="{Binding ViewResultCommand, RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor}}" Content="{Binding Source={x:Static Root:App.SharedValues},FallbackValue=Results, Path=LanguageResource.score_windows}" IsEnabled="{Binding Path=LastVisitedDiseaseID, Source={x:Static GD:GlobalData.Default}, Converter={StaticResource objToEnableConverter}}" />
+        </UniformGrid>
+        <Grid VerticalAlignment="Bottom" Grid.ColumnSpan="2">
+            <Rectangle VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="3" Fill="White" Name="rectNav"/>
+        </Grid>
+    </Grid>
+</UserControl>

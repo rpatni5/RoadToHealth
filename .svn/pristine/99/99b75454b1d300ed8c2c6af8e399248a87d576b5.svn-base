@@ -1,0 +1,17 @@
+﻿using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class FriendsOfQViewModel
+    {
+        public FriendsOfQViewModel()
+        {
+            GlobalData.Default.HeaderVisibility = System.Windows.Visibility.Collapsed;
+        }
+    }
+}

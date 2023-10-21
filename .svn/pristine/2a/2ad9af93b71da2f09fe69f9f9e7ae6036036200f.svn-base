@@ -1,0 +1,59 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for StrategyUserControl.xaml
+    /// </summary>
+    public partial class StrategyView : ViewBase
+    {
+        public string ObjectiveId { get; set; }
+        public StrategyView()
+        {
+            InitializeComponent();
+        }
+        private RelayCommand m_EditStrategyCommand;
+
+        public RelayCommand EditStrategyCommand
+        {
+            get
+            {
+                return m_EditStrategyCommand ?? (m_EditStrategyCommand = new RelayCommand(
+                    ve => ShowEditStragey(ve)));
+            }
+        }
+
+        private void ShowEditStragey(object ve)
+        {
+            this.EditStrategyGrid.Visibility = Visibility.Visible;
+            this.txtNewStrategy.Text = ve == null ? string.Empty : ve as string;
+        }
+
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.GetNew<StrategyViewModel>();
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+
+        public override void OnViewLoaded()
+        {
+            (this.ViewModel as StrategyViewModel).GetHealthPlanQuestion(ObjectiveId);
+        }
+    }
+}

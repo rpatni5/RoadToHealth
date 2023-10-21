@@ -1,0 +1,64 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthPlanView.xaml
+    /// </summary>
+    public partial class HealthPlanView : ViewBase
+    {
+        public HealthPlanView()
+        {
+            InitializeComponent();
+        }       
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<HealthPlanViewModel>(refreshRequired: true);
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();           
+        }
+
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+          var ui=  UIExtensions.GetChild<Grid>(((Decorator)((ContentControl)sender).Content).Child);
+            ui.Visibility = Visibility.Visible;
+        }
+               
+        private RelayCommand m_ObjActionCommand;
+
+        public RelayCommand ObjActionCommand
+        {
+            get
+            {
+                return m_ObjActionCommand ?? (m_ObjActionCommand = new RelayCommand(
+                    ve => OnClick(ve), (t) => true));
+            }
+        }
+
+        private void OnClick(object ve)
+        {
+            
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+    }
+}

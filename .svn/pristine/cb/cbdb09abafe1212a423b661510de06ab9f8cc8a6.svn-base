@@ -1,0 +1,68 @@
+﻿using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ProductCategoriesView.xaml
+    /// </summary>
+    public partial class ProductCategoriesView : ViewBase
+    {
+        public ProductCategoriesView()
+        {
+            InitializeComponent();
+        }
+        private void ProductList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            List<ProductInfo> pTest = new List<ProductInfo>();
+            //GlobalData.Default.Products;
+            System.Windows.Controls.ListView lv= (System.Windows.Controls.ListView)sender;
+            if(lv.SelectedIndex>=0)
+            {
+                if (((RTH.Windows.ViewModels.Objects.ProductInfo)lv.SelectedValue).ID == string.Empty)
+                {
+                    pTest.Add(new ProductInfo { ID = ((RTH.Windows.ViewModels.Objects.ProductInfo)lv.SelectedValue).ID, Name = ((RTH.Windows.ViewModels.Objects.ProductInfo)lv.SelectedValue).Name, ProductImage = ((RTH.Windows.ViewModels.Objects.ProductInfo)lv.SelectedValue).ProductImage, Products = ((RTH.Windows.ViewModels.Objects.ProductInfo)lv.SelectedValue).Products, IsChecked = true });
+                    foreach (var item in GlobalData.Default.Products)
+                    {
+                        if (!pTest.Where(x => x.ID == item.ID).Any())
+                            pTest.Add(new ProductInfo { ID = item.ID, Name = item.Name, ProductImage = item.ProductImage, Products = item.Products, IsChecked = false });
+                    }
+                }
+                else
+                {
+                    foreach (var item in GlobalData.Default.Products)
+                    {
+                        if (item.ID == string.Empty)
+                            pTest.Add(new ProductInfo { ID = item.ID, Name = item.Name, ProductImage = item.ProductImage, Products = item.Products, IsChecked = false });
+                        else
+                            pTest.Add(new ProductInfo { ID = item.ID, Name = item.Name, ProductImage = item.ProductImage, Products = item.Products, IsChecked = true });
+
+                    }
+                }
+                for (int i = 0; i < GlobalData.Default.Products.Count; i++)
+                {
+                    GlobalData.Default.Products.RemoveAt(i);
+                } 
+                foreach (var item in pTest)
+                {
+                    GlobalData.Default.Products.Add(item);
+                }
+            }
+        }
+
+    }
+}

@@ -1,0 +1,33 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels.Objects
+{
+    public class DiseaseData : NotifyBase
+    {
+        public string ID { get; set; }
+        public string BgColor { get { return GetValue(() => this.BgColor); } set { SetValue(() => this.BgColor, value); } }
+        public string Title { get; set; }       
+        public string TotalScore { get; set; }
+        public string Summary { get; set; }
+        public bool IsCompleted { get; set; }
+        public string KeyString { get; set; }       
+        public bool IsChecked { get { return GetValue(() => this.IsChecked); } set { SetValue(() => this.IsChecked, value); } }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            DiseaseData d = obj as DiseaseData;
+            if (d == null) return base.Equals(obj);
+            return ID.Equals(d.ID) && BgColor.Equals(d.BgColor) && Title.Equals(d.Title) && TotalScore.Equals(d.TotalScore) && Summary.Equals(d.Summary) && IsCompleted.Equals(d.IsCompleted) && KeyString.Equals(d.KeyString) && IsChecked.Equals(d.IsChecked);
+        }
+    }
+}

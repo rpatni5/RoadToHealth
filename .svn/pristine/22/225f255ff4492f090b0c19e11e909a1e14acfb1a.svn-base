@@ -1,0 +1,14 @@
+﻿namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthAreas.xaml
+    /// </summary>
+    public partial class HealthAreasView : ViewBase
+    {
+        public HealthAreasView()
+        {
+            InitializeComponent();
+        }
+
+    }
+}

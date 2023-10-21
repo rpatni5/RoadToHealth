@@ -1,0 +1,39 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:bo="clr-namespace:RTH.Business.Objects;assembly=RTH.Business.Objects"
+                    xmlns:uc="clr-namespace:RTH.Windows.Views.UserControls">
+    <DataTemplate x:Key="MultiSelectDragDrop" DataType="{x:Type bo:Question}">
+        <uc:MultiSelectDragDropUserControl DataContext="{Binding}" />
+    </DataTemplate>
+    <DataTemplate x:Key="SingleSelect" DataType="{x:Type bo:Question}">
+        <uc:SingleSelectQuestionView DataContext="{Binding}" />
+    </DataTemplate>
+    <DataTemplate x:Key="DateType" DataType="{x:Type bo:Question}">
+        <uc:DatePickerControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate x:Key="MultiSelect" DataType="{x:Type bo:Question}">
+        <uc:MultiSelectUserControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="WeightViewTemplate">
+        <uc:WeightUserControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="HeightViewTemplate">
+        <uc:HeightUserControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="SimpleTextViewTemplate">
+        <uc:SimpleTextUserControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="WaistGirthTemplate">
+        <uc:WaistGirthControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="BloodGlucoseResultTemplate">
+        <uc:BloodGlucoseResultControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="LatestBPReadingTemplate">
+        <uc:LatestBPReadingControl DataContext="{Binding}"/>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type bo:Question}" x:Key="CholesterollevelTemplate">
+        <uc:CholesterolLevelControl DataContext="{Binding}"/>
+    </DataTemplate>
+
+</ResourceDictionary>

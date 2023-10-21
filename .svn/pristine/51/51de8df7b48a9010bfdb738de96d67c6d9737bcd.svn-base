@@ -1,0 +1,292 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Enums;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Animation;
+
+namespace RTH.Windows.Views
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private ICommand m_backCommand;
+        private Stack<ViewEnum> m_viewStack = new Stack<ViewEnum>();
+
+        public ICommand BackCommand
+        {
+            get
+            {
+                return m_backCommand ?? (m_backCommand = new RelayCommand((o) => OnBackCommand(o), (o) => CanGoBack(o)));
+            }
+        }
+
+        private bool CanGoBack(object o)
+        {
+            return m_viewStack.Count > 0;
+        }
+
+        private void OnBackCommand(object o)
+        {
+            var lastView = m_viewStack.Pop();
+            this.LoadView2(lastView, rightAnimate: true);
+        }
+
+        HomeViewModel homeViewModel;
+        public MainWindow()
+        {
+            InitializeComponent();
+            this.ViewModel = homeViewModel = new ViewModels.HomeViewModel();
+            App.SharedValues.WindowMain = this;
+            //header properties
+            GlobalData.Default.HeaderVisibility = Visibility.Collapsed;
+            //footer properties
+            GlobalData.Default.FooterVisibility = Visibility.Collapsed;
+            App.Current.MainWindow = this;
+            GlobalData.Default.LastVisitedDiseaseID = Properties.Settings.Default.LastVisitedHRAID;
+#if !DEBUG
+            this.ResizeMode = ResizeMode.NoResize;
+#endif
+        }
+
+        public MainWindow(ViewEnum defaultView, bool animate = false) : this()
+        {
+            LoadView(defaultView, animate);
+        }
+
+        public ViewModelBase ViewModel
+        {
+            get { return (ViewModelBase)GetValue(ViewModelProperty); }
+            set { SetValue(ViewModelProperty, value); }
+        }
+
+        public static readonly DependencyProperty ViewModelProperty =
+            DependencyProperty.Register("ViewModel", typeof(ViewModelBase), typeof(MainWindow), new PropertyMetadata(null));
+
+        public ViewEnum CurrentView
+        {
+            get { return (ViewEnum)GetValue(CurrentViewProperty); }
+            set { SetValue(CurrentViewProperty, value); }
+        }
+
+        public static readonly DependencyProperty CurrentViewProperty =
+            DependencyProperty.Register("CurrentView", typeof(ViewEnum), typeof(MainWindow), new PropertyMetadata(ViewEnum.None));
+
+
+        private RelayCommand m_RenderView;
+        private RelayCommand m_SetLanguageCommand;
+        private RelayCommand m_MenuButtonCheckedCommand;
+        private RelayCommand m_MenuButtonUncheckedCommand;
+        private RelayCommand m_UpdateLanguageCommand;
+        private RelayCommand m_UpdateCountryCommand;
+        private RelayCommand m_ViewResultCommand;
+
+        public RelayCommand ViewResultCommand
+        {
+            get
+            {
+                return m_ViewResultCommand ?? (m_ViewResultCommand = new RelayCommand(
+                    ve =>
+                    {
+                        OnLoadViewModel(ve, GlobalData.Default.ClickedHRA.ID);
+
+                    }
+                    , (t) => true));
+            }
+        }
+        public RelayCommand LoadViewModel
+        {
+            get
+            {
+                return m_RenderView ?? (m_RenderView = new RelayCommand(
+                    ve => OnLoadViewModel(ve), (t) => true));
+            }
+        }
+        public RelayCommand SetLanguageCommand
+        {
+            get
+            {
+                return m_SetLanguageCommand ?? (m_SetLanguageCommand = new RelayCommand(
+                    ve => OnSetLanguage(ve), (t) => true));
+            }
+        }
+        public RelayCommand UpdateLanguageCommand
+        {
+            get
+            {
+                return m_UpdateLanguageCommand ?? (m_UpdateLanguageCommand = new RelayCommand(
+                    ve => OnUpdateLanguage(ve), (t) => true));
+            }
+        }
+        public RelayCommand UpdateCountryCommand
+        {
+            get
+            {
+                return m_UpdateCountryCommand ?? (m_UpdateCountryCommand = new RelayCommand(
+                    ve => OnUpdateCountry(ve), (t) => true));
+            }
+        }
+        public RelayCommand MenuButtonCheckedCommand
+        {
+            get
+            {
+                return m_MenuButtonCheckedCommand ?? (m_MenuButtonCheckedCommand = new RelayCommand(
+                    ve => OnMenuButtonChecked(ve), (t) => true));
+            }
+        }
+        public RelayCommand MenuButtonUncheckedCommand
+        {
+            get
+            {
+                return m_MenuButtonUncheckedCommand ?? (m_MenuButtonUncheckedCommand = new RelayCommand(
+                    ve => OnMenuButtonUnchecked(ve), (t) => true));
+            }
+        }
+        /// <summary>
+        /// menu toggle button checked
+        /// </summary>
+        private void OnMenuButtonUnchecked(object ve)
+        {
+            Animate(250, 0);
+        }
+        /// <summary>
+        /// menu toggle button unchecked
+        /// </summary>      
+        private void OnMenuButtonChecked(object ve)
+        {
+            Animate(0, 250);
+        }
+        /// <summary>
+        /// to animate from one position to another
+        /// </summary>
+        /// <param name="from"> starting position</param>
+        /// <param name="to"> ending position</param>
+        private void Animate(double from, double to)
+        {
+            DoubleAnimation da = new DoubleAnimation();
+            da.From = from;
+            da.To = to;
+            da.Duration = new Duration(TimeSpan.FromSeconds(.5));
+            this.SideMenu.BeginAnimation(Button.WidthProperty, da);
+        }
+        private void OnSetLanguage(object param)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                if (param != null)
+                {
+                    var x = homeViewModel.GetLanguageVariables(param as string).data;
+                    App.SharedValues.SetLanguage(x);
+                    ViewModelBase.AppMessages = x as Variable;
+                    ViewModelBase.Lang = param as string;
+                }
+            });
+        }
+        private void OnUpdateLanguage(object param)
+        {
+            var x = homeViewModel.GetLanguageVariables(param as string ?? "en").data;
+            App.SharedValues.SetLanguage(x);
+            ViewModelBase.AppMessages = x as Variable;
+            ViewModelBase.Lang = param as string;
+            (this.ViewModel as SettingsViewModel).UpdateLanguage(param as string);
+        }
+
+        private void OnUpdateCountry(object param)
+        {
+            ViewModelBase.Country = param as string;
+            (this.ViewModel as SettingsViewModel).UpdateCountry(param as string);
+        }
+
+        public void LoadView(ViewEnum view, bool animate = false, object param = null, bool rightAnimate = false)
+        {
+            m_viewStack.Push(this.CurrentView);
+            this.LoadView2(view, animate, param, rightAnimate);
+        }
+
+        private void LoadView2(ViewEnum view, bool animate = false, object param = null, bool rightAnimate = false)
+        {
+            //set some necessary prop            
+            CurrentView = view;
+            switch (view)
+            {
+                case ViewEnum.LoginView:
+                    this.ViewModel = new LoginViewModel(); break;
+                case ViewEnum.UserRegistrationView:
+                    this.ViewModel = new UserRegistrationViewModel(); break;
+                case ViewEnum.ForgotPasswordView:
+                    this.ViewModel = new ForgotPasswordViewModel(); break;
+                case ViewEnum.HomeView:
+                    rightAnimate = true;
+                    this.ViewModel = new HomeViewModel() { Animate = animate }; break;
+                case ViewEnum.InsightsView:
+                    this.ViewModel = new InsightViewModel(); break;
+                case ViewEnum.DashboardView:
+                    rightAnimate = true;
+                    this.ViewModel = new DashboardViewModel(); break;
+                case ViewEnum.ResultView:
+                    ViewModel = new ResultViewModel(param as string); break;
+                case ViewEnum.HealthAreasView:
+                    ViewModel = new HealthAreasViewModel(param as string); break;
+                case ViewEnum.FaceBookAuthenticationView:
+                    this.transition.AllowTransitions = false;
+                    this.ViewModel = new FaceBookAuthenticationViewModel(); break;
+                case ViewEnum.QuestionNavigatorView:
+                    this.ViewModel = new QuestionNavigatorViewModel(); break;
+                case ViewEnum.FriendsOfQView:
+                    this.ViewModel = new FriendsOfQViewModel(); break;
+                case ViewEnum.SettingsView:
+                    this.ViewModel = new SettingsViewModel(); break;
+                case ViewEnum.FBUserRegistrationView:
+                    FBUserRegistrationViewModel oFBUserRegistrationViewModel = new FBUserRegistrationViewModel();
+                    oFBUserRegistrationViewModel.name = ViewModelBase.UserDetails.name;
+                    oFBUserRegistrationViewModel.FbId = ViewModelBase.UserDetails._id;
+                    this.ViewModel = oFBUserRegistrationViewModel;
+                    this.transition.AllowTransitions = false; break;
+                case ViewEnum.TwitterAuthenticationView:
+                    this.transition.AllowTransitions = false;
+                    this.ViewModel = new TwitterAuthenticationViewModel(param as TwitterCredentials); break;
+                case ViewEnum.ProductCategoriesView:
+                    this.ViewModel = new ProductCategoriesViewModel(); break;
+                case ViewEnum.DeactivateView:
+                    this.ViewModel = new DeactivateViewModel(); break;
+                case ViewEnum.TermsAndConditionsView:
+                    this.ViewModel = new TermsAndConditionsViewModel(); break;
+                case ViewEnum.PolicyView:
+                    this.ViewModel = new PolicyViewModel(); break;
+                case ViewEnum.AllQScoreView:
+                    this.ViewModel = new AllQScoreViewModel(); break;
+                case ViewEnum.AboutUsView:
+                    this.ViewModel = new AboutUsViewModel(); break;
+                case ViewEnum.MWHealthierView:
+                    this.ViewModel = new MWHealthierViewModel(); break;
+                default:
+                    break;
+            }
+            this.transition.LoadControl(new ContentControl { Content = this.ViewModel }, rightAnimate);
+            this.transition.AllowTransitions = true;
+
+        }
+        private void OnLoadViewModel(object viewModel, object param = null)
+        {
+            this.Opacity = 1;
+            HeaderMenu.HideMenu();
+            var ve = (ViewEnum)Enum.Parse(typeof(ViewEnum), viewModel as string);
+            LoadView(ve, param: param);
+        }
+
+        private void MainWin_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Properties.Settings.Default.LastVisitedHRAID = GlobalData.Default.LastVisitedDiseaseID;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+}

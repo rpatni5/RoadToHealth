@@ -1,0 +1,119 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+
+namespace RTH.Windows.ViewModels
+{
+    public class UserRegistrationViewModel : Common.ViewModelBase
+    {
+      
+        public IEnumerable<Language> LanguageList
+        {
+            get { return GetValue(() => LanguageList); }
+            set
+            {
+                SetValue(() => LanguageList, value);
+            }
+        }
+
+        public UserRegistrationViewModel()
+        {
+            LanguageList = RTH.Business.Services.AppService.GetLanguage().Data;
+            Language = "en";
+            HeaderLabel = AppMessages.login;
+
+        }
+        public User UserRegistration()
+        {
+            if (string.IsNullOrEmpty(this.name))
+            { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_name; return null; }
+            if (string.IsNullOrEmpty(this.email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+            if (!ExtensionMethod.ValidateEmail(this.email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+            if (string.IsNullOrEmpty(this.password))
+            { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_password; return null; }
+            if (string.IsNullOrEmpty(this.confirm))
+            { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_confirm_password; return null; }
+            if (this.confirm != this.password )
+            { this.ErrorMessage = ViewModelBase.AppMessages.password_mismatched; return null; }
+
+            var User = new User
+            {
+                name = name,
+                email = email,
+                password = password,
+                confirm = confirm,
+                username = email,
+                language = Language
+            };           
+            return RTH.Business.Services.UserService.RegisterUser(User);
+        }
+
+       
+
+        #region ViewModel Property  
+        public String name
+        {
+            get { return GetValue(() => name); }
+            set{SetValue(() => name, value);}
+        }
+        
+        public String email
+        {
+            get { return GetValue(() => email); }
+            set
+            {
+                SetValue(() => email, value);
+            }
+        }
+        public String password
+        {
+            get { return GetValue(() => password); }
+            set
+            {
+                SetValue(() => password, value);
+            }
+        }
+        public String confirm
+        {
+            get { return GetValue(() => confirm); }
+            set
+            {
+                SetValue(() => confirm, value);
+            }
+        }
+        public String Language
+        {
+            get { return GetValue(() => Language); }
+            set
+            {
+                SetValue(() => Language, value);
+            }
+        }
+        public String HealthGuidelines
+        {
+            get { return GetValue(() => HealthGuidelines); }
+            set
+            {
+                SetValue(() => HealthGuidelines, value);
+            }
+        }
+
+       
+        #endregion
+
+
+
+    }
+}

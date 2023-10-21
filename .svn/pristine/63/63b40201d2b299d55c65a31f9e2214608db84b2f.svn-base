@@ -1,0 +1,175 @@
+﻿using System.Windows;
+using RTH.Windows.ViewModels;
+using System;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Objects;
+using RTH.Windows.Views.Helpers;
+using System.Collections.Generic;
+using System.Threading;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthAreas.xaml
+    /// </summary>
+    public partial class HealthAreasView : ViewBase, ITutorialHost
+    {
+        public HealthAreasView()
+        {
+            InitializeComponent();
+            if (!ViewModel.IsLoaded)
+            {
+                gridHealthAdvice.Visibility = Visibility.Collapsed;
+                ViewModel.Loaded += OnViewModelLoaded;
+            }
+            else
+            {
+                if (HasShowTutorials())
+                {
+                    this.SetValue(ShowTutorialProperty, true);
+                }
+            }
+            btnExpand.IsVisibleChanged += BtnExpand_IsVisibleChanged;
+            btnFOQ.IsVisibleChanged += BtnFOQ_IsVisibleChanged;
+        }
+
+        public HealthAreasViewModel ThisViewModel { get { return (this.ViewModel as HealthAreasViewModel); } }
+
+        private void BtnFOQ_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+            {
+                if (HasShowTutorials())
+                {
+                    tutorialObjects.Add(tutorialObjects.Count, new Tuple<string, FrameworkElement>("Expand", sender as Button));
+                    this.SetValue(ShowTutorialProperty, true);
+                }
+            }
+        }
+
+        private void BtnExpand_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+            {
+                if (HasShowTutorials())
+                {
+                    tutorialObjects.Add(tutorialObjects.Count, new Tuple<string, FrameworkElement>("FOQ", sender as ToggleButton));
+                    this.SetValue(ShowTutorialProperty, true);
+                }
+            }
+        }
+
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<HealthAreasViewModel>(refreshRequired: true);
+            this.RefreshOnLoad = true;
+
+            base.LoadViewModel();
+        }
+
+        private void OnViewModelLoaded(object sender)
+        {
+            Dispatcher.BeginInvoke((Action)(() =>
+            {
+                gridHealthAdvice.Visibility = Visibility.Visible;
+                new Thread(new ThreadStart((Action)(() =>
+                {
+                    Thread.Sleep(100);
+                    Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        if (HasShowTutorials())
+                        {
+                            this.SetValue(ShowTutorialProperty, true);
+                        }
+                    }));
+                }))).Start();
+
+            }));
+
+
+        }
+
+        #region Tutorials
+
+        Dictionary<int, Tuple<string, FrameworkElement>> tutorialObjects;
+        public void InitializeTutorials()
+        {
+            tutorialObjects = new Dictionary<int, Tuple<string, FrameworkElement>>
+            {
+                { 0,new Tuple<string, FrameworkElement>("Overview", null) },
+            };
+        }
+        public override void OnViewLoaded()
+        {
+            InitializeTutorials();
+        }
+
+        int currentTutIndex = 0;
+        public override TutorialContent GetTutorials()
+        {
+            if (currentTutIndex >= this.MaxTutorials)
+            {
+                ShowTutorial = false;
+                return null;
+            }
+            var tuple = tutorialObjects[currentTutIndex++];
+
+            Properties.Settings.Default.LastVisitedHealthTutorial = tuple.Item1;
+            Properties.Settings.Default.Save();
+
+            if (tuple.Item2 == null)
+            {
+                return this.gridOverview.GetTutorial(this, tuple.Item1);
+            }
+            return tuple.Item2.GetTutorial(this, tuple.Item1);
+        }
+        public int MaxTutorials
+        {
+            get
+            {
+                return tutorialObjects.Count;
+            }
+        }
+
+        public int GetTutorialIndex()
+        {
+            return currentTutIndex;
+        }
+
+        public string GetTutorialText(string keyString)
+        {
+            if (App.SharedValues.LanguageResource.GetType().GetProperty(keyString) != null)
+            {
+                return App.SharedValues.LanguageResource.GetType().GetProperty(keyString).GetValue(App.SharedValues.LanguageResource).ToString();
+            }
+            return string.Empty;
+        }
+
+        private bool HasShowTutorials()
+        {
+            string healthTutorials = Properties.Settings.Default.HealthTutorials;
+            string[] tutorialsKeys = healthTutorials.Split('&');
+            int indexOfKey = Array.IndexOf(tutorialsKeys, Properties.Settings.Default.LastVisitedHealthTutorial);
+
+            if (Properties.Settings.Default.HTutorialsCompleted == false && Properties.Settings.Default.Tutorials == true &&
+                (indexOfKey != -1 || Properties.Settings.Default.LastVisitedHealthTutorial == string.Empty))
+            {
+                if (indexOfKey != -1)
+                {
+                    currentTutIndex = indexOfKey + 1;
+                }
+                else
+                {
+                    currentTutIndex = 0;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        #endregion Tutorials
+
+    }
+}

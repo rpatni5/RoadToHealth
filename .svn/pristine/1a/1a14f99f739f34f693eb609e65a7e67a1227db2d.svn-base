@@ -1,0 +1,63 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class TermsAndConditionsViewModel : ViewModelBase
+    {
+        #region Global Properties
+        public PrivatePolicy.Data TermsData
+        {
+            get { return GetValue(() => this.TermsData); }
+            set { SetValue(() => TermsData, value); }
+        }
+
+        #endregion Global Properties
+        public TermsAndConditionsViewModel()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                TermsData = RTH.Business.Services.PolicyService.GetTermsAndConditions(Lang ?? "en");
+            });
+        }
+
+
+        public List<Question2> GetPreConversation()
+        {
+            List<Question2> lst = ConversationService.PreRegistrationConversation().questions.FirstOrDefault().questions.ToList();
+            List<Question2> preConList = new List<Question2>();
+            Question2 element = lst.FirstOrDefault(x => x.dependency.dependency_question == null);
+            preConList.Add(element);
+            Traverse(preConList, lst, element.answers.FirstOrDefault()._id);
+            return preConList;
+        }
+
+
+
+        private void Traverse(List<Question2> preConList, List<Question2> lst, string dependendAnswerId)
+        {
+            Question2 element = lst.FirstOrDefault(x => x.dependency.dependency_answer.Any(y => y == dependendAnswerId));
+            if (element != null)
+            {
+                preConList.Add(element);
+                Traverse(preConList, lst, element.answers.FirstOrDefault()._id);
+            }            
+        }
+
+        public List<Question2> GetPostConversation()
+        {
+            List<Question2> lst = ConversationService.PostRegistrationConversation(lang: "en", accessToken: UserDetails.AuthToken.access_token).questions.FirstOrDefault().questions.ToList();
+            List<Question2> postConList = new List<Question2>();
+            Question2 element = lst.FirstOrDefault(x => x.dependency.dependency_question == null);
+            postConList.Add(element);
+            Traverse(postConList, lst, element.answers.FirstOrDefault()._id);
+            return postConList;
+        }
+    }
+}

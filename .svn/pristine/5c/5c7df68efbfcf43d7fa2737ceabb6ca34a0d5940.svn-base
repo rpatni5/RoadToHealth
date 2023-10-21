@@ -1,0 +1,90 @@
+﻿using RTH.Windows.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ResultView.xaml
+    /// </summary>
+    public partial class ResultView : ViewBase
+    {
+        public ResultView()
+        {
+            InitializeComponent();
+            Loaded += OnLoaded;
+            resultGraph.AnimationExecuted += OnAnimationCompleted;
+        }
+
+        private void OnAnimationCompleted(double duration)
+        {
+            RunRectangleSlideRTL(duration);
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ResultViewModel vm = DataContext as ResultViewModel;
+            if (vm != null && vm.Animate)
+            {
+                RunScaleTransform();
+            }
+        }
+
+        private void RunScaleTransform()
+        {
+            gridResultDisplay.RenderTransformOrigin = new Point(0.5, 0.5);
+            gridResultDisplay.RenderTransform = new ScaleTransform(2, 2);
+
+            var scaleXAnimation = new DoubleAnimationUsingKeyFrames();
+            scaleXAnimation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            scaleXAnimation.KeyFrames = new DoubleKeyFrameCollection();
+            scaleXAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3))));
+            Storyboard.SetTarget(scaleXAnimation, gridResultDisplay);
+            Storyboard.SetTargetProperty(scaleXAnimation, new PropertyPath("RenderTransform.(ScaleTransform.ScaleX)"));
+
+            var scaleYAnimation = new DoubleAnimationUsingKeyFrames();
+            scaleYAnimation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            scaleYAnimation.KeyFrames = new DoubleKeyFrameCollection();
+            scaleYAnimation.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(3))));
+            Storyboard.SetTarget(scaleYAnimation, gridResultDisplay);
+            Storyboard.SetTargetProperty(scaleYAnimation, new PropertyPath("RenderTransform.(ScaleTransform.ScaleY)"));
+
+            Storyboard sb = new Storyboard();
+            sb.Children.Add(scaleXAnimation);
+            sb.Children.Add(scaleYAnimation);
+            sb.Begin();
+        }
+        public void RunRectangleSlideRTL(double duration)
+        {
+            ThicknessAnimation rectAnimation = new ThicknessAnimation();
+            rectAnimation.To = new Thickness(0);
+            rectAnimation.BeginTime = TimeSpan.FromSeconds(duration);
+            rectAnimation.Duration = new Duration(TimeSpan.FromSeconds(1));
+
+            Storyboard storyboard = new Storyboard();
+
+            storyboard.Children.Add(rectAnimation);
+            Storyboard.SetTarget(rectAnimation, ragContainer);
+            Storyboard.SetTargetProperty(rectAnimation, new PropertyPath(Grid.MarginProperty));
+            storyboard.Begin();
+        }
+
+    }
+}
+

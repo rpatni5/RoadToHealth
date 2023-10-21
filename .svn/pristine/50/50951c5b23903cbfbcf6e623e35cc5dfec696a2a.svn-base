@@ -1,0 +1,77 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels.Objects;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class ResultViewModel : ViewModels.Common.ViewModelBase
+    {
+        
+        public ResultViewModel()
+        {
+            SelectedDisease = GlobalData.Default.ClickedHRA;
+            LoadHealthAreasAsync();
+
+        }
+
+        private void LoadHealthAreasAsync()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                SetHeader();
+                Summary = ResultService.GetSummaries(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token).data;
+                ObservableCollection<ScoreSummary> sc = ResultService.GetScoreSummaryDetails(UserDetails._id, SelectedDisease.ID, UserDetails.AuthToken.access_token);
+                if (sc != null && sc.Any())
+                {
+                    if (ScoreSummaries == null)
+                        ScoreSummaries = new ObservableCollection<ScoreSummary>();
+                    for (int i = 0; i <= 7; i++)
+                    {
+                        if (sc.Count > i)
+                        {
+                            ScoreSummaries.Add(sc[i]);
+                        }
+                        else break;
+                    }
+                    LatestScoreSummary = sc[0];
+                }
+            });
+        }
+
+        void SetHeader()
+        {
+            GlobalData.Default.HeaderVisibility = true;
+            GlobalData.Default.HeaderTitle = SelectedDisease.Title;
+            GlobalData.Default.HeaderColor = SelectedDisease.BgColor;
+            GlobalData.Default.KeyString = SelectedDisease.KeyString;
+            GlobalData.Default.HeaderState = false;
+            GlobalData.Default.LastVisitedDiseaseID = SelectedDisease.ID;
+            GlobalData.Default.FooterVisibility = true;
+        }
+
+        public ObservableCollection<QSummaries> Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+        public ScoreSummary LatestScoreSummary
+        {
+            get { return GetValue(() => LatestScoreSummary); }
+            set { SetValue(() => LatestScoreSummary, value); }
+        }
+
+        public ObservableCollection<ScoreSummary> ScoreSummaries
+        {
+            get { return GetValue(() => ScoreSummaries); }
+            set { SetValue(() => ScoreSummaries, value); }
+        }
+    }
+}

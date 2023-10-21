@@ -1,0 +1,330 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Controls;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for CoachChatView.xaml
+    /// </summary>
+    public partial class CoachChatView : ViewBase
+    {
+        public CoachChatView()
+        {
+            InitializeComponent();
+        }
+        CoachChatViewModel vm;
+        public override void LoadViewModel()
+        {
+            vm = ViewModelLocator.Get<CoachChatViewModel>();
+            ViewModel = vm;
+            base.LoadViewModel();
+        }
+        List<string> lstChat;
+        ConversationThread currentConversation;
+        public void StartChat(Engagement engagement)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                GetActivity(engagement._id);
+            }, false);
+        }
+
+        private async void GetActivity(string _id)
+        {
+            AsyncCall.Invoke(() =>
+            {
+                currentConversation = vm.GetSpecificActivity(_id);
+                if (currentConversation != null && !string.IsNullOrEmpty(currentConversation.engage_statement))
+                {
+                    FetchData(currentConversation.engage_statement);
+                    DisplayChat();
+                }
+                else
+                {
+                    viewTyping.Visibility = Visibility.Collapsed;
+                }
+            }, false);
+        }
+        private void FetchData(string str)
+        {
+            lstChat = str.Split('\n').ToList();
+        }
+        private int chatWaitTime = 2000;
+        int chatItrerator = 0;
+        private void DisplayChat()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                viewTyping.Visibility = Visibility.Visible;
+                chatScroll.ScrollToBottom();
+            });
+
+            chatItrerator = 0;
+            int count = lstChat.Count;
+            for (chatItrerator = 0; chatItrerator < count;)
+            {
+                Thread.Sleep(chatWaitTime);
+                if (chatWaitTime != 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddChatBlock();
+                    });
+                }
+                chatWaitTime = 2000;
+            }
+        }
+        private void AddChatBlock()
+        {
+            try
+            {
+                if (lstChat != null && chatItrerator < lstChat.Count)
+                {
+                    chatScroll.ScrollToBottom();
+                    var chatBox = new ChatBox(lstChat[chatItrerator], false);
+                    coachControl.Children.Add(chatBox);
+                    chatItrerator++;
+                    switch (currentConversation.chevron_link)
+                    {
+                        case 1:
+                            GenerateLink(chatBox, lstChat[chatItrerator], currentConversation.chevron_obj);
+                            break;
+                        case 2:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                            chatBox.DataContext = currentConversation;
+                            chatBox.MouseLeftButtonDown += ClientResponse;
+                            break;
+                    }
+                    if (chatItrerator == lstChat.Count)
+                    {
+                        lstChat = null;
+                        viewTyping.Visibility = Visibility.Collapsed;
+                        SwipeOption();
+                    }
+
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void GenerateLink(ChatBox label, string Content, string url)
+        {
+            StackPanel panel = new StackPanel();
+            panel.Orientation = Orientation.Vertical;
+            TextBlock text = new TextBlock();
+            text.Text = Content;
+            Label hyperText = new Label();
+            Hyperlink link = new Hyperlink();
+            link.Inlines.Add(url);
+            hyperText.Content = link;
+            panel.Children.Add(text);
+            panel.Children.Add(hyperText);
+            label.DataContext = currentConversation;
+            label.MouseLeftButtonDown += ClientResponse;
+        }
+
+        private void ClientResponse(object sender, MouseButtonEventArgs e)
+        {
+            var label = sender as ChatBox;
+            label.MouseLeftButtonDown -= ClientResponse;
+        }
+
+        private void SwipeOption()
+        {
+            if (currentConversation.option_list != null && currentConversation.option_list.Count > 0)
+            {
+                currentConversation.option_list.ForEach(c =>
+                {
+                    ChatResponseButton btn = new ChatResponseButton(c.option);
+                    btn.DataContext = c;
+                    btn.Content = c.option;
+                    responseControl.Children.Add(btn);
+                    chatScroll.ScrollToBottom();
+                    btn.Click += btn_Click;
+                });
+            }
+            else
+            {
+                EndOfChat();
+            }
+
+        }
+
+        private void EndOfChat()
+        {
+            coachControl.Children.Add(new ChatBox("End of the Chat", false));
+            ChatResponseButton btn = new ChatResponseButton("Back");
+            btn.DataContext = null;
+            responseControl.Children.Add(btn);
+            chatScroll.ScrollToBottom();
+            btn.Click += btn_Click;
+        }
+        private void btn_Click(object sender, RoutedEventArgs e)
+        {
+            var btn = sender as Button;
+
+            if (btn.DataContext == null)
+            {
+                App.SharedValues.WindowMain.BackCommand.Execute(null);
+            }
+            else
+            {
+
+                var opt = btn.DataContext as OptionList;
+                AsyncCall.Invoke(() =>
+                {
+                    switch (opt.additional_info)
+                    {
+                        case 0:
+                            AddResponseButton(btn, btn.Content.ToString());
+                            CallAnotherAcitivityAfterResponse(opt.option_id);
+                            break;
+                        case 2:
+                            Dispatcher.Invoke(() =>
+                            {
+                                Done.DataContext = btn.DataContext;
+                                Done.Tag = btn.Content;
+                            });
+                            AnimateAdditionalPanel(true, opt.additional_info);
+                            break;
+                    }
+                    if (opt.additional_info == 0) { }
+                }, false);
+            }
+        }
+
+
+        private void CallAnotherAcitivityAfterResponse(string OptionID, string AdditionalData = "")
+        {
+            CoachingConversationResponse res = vm.SetSpecificEngagement(currentConversation._id, OptionID, AdditionalData);
+            if (!string.IsNullOrEmpty(res.follow_on_activity_id))
+            {
+                GetActivity(res.follow_on_activity_id);
+            }
+            else
+            {
+
+            }
+        }
+
+        private void AddResponseButton(Button btn, string content)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                btn.Click -= btn_Click;
+                responseControl.Children.Clear();
+                coachControl.Children.Add(new ChatBox(content, true));
+            });
+        }
+        private void AnimateAdditionalPanel(bool IsOpen = true, int AdditionalInfo = 0)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (AdditionalInfo == 1)
+                {
+                    weightControl.Visibility = Visibility.Visible;
+                }
+                else if (AdditionalInfo == 2)
+                {
+                    DateAnswer.Visibility = Visibility.Visible;
+                    DateAnswer.DisplayDateEnd = DateTime.Now;
+                }
+                else if (AdditionalInfo == 3)
+                {
+
+                }
+                else
+                {
+                    ErrorMessage.Text = string.Empty;
+                    DateAnswer.Visibility = Visibility.Collapsed;
+                    weightControl.Visibility = Visibility.Collapsed;
+                }
+
+                if (IsOpen)
+                    additionalPanel.SetValue(VisibilityProperty, Visibility.Visible);
+                Storyboard qSB = new Storyboard();
+                ThicknessAnimation da;
+                if (IsOpen)
+                {
+                    da = new ThicknessAnimation(new Thickness(10, 0, 10, -180), new Thickness(10, 0, 10, 10), TimeSpan.FromSeconds(0.6));
+                }
+                else
+                {
+                    da = new ThicknessAnimation(new Thickness(10, 0, 10, 10), new Thickness(10, 0, 10, -180), TimeSpan.FromSeconds(0.6));
+                }
+
+                Storyboard.SetTarget(da, additionalPanel);
+                Storyboard.SetTargetProperty(da, new PropertyPath(Border.MarginProperty));
+                qSB.Children.Add(da);
+                qSB.Begin();
+            });
+        }
+
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            AnimateAdditionalPanel(false);
+        }
+
+        private void Done_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = (sender as Button);
+            OptionList opt = btn.DataContext as OptionList;
+            if (opt.additional_info == 1)
+            {
+                if (string.IsNullOrEmpty(WeightText.Text))
+                {
+                    ErrorMessage.Text = "Please enter value";
+                    return;
+                }
+                else
+                {
+                    AddResponseButton(btn, btn.Tag.ToString());
+                    CallAnotherAcitivityAfterResponse(opt.option_id, WeightText.Text);
+                }
+            }
+            else if (opt.additional_info == 2)
+            {
+                if (DateAnswer.SelectedDate == null)
+                {
+                    ErrorMessage.Text = "Please select value";
+                    return;
+                }
+                else
+                {
+                    String DOB = Convert.ToString(Convert.ToDateTime(DateAnswer.SelectedDate).ToString("yyyy-MM-dd"));
+                    AddResponseButton(btn, btn.Tag.ToString());
+                    CallAnotherAcitivityAfterResponse(opt.option_id, DOB);
+                }
+            }
+            else if (opt.additional_info == 3)
+            {
+
+            }
+            AnimateAdditionalPanel(false);
+        }
+    }
+}

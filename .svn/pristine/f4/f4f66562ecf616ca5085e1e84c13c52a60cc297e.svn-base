@@ -1,0 +1,32 @@
+﻿using RTH.Business.Objects.JSON;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Services
+{
+    public static class TwitterService
+    {
+        public static string GetRequestToken(string consumerKey, string accessToken)
+        {
+            string twitterHeader = string.Format("OAuth oauth_consumer_key={0},oauth_token={1},oauth_signature_method=HMAC-SHA1,oauth_timestamp={2},oauth_nonce=5PQpDJsdfgertdfgertdfgertdfgertd,oauth_version=1.0,oauth_signature=5Ghrs8xLXPJ0Gc9cRJ3DbQMTE2I%3D", consumerKey, accessToken, DateTime.UtcNow.Ticks)
+            ;
+            //string twitterHeader = "OAuth oauth_consumer_key=" + consumerKey
+            //                       + "\",oauth_token=\"" + accessToken
+            //                       + "\",oauth_signature_method=\"HMAC-SHA1"
+            //                       + "\",oauth_timestamp=\"1452333614"
+            //                       + "\",oauth_nonce=\"5PQpDJsdfgertdfgertdfgertdfgertd"
+            //                         + "\",oauth_version=\"1.0"
+            //                         + "\",oauth_signature=\"5Ghrs8xLXPJ0Gc9cRJ3DbQMTE2I%3D\"";
+
+            return Http.ExecuteTwitterPOST<string>(APIMethod.GetTwitterRequestToken, twitterHeader);
+        }
+        public static string GetAccessToken(string consumerKey, string accessToken)
+        {
+            string twitterHeader = string.Format("OAuth oauth_consumer_key='{0}',oauth_token='{1}',oauth_signature_method='HMAC - SHA1',oauth_timestamp='1452333614',oauth_nonce='5PQpDJsdfgertdfgertdfgertdfgertd',oauth_version='1.0',oauth_signature='5Ghrs8xLXPJ0Gc9cRJ3DbQMTE2I % 3D'", consumerKey, accessToken);
+            return Http.ExecuteTwitterPOST<string>(APIMethod.GetTwitterRequestToken, accessToken);
+        }
+    }
+}

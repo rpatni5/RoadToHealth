@@ -1,0 +1,417 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.QuestionNavigatorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             xmlns:vm="clr-namespace:RTH.Windows.ViewModels;assembly=RTH.Windows.ViewModels"
+             xmlns:bo="clr-namespace:RTH.Business.Objects;assembly=RTH.Business.Objects"
+             mc:Ignorable="d" 
+             xmlns:ctrls="clr-namespace:RTH.Windows.Views.Controls"
+             xmlns:helpers="clr-namespace:RTH.Windows.Views.Helpers"
+             d:DesignHeight="300" d:DesignWidth="300" Background="{DynamicResource PHABGColor}"
+             xmlns:converters="clr-namespace:RTH.Windows.Views.Converters" FontSize="15">
+    <UserControl.Resources>
+        <converters:QuestionnaireButtonsVisibilityConverter x:Key="visibilityConverter"/>
+        <converters:CategoryCountConverter x:Key="CategoryCountConverter"/>
+        <converters:NullStringToVisibilityConverter x:Key="nullStringToVisibilityConverter"/>
+        <converters:SubCategoryVisibilityConverter x:Key="subCategoryVisibilityConverter"/>
+        <converters:CategorySubCategoryColorConverter x:Key="categorySubCategoryColorConverter"/>
+        <ItemsPanelTemplate x:Key="ItemsPanelTemplate1">
+            <UniformGrid Rows="1"/>
+        </ItemsPanelTemplate>
+
+        <DataTemplate x:Key="QuestionTemplate">
+            <ContentControl Name="answersControl" Content="{Binding}" />
+            <DataTemplate.Triggers>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="cigarettes_count"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="mod_literal"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="vig_literal"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="height"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource HeightViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="waist_girth"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource WaistGirthTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="weight"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource WeightViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="blood_glucose_level"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=BloodGlucoseResultTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="alcopop_m"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="fortified_m"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="liqueur_m"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="spirit_m"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="wine_m"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="beer_m"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="alcopop_w"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="fortified_w"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="liqueur_w"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="spirit_w"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="wine_w"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="beer_w"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="blood_pressure"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=LatestBPReadingTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="cholesterol"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=CholesterollevelTemplate}"/>
+                </MultiDataTrigger>
+
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="night_shift_total_years"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="menarchy_age"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="given_birth_total"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+
+                <MultiDataTrigger>
+                    <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding element_type}" Value="4"/>
+                        <Condition Binding="{Binding key_string}" Value="menopause_age"/>
+                    </MultiDataTrigger.Conditions>
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource ResourceKey=SimpleTextViewTemplate}"/>
+                </MultiDataTrigger>
+
+                <!--<DataTrigger Binding="{Binding element_type}" Value="4">
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource InputType}" />
+                </DataTrigger>-->
+                <DataTrigger Binding="{Binding element_type}" Value="6">
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource DateType}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding element_type}" Value="7">
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource MultiSelect}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding element_type}" Value="0">
+                    <Setter TargetName="answersControl" Property="ContentTemplate" Value="{StaticResource SingleSelect}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </UserControl.Resources>
+    <!--<Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <local:OffHeaderView NavigationView="DashboardView"></local:OffHeaderView>-->
+    <Grid Grid.Row="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <!--Show Categorywise question count-->
+        <ItemsControl Name="icQuestions" ItemsPanel="{DynamicResource ItemsPanelTemplate1}" ItemsSource="{Binding Path=Questionnaire.questions}" HorizontalAlignment="Stretch">
+            <ItemsControl.ItemTemplate>
+                <!--Content="{Binding Path=questions.Count}"-->
+                <DataTemplate >
+                    <Label  HorizontalContentAlignment="Center"  Background="{Binding Path=category.color}" Foreground="White" Padding="10"  >
+                        <Label.Content>
+                            <MultiBinding  Converter="{StaticResource CategoryCountConverter}" ConverterParameter="a">
+                                <Binding Path="DataContext.AllQuestions" ElementName="icQuestions" />
+                                <Binding Path="category.name" />
+                                <Binding Path="DataContext.CurrentQuestion" ElementName="icQuestions" />
+                            </MultiBinding>
+                        </Label.Content>
+
+                    </Label>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!--<ContentControl  Name="ContentQuestionTemplate"
+            Grid.Row="3"
+            Content="{Binding CurrentQuestion}" 
+            Background="{Binding Path=Category.question_color}" 
+            ContentTemplate="{StaticResource QuestionTemplate}" 
+            VerticalContentAlignment="Center">
+        </ContentControl>-->
+        <Grid DataContext="{Binding Path=CurrentQuestion}"  Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <!--Show Category Label-->
+            <Label Height="30" Grid.Row="0" Name="Category" Background="{Binding Path=Category.color}" Content="{Binding Path=Category.name}" Foreground="White"></Label>
+            <!--Show SubCategory Label-->
+            <Label Height="30" Visibility="{Binding SubCategory, Converter={StaticResource subCategoryVisibilityConverter}}" Grid.Row="1" Background="{Binding Path=SubCategory.color}" Content="{Binding Path=SubCategory.name}" Foreground="White" FontSize="13"></Label>
+            <Grid Grid.Row="2" Background="{Binding Category.question_color}" Height="22" VerticalAlignment="Top">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="1" Margin="5 0 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Name="lblQuestion" VerticalAlignment="Center" Text="{Binding question}" TextWrapping="Wrap"/>
+                    <ToggleButton Grid.Column="1" Background="Transparent" Name="tbtnShowHelp"
+                                Command="{Binding ShowQuestionHelperCommand, RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor}}"                                
+                                CommandParameter="{Binding}">
+                        <ToggleButton.Content>
+                            <!--Command="{Binding DataContext.ShowQuestionHelperCommand, RelativeSource={RelativeSource AncestorType=UserControl,Mode=FindAncestor}}"-->
+                            <Image Source="{Binding HelperImagePath}"   />
+                            <!--<Image Source="..\Assets\check-blue-sml.png"   />-->
+
+                        </ToggleButton.Content>
+                    </ToggleButton>
+                    
+                </Grid>
+                
+            </Grid>
+            <Label Name="lblError" Grid.Row="3" Style="{DynamicResource ErrorMessage}" Visibility="{Binding ErrorMessage, Converter={StaticResource nullStringToVisibilityConverter}}" Content="{Binding ErrorMessage}" HorizontalAlignment="Stretch"/>
+            <UniformGrid Grid.Row="4" Rows="1">
+                <UniformGrid.Resources>
+                    <TextBlock x:Key="test" />
+                </UniformGrid.Resources>
+                <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <ContentPresenter Grid.Column="0" Content="{Binding}" ContentTemplate="{StaticResource QuestionTemplate}" />
+                </ScrollViewer>
+                <ctrls:AnimatedContentControl Grid.Column="1" x:Name="transition" ClipToBounds="True" 
+                                                  Content="{StaticResource test}"
+                                                  />
+
+            </UniformGrid>
+
+            <!--<ContentControl Content="{Binding}" Grid.Row="2" />-->
+        </Grid>
+        <Grid Grid.Row="4" HorizontalAlignment="Stretch" >
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button Name="btnContinue" BorderThickness="0" Grid.ColumnSpan="2" Style="{StaticResource ButtonDefaultStyle}" HorizontalAlignment="Stretch" Background="{Binding Path=CurrentQuestion.Category.color}"
+                    Command="{Binding Path=ContinueCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                    CommandParameter="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Width="16" Margin="5,0" Height="16" Data="M1,8 L16,8 M8,1 L15,8 8,16" StrokeThickness="2"  HorizontalAlignment="Right"
+                         Stroke="#fff" />
+                        <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.continue}" Foreground="White" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button.Content>
+                <Button.Visibility>
+                    <MultiBinding  Converter="{StaticResource visibilityConverter}" ConverterParameter="continue">
+                        <Binding Path="AllQuestions" />
+                        <Binding Path="CurrentQuestion" />
+                    </MultiBinding>
+                </Button.Visibility>
+            </Button>
+            <Button  Name="btnBack" BorderThickness="0" Grid.Column="0" Style="{StaticResource ButtonDefaultStyle}"  HorizontalAlignment="Stretch" Background="{Binding Path=CurrentQuestion.Category.color}" 
+                        Command="{Binding Path=PreviousCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" 
+                        CommandParameter="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Width="16" Height="16" Margin="5,0" Data="M1,8 L16,8 M8,1 L1,8 8,16" StrokeThickness="2" 
+                          Stroke="#fff" />
+                        <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.prev_button}" Foreground="White" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button.Content>
+                <Button.Visibility>
+                    <MultiBinding  Converter="{StaticResource visibilityConverter}" ConverterParameter="prev">
+                        <Binding Path="AllQuestions" />
+                        <Binding Path="CurrentQuestion" />
+                    </MultiBinding>
+                </Button.Visibility>
+            </Button>
+            <Button Grid.Column="1" BorderThickness="0"  Style="{StaticResource ButtonDefaultStyle}" HorizontalAlignment="Stretch" Name="btnNext"
+                    Background="{Binding Path=CurrentQuestion, Converter={StaticResource categorySubCategoryColorConverter}}"
+                    Command="{Binding Path=NextCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" 
+                    CommandParameter="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Width="16" Height="16" Margin="5,0" Data="M1,8 L16,8 M8,1 L15,8 8,16" StrokeThickness="2" HorizontalAlignment="Right"
+                          Stroke="#fff" />
+                        <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.next_button}" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                    </Grid>
+                </Button.Content>
+                <Button.Visibility>
+                    <MultiBinding  Converter="{StaticResource visibilityConverter}" ConverterParameter="next">
+                        <Binding Path="AllQuestions" />
+                        <Binding Path="CurrentQuestion" />
+                    </MultiBinding>
+                </Button.Visibility>
+            </Button>
+            <Button Name="btnSubmit" Style="{StaticResource ButtonDefaultStyle}"  BorderThickness="0"
+                    Grid.Column="1" 
+                    HorizontalAlignment="Stretch"
+                    Background="{Binding Path=CurrentQuestion, Converter={StaticResource categorySubCategoryColorConverter}}"
+                    Command="{Binding Path=SubmitCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}"
+                    CommandParameter="{Binding}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Button.Content>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Path Width="16" Height="16" Margin="5,0" Data="M1,8 L16,8 M8,1 L15,8 8,16" StrokeThickness="2"  HorizontalAlignment="Right"  
+                          Stroke="#fff" />
+                        <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.next_button}" Foreground="White" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Grid>
+                </Button.Content>
+                <Button.Visibility>
+                    <MultiBinding  Converter="{StaticResource visibilityConverter}" ConverterParameter="submit">
+                        <Binding Path="AllQuestions" />
+                        <Binding Path="CurrentQuestion" />
+                    </MultiBinding>
+                </Button.Visibility>
+            </Button>
+        </Grid>
+    </Grid>
+    <!--</Grid>-->
+</UserControl>

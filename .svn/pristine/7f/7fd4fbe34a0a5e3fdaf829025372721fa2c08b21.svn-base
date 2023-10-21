@@ -1,0 +1,47 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class PHA : NotifyBase
+    {
+        public int status { get; set; }
+        public string message { get; set; }
+        public ObservableCollection<HealthArea> health_areas { get; set; }
+        public ObservableCollection<SubDisease> sub_diseases { get; set; }
+    }
+
+    public class HealthArea
+    {
+        public string _id { get; set; }
+        public string key_string { get; set; }
+        public string health_area { get; set; }
+        public string summary { get; set; }
+        public string details { get; set; }
+        public string display_value { get; set; }
+        public string display_text { get; set; }
+        public string background { get; set; }
+
+    }
+
+    public class SubDisease : NotifyBase
+    {
+        public string _id { get; set; }
+        public string key_string { get; set; }
+        public string health_area { get; set; }
+        public string summary { get; set; }
+        public string details { get; set; }
+        public string display_value { get; set; }
+        public string display_text { get; set; }
+        public string background { get; set; }
+        public string icon { get; set; }
+        public string disease { get; set; }
+        public string UploadUrl { get{ return GetValue(() => this.UploadUrl); } set { SetValue(() => this.UploadUrl, value); } }
+        public ObservableCollection<string> health_areas { get; set; }
+    }
+}

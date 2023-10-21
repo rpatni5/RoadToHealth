@@ -1,0 +1,101 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ViewModels="clr-namespace:RTH.Windows.ViewModels;assembly=RTH.Windows.ViewModels"
+                    xmlns:trans="clr-namespace:RTH.Windows.Views.Controls"
+                    xmlns:ctrls="clr-namespace:RTH.Windows.Views.UserControls">
+
+    <Style TargetType="{x:Type trans:AnimatedContentControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type trans:AnimatedContentControl}">
+                    <Grid>
+                        <ContentPresenter Content="{TemplateBinding Content}" x:Name="PART_MainContent" />
+                        <Rectangle x:Name="PART_PaintArea" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate DataType="{x:Type ViewModels:LoginViewModel}">
+        <Grid>
+            <ctrls:LoginView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type ViewModels:UserRegistrationViewModel}">
+        <Grid>
+            <ctrls:UserRegistrationView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:HomeViewModel}">
+        <Grid>
+            <ctrls:HomeView DataContext="{Binding}" Animate="{Binding Path=Animate}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:ForgotPasswordViewModel}">
+        <Grid>
+            <ctrls:ForgotPasswordView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:FaceBookAuthenticationViewModel}">
+        <Grid>
+            <ctrls:FaceBookAuthenticationView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type ViewModels:DashboardViewModel}">
+        <Grid>
+            <ctrls:DashboardView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+
+
+    <DataTemplate DataType="{x:Type ViewModels:InsightViewModel}">
+        <Grid>
+            <ctrls:InsightsView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:ResultViewModel}">
+        <Grid>
+            <ctrls:ResultView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:HealthAreasViewModel}">
+        <Grid>
+            <ctrls:HealthAreasView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:QuestionNavigatorViewModel}">
+        <Grid>
+            <ctrls:QuestionNavigatorView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:FriendsOfQViewModel}">
+        <Grid>
+            <ctrls:FriendsOfQView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:FBUserRegistrationViewModel}">
+        <Grid>
+            <ctrls:FBUserRegistrationView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type ViewModels:ProductCategoriesViewModel}">
+        <Grid>
+            <ctrls:ProductCategoriesView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:SettingsViewModel}">
+        <Grid>
+            <ctrls:SettingsView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type ViewModels:DeactivateViewModel }">
+        <Grid>
+            <ctrls:DeactivateView DataContext="{Binding}" />
+        </Grid>
+    </DataTemplate>
+
+</ResourceDictionary>

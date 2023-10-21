@@ -1,0 +1,150 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.ViewModels;
+using RTH.Business.Objects;
+using System.Collections.ObjectModel;
+
+namespace RTH.Windows.Views
+{
+    public partial class MainWindow
+    {
+
+        //#region Continue button
+        //private RelayCommand continueCommand;
+
+        //public RelayCommand ContinueCommand
+        //{
+        //    get
+        //    {
+        //        return continueCommand ?? (continueCommand = new RelayCommand(
+        //            vm => ExecuteContinueCommand(vm), (vm) =>
+        //            {
+        //                //QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+        //                //return
+        //                //v != null &&
+        //                //v.CurrentQuestion != null &&
+        //                //v.CurrentQuestion.SelectedAnswers != null &&
+        //                //v.CurrentQuestion.SelectedAnswers[0].answer != null &&
+        //                //(v.CurrentQuestion.element_type != 4 ||
+        //                // v.CurrentQuestion.element_type == 4 &&
+        //                //    (v.CurrentQuestion.SelectedAnswers[0].response != null ||
+        //                //     v.CurrentQuestion.SelectedAnswers[0].response1 != null ||
+        //                //     v.CurrentQuestion.SelectedAnswers[0].response2 != null));
+        //                return true;
+
+        //            }));
+        //    }
+        //}
+
+        //private void ExecuteContinueCommand(object obj)
+        //{
+        //    QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+        //    vm.MoveToQuestion(1);
+        //}
+
+        //#endregion
+
+        //#region Next Button
+        //private RelayCommand nextCommand;
+
+        //public RelayCommand NextCommand
+        //{
+        //    get
+        //    {
+        //        return nextCommand ?? (nextCommand = new RelayCommand(
+        //            vm => ExecuteContinueCommand(vm), (vm) =>
+        //            {
+        //                //QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+        //                //return
+        //                //v != null &&
+        //                //v.CurrentQuestion != null &&
+        //                //v.CurrentQuestion.SelectedAnswers != null &&
+        //                //v.CurrentQuestion.SelectedAnswers[0].answer != null &&
+        //                //(v.CurrentQuestion.element_type != 4 ||
+        //                // v.CurrentQuestion.element_type == 4 &&
+        //                //    (v.CurrentQuestion.SelectedAnswers[0].response != null ||
+        //                //     v.CurrentQuestion.SelectedAnswers[0].response1 != null ||
+        //                //     v.CurrentQuestion.SelectedAnswers[0].response2 != null));
+
+        //                QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+        //                if (
+        //                v != null &&
+        //                v.CurrentQuestion != null &&
+        //                v.CurrentQuestion.HasErrors)
+        //                {
+        //                    v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+        //                    return false;
+        //                }
+        //                //if (
+        //                //v != null &&
+        //                //v.CurrentQuestion != null)
+        //                //    v.CurrentQuestion.ErrorMessage = "";
+        //                return true;
+        //            }));
+        //    }
+        //}
+
+        //#endregion
+
+        //#region Previous Button
+        //private RelayCommand previousCommand;
+
+        //public RelayCommand PreviousCommand
+        //{
+        //    get
+        //    {
+        //        return previousCommand ?? (previousCommand = new RelayCommand(
+        //            vm => ExecutePreviousCommand(vm), (vm) => true));
+        //    }
+        //}
+
+        //private void ExecutePreviousCommand(object obj)
+        //{
+        //    QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+        //    vm.MoveToQuestionPrevious(-1);
+        //}
+        //#endregion
+        //#region Submit Button
+        //private RelayCommand submitCommand;
+
+        //public RelayCommand SubmitCommand
+        //{
+        //    get
+        //    {
+        //        return submitCommand ?? (submitCommand = new RelayCommand(
+        //            vm => ExecuteSubmitCommand(vm), (vm) =>
+        //            {
+        //                //QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+        //                //return
+        //                //v != null &&
+        //                //v.CurrentQuestion != null &&
+        //                //v.CurrentQuestion.SelectedAnswers != null &&
+        //                //v.CurrentQuestion.SelectedAnswers[0].answer != null &&
+        //                //(v.CurrentQuestion.element_type != 4 ||
+        //                // v.CurrentQuestion.element_type == 4 &&
+        //                //    (v.CurrentQuestion.SelectedAnswers[0].response != null ||
+        //                //     v.CurrentQuestion.SelectedAnswers[0].response1 != null ||
+        //                //     v.CurrentQuestion.SelectedAnswers[0].response2 != null));
+        //                return true;
+        //            }));
+        //    }
+        //}
+
+        //private async void ExecuteSubmitCommand(object obj)
+        //{
+
+        //    QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+        //    QuestionnairesResponse oQuestionnairesResponse = await vm.SubmitQuestionnaire(Properties.Settings.Default.Password);
+        //    if (oQuestionnairesResponse.status == 0)
+        //    {
+        //        this.LoadView(Enums.ViewEnum.DashboardView);
+        //    }
+        //}
+
+        //#endregion
+    }
+}

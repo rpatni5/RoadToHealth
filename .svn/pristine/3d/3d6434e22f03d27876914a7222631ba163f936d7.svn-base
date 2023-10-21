@@ -1,0 +1,25 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Services
+{
+    public static class AppService
+    {
+        public static Languages GetLanguage()
+        {
+            return Http.ExecuteGET<Languages>(APIMethod.GetLanguages, null);
+        }
+
+        public static Variables GetVariable(string Language)
+        {
+            NameValueCollection nvc = new NameValueCollection();
+            nvc.Add("grant_type", "password");
+            return Http.ExecuteGET<Variables>("apis/get_Variables/" + Language, null);
+        }
+    }
+}

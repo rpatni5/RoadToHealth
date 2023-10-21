@@ -1,0 +1,53 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.QuealthCoachView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             mc:Ignorable="d" 
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             d:DesignHeight="600" d:DesignWidth="800">
+    <!--<local:OffHeaderView Grid.Row="0" Grid.ColumnSpan="2"  HeaderData="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.terms_long}" NavigationView="UserRegistrationView"></local:OffHeaderView>-->
+    <Grid Margin="30,0,30,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!--<local:OffHeaderView Grid.Row="0"  HeaderData="" NavigationView="UserRegistrationView" />-->
+        <Grid Margin="30,0" Grid.Row="1" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="100" />
+            </Grid.RowDefinitions>
+
+            <Image HorizontalAlignment="Left"
+                       Margin="20,20,0,10"
+                       Stretch="None" 
+                       Style="{StaticResource HeaderOffImages}"/>
+            <ScrollViewer Style="{StaticResource ExtendedScrollViewer}" VerticalScrollBarVisibility="Visible" Grid.Row="1" Name="chatScroll">
+                <StackPanel>
+                    <StackPanel Orientation="Vertical" Name="coachControl" Height="Auto"  >
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" Height="Auto" Grid.Row="2" >
+                        <Label Template="{StaticResource typingTemplate}" Name="viewTyping" Background="#e6e6e6" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Button Name="btnGetStarted" Grid.Row="2"  Visibility="Collapsed" HorizontalAlignment="Right"
+                    BorderThickness="0"   Width="Auto"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                    Style="{StaticResource ChatButtonDefaultStyle}" VerticalAlignment="Center" 
+                    Click="btnGetStarted_Click"  Padding="15"
+                    FontSize="16" Foreground="White" Margin="0,10"
+                    Content="Sign Up" Background="#FF31AAE1" />
+
+            <Button Name="btnLetsGo" Grid.Row="3"  Visibility="Collapsed" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    BorderThickness="0"  Width="Auto"  Padding="15"
+                    Style="{StaticResource ChatButtonDefaultStyle}"
+                    Click="btnLetsGo_Click" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                    FontSize="16" Foreground="White" Margin="0,10"
+                    Content="Ok let's go" Background="#FF31AAE1" />
+        </Grid>
+    </Grid>
+</local:ViewBase>

@@ -1,0 +1,62 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Enums;
+using RTH.Business.Objects;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public abstract class ViewModelBase : NotifyBase
+    {
+        private ICommand m_backCommand;
+
+        public ICommand BackCommand { get { return m_backCommand ?? (m_backCommand = new RelayCommand((o) => OnBackCommand(o), (o) => CanGoBack(o))); } }
+
+        protected virtual bool CanGoBack(object o)
+        {
+            return true;
+        }
+
+        protected virtual object OnBackCommand(object o)
+        {
+            throw new NotImplementedException();
+        }
+        public String ErrorMessage
+        {
+            get { return GetValue(() => ErrorMessage); }
+            set
+            {
+                SetValue(() => ErrorMessage, value);
+            }
+        }
+        public static String Lang
+        {
+            get; set;
+        }
+        public static Variable AppMessages {
+            get;set;
+        }
+        public static User UserDetails
+        {
+            get; set;
+        }
+        public String HeaderLabel
+        {
+            get { return GetValue(() => HeaderLabel); }
+            set
+            {
+                SetValue(() => HeaderLabel, value);
+            }
+        }
+
+    }
+}

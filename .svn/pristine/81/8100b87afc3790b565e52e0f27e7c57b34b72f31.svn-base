@@ -1,0 +1,59 @@
+﻿<UserControl x:Class="RTH.Windows.Views.UserControls.ForgotPasswordView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             xmlns:Root="clr-namespace:RTH.Windows.Views"
+             xmlns:conv="clr-namespace:RTH.Windows.Views.Converters"
+             mc:Ignorable="d" >
+    <UserControl.Resources>
+        <conv:ParameterConvertor x:Key="parameterConvertor" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+
+        </Grid.RowDefinitions>
+        <local:OffHeaderView Grid.Row="0" HeaderData="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.signin_help}" NavigationView="HomeView"></local:OffHeaderView>
+        <StackPanel Orientation="Vertical" Grid.Row="1" Background="#ebebeb" >
+            <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.forgotten_password}" 
+                   Style="{StaticResource LabelText}"  VerticalAlignment="Top" Margin="0 5 0 0" />
+
+            <Label Name="ErrorMessage" Style="{StaticResource ErrorMessage}" Content="{Binding Path= ErrorMessage}" />
+            <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.email}" Style="{StaticResource LabelText}"  VerticalAlignment="Top" Margin="0 10 0 0" />
+            <TextBox VerticalAlignment="Top"  Style="{StaticResource ForgotText}" Text="{Binding Path=Email}"/>
+
+
+            <Button Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.request_an_access_code}"  Style="{StaticResource Button_Login}" 
+                    Command="{Binding Path=RequestAnAccessCodeCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" 
+                    CommandParameter="{Binding ElementName=passwordBox}"/>
+
+            <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.already_have_an_access_code}" Style="{StaticResource LabelText}"  VerticalAlignment="Top" />
+
+            <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.code}" Style="{StaticResource LabelText}"  VerticalAlignment="Top" />
+            <TextBox VerticalAlignment="Top"  Style="{StaticResource ForgotText}" Text="{Binding Path=Code}"/>
+            <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.new_password}" Style="{StaticResource LabelText}"  VerticalAlignment="Top" />
+            <PasswordBox Name="passwordBox" Style="{StaticResource NewPassword}"></PasswordBox>
+            <Label Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.confirm_new_password}" Style="{StaticResource LabelText}"  VerticalAlignment="Top" />
+            <PasswordBox Name="ConfirmpasswordBox" Style="{StaticResource NewPassword}"></PasswordBox>
+            <!--<Button Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.confirm}" Style="{StaticResource Button_Login}" >-->
+            <Button Content="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.confirm}"  Style="{StaticResource Button_Login}" 
+                    Command="{Binding Path=ChangePasswordCommand, RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}">
+                <Button.CommandParameter>
+                    <MultiBinding Converter="{StaticResource parameterConvertor}">
+                        <Binding ElementName="passwordBox"/>
+                        <Binding ElementName="ConfirmpasswordBox"/>
+                    </MultiBinding>
+                </Button.CommandParameter>        
+            </Button>
+        </StackPanel>
+
+
+    </Grid>
+</UserControl>

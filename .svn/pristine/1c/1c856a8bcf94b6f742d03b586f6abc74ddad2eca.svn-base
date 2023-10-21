@@ -1,0 +1,203 @@
+﻿using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Helpers;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System;
+using RTH.Windows.Views.Controls;
+using System.Linq;
+using RTH.Business.Objects;
+using System.Collections.Generic;
+using RTH.Windows.Views.Objects;
+using System.Threading;
+using RTH.Helpers.Messaging;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HealthPlanView.xaml
+    /// </summary>
+    public partial class HealthPlanView : ViewBase, ITutorialHost
+    {
+        public HealthPlanView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.GetNew<HealthPlanViewModel>();
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+        private void RadioButton_Click(object sender, RoutedEventArgs e)
+        {
+            var ui = UIExtensions.GetChild<Grid>(((Decorator)((ContentControl)sender).Content).Child);
+            ui.Visibility = Visibility.Visible;
+        }
+
+        private RelayCommand<object[]> m_ObjActionCommand;
+        public RelayCommand<object[]> ObjActionCommand
+        {
+            get
+            {
+                return m_ObjActionCommand ?? (m_ObjActionCommand = new RelayCommand<object[]>(
+                    ve => OnClick(ve), (t) => true));
+            }
+        }
+        private async void OnClick(object[] ve)
+        {
+            if (ve.Length > 2)
+            {
+                string id = ve[0] as string;
+                Grid grid = ve[1] as Grid;
+                bool IsUserObjective = (bool)ve[2];
+                if (IsUserObjective)
+                {
+                    if (grid.Visibility == Visibility.Visible)
+                    {
+                        grid.Visibility = Visibility.Collapsed;
+
+                    }
+                    else
+                    {
+                        grid.DataContext = await (this.ViewModel as HealthPlanViewModel).GetStrategy(id);
+                        grid.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    int totalTargets = 0;
+                    foreach (IEnumerable<HealthPlanObjective> item in (this.ViewModel as HealthPlanViewModel).HealthPlanObj.Values)
+                    {
+                        totalTargets += item.Count(x => x.isUserObjective == true);
+                    }
+                    if (totalTargets >= 5)
+                    {
+                        QuealthMessageBox.ShowInformation("You have already set five objectives! When ready you can remove your set objectives to work on something else.");
+                    }
+                    else
+                    {
+                        App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthPlanQuestionnaireView, true, id);
+                    }
+                }
+            }
+            else
+            {
+                MessageBoxResult result = QuealthMessageBox.ShowWarning("Are you sure want to remove this challenge?",
+                   "",
+                   showCancel: true, options: MessageBoxOptions.None);
+                //App.SharedValues.LanguageResource.warning
+                if (result == MessageBoxResult.OK)
+                {
+                    (ve[0] as Grid).Visibility = Visibility.Collapsed;
+                    (ve[1] as ToggleButton).IsChecked = false;
+                    Grid grid = ve[0] as Grid;
+                    (this.ViewModel as HealthPlanViewModel).DeleteObjective((ve[1] as ToggleButton).Tag.ToString());
+                    (this.ViewModel as HealthPlanViewModel).Refresh();
+                }
+
+            }
+        }
+
+        private RelayCommand<object[]> m_EditCommand;
+        public RelayCommand<object[]> EditCommand
+        {
+            get
+            {
+                return m_EditCommand ?? (m_EditCommand = new RelayCommand<object[]>(
+                    ve => EditObjective(ve), (t) => true));
+            }
+        }
+        private void EditObjective(object[] ve)
+        {
+            App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HealthPlanQuestionnaireView, true, (ve[0] as ToggleButton).Tag.ToString());
+        }
+
+        #region Tutorials
+
+        Dictionary<int, Tuple<string, FrameworkElement>> tutorialObjects;
+        public void InitializeTutorials()
+        {
+            tutorialObjects = new Dictionary<int, Tuple<string, FrameworkElement>>();
+            AddTutorialToList(TutorialHelper.HealthPlanObjIcon, tutorialHealthPlan);
+        }
+        public override void OnViewLoaded()
+        {
+            InitializeTutorials();
+        }
+        public override void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.HealthPlanLoaded)
+            {
+                if (HasShowTutorials())
+                {
+                    this.SetValue(ShowTutorialProperty, true);
+                }
+            }
+        }
+        int currentTutIndex = 0;
+        public override TutorialContent GetTutorials()
+        {
+            if (currentTutIndex >= this.MaxTutorials)
+            {
+                currentTutIndex = 0;
+                tutorialObjects.Clear();
+                ShowTutorial = false;
+                return null;
+            }
+            var tuple = tutorialObjects[currentTutIndex++];
+            if (tuple.Item1.ShowTutorial())
+            {
+
+                tuple.Item1.TutorialComplete();               
+                return tuple.Item2.GetTutorial(this, tuple.Item1, true);
+            }
+            ShowTutorial = false;
+            return null;
+        }
+        public int MaxTutorials
+        {
+            get
+            {
+                return tutorialObjects.Count;
+            }
+        }
+
+        public int GetTutorialIndex()
+        {
+            return currentTutIndex;
+        }
+        public string GetTutorialText(string keyString)
+        {
+            if (App.SharedValues.LanguageResource.GetType().GetProperty(keyString) != null)
+            {
+                return App.SharedValues.LanguageResource.GetType().GetProperty(keyString).GetValue(App.SharedValues.LanguageResource).ToString();
+            }
+            return string.Empty;
+        }
+
+        private bool HasShowTutorials()
+        {
+            return Properties.Settings.Default.Tutorials;
+        }
+        private bool AddTutorialToList(string keyString, FrameworkElement element)
+        {
+            if (TutorialHelper.ShowTutorial(keyString))
+            {
+                tutorialObjects.Add(tutorialObjects.Count, new Tuple<string, FrameworkElement>(keyString, element));
+                return true;
+            }
+            return false;
+        }
+        public override void SkipTutorials()
+        {
+            string[] keys = new string[] { TutorialHelper.HealthPlanObjIcon };
+            TutorialHelper.SkipTutorials(keys);
+            this.SetValue(ShowTutorialProperty, false);
+        }
+
+        #endregion Tutorials
+       
+    }
+}

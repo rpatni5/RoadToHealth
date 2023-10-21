@@ -1,0 +1,84 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.ProductCategoriesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"            
+           xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+            xmlns:GD="clr-namespace:RTH.Windows.ViewModels.Common;assembly=RTH.Windows.ViewModels" >
+    <UserControl.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="IsSelected" Value="{Binding IsChecked, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Grid HorizontalAlignment="Center"
+                                Margin="20,4"
+                                Width="750" Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Image   HorizontalAlignment="Stretch"
+                               Source="{Binding ProductImage}" RenderOptions.BitmapScalingMode="HighQuality" />
+                            <TextBlock  Grid.Column="1" Margin="20,5,0,0" Padding="5" FontSize="16"   Text="{Binding Name}" Foreground="Red" />
+                            <Image Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}" Name="imgTick" Grid.Column="2" HorizontalAlignment="Right" 
+                                   Margin="0,0,80,0" Source="/RTH.Windows.Views;component/Assets/ic_item_selected.png" 
+                               VerticalAlignment="Center"   Height="25"  />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <local:OffHeaderView Grid.Row="0" HeaderData="All Categories" NavigationView="FriendsOfQView" Background="White"></local:OffHeaderView>
+
+        <ItemsControl Grid.Row="1"  ItemsSource="{Binding Source={x:Static GD:GlobalData.Default}, Path=Products, UpdateSourceTrigger=PropertyChanged}" Name="ProductList" >
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Name="grdMain" Background="#FFFFFFFF" Margin="0,0,0,2">
+                        <!--<CheckBox Height="30" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" Content="{Binding answer_text}" Tag="{Binding _id}"  Background="#FFA1BCD5" Style="{DynamicResource QuestionnaireCheckBoxTemplate}" Click="CheckBox_Click" Loaded="CheckBox_Loaded" />-->
+                        <CheckBox  Height="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Center" HorizontalAlignment="Stretch"  Tag="{Binding ID}"  Background="#FFA1BCD5" Style="{DynamicResource QuestionnaireCheckBoxTemplate}"  Loaded="CheckBox_Loaded" Click="CheckBox_Click" >
+                            <Grid HorizontalAlignment="Center"
+                                Margin="20,4"
+                                Width="750" Background="Transparent">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image   HorizontalAlignment="Stretch"
+                               Source="{Binding ProductImage}" RenderOptions.BitmapScalingMode="HighQuality" />
+                                <TextBlock  Grid.Column="1" Margin="20,5,0,0" Padding="5" FontSize="16"   Text="{Binding Name}" Foreground="Red" />
+                                <Image Visibility="{Binding IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}" Name="imgTick" Grid.Column="2" HorizontalAlignment="Right" 
+                                   Margin="0,0,80,0" Source="/RTH.Windows.Views;component/Assets/ic_item_selected.png" 
+                               VerticalAlignment="Center"   Height="25"  />
+                            </Grid>
+                            <CheckBox.Template>
+                                <ControlTemplate TargetType="{x:Type CheckBox}">
+                                    <Grid x:Name="templateRoot" Background="Transparent" SnapsToDevicePixels="True">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border x:Name="CheckBoxBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="100" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="1,1,2,1" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed">
+                                            <Grid x:Name="markGrid" Margin="2">
+                                                <Ellipse x:Name="optionMark" Fill="{StaticResource RadioButton.Static.Glyph}" MinWidth="6" MinHeight="6" Opacity="0"/>
+                                            </Grid>
+                                        </Border>
+                                        <ContentPresenter x:Name="contentPresenter" Grid.Column="0" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                    </Grid>
+                                </ControlTemplate>
+                            </CheckBox.Template>
+                        </CheckBox>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+    </Grid>
+</local:ViewBase>

@@ -1,0 +1,217 @@
+﻿using RTH.Business.Objects;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Controls;
+using RTH.Windows.Views.Converters;
+using System;
+using System.Configuration;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using TheArtOfDev.HtmlRenderer.WPF;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for QuestionNavigatorView.xaml
+    /// </summary>
+    public partial class QuestionNavigatorView : ViewBase
+    {
+        public QuestionNavigatorView()
+        {
+            InitializeComponent();
+            Loaded += OnViewLoaded;
+        }
+
+        private bool submitted = false;
+        public override bool CanUnload()
+        {
+            if (!submitted)
+            {
+                MessageBoxResult result = QuealthMessageBox.ShowWarning(
+                    App.SharedValues.LanguageResource.hra_warning_message,
+                    "",
+                    showCancel: true, options: MessageBoxOptions.None);
+                //App.SharedValues.LanguageResource.warning
+                if (result == MessageBoxResult.Cancel)
+                {
+                    return false;
+                }
+
+            }
+            return true;
+        }
+        private void OnViewLoaded(object sender, RoutedEventArgs e)
+        {
+            App.Current.MainWindow.Opacity = 1;
+        }
+
+
+        #region Continue button
+        private RelayCommand continueCommand;
+        private RelayCommand m_ShowQuestionHelperCommand;
+        private RelayCommand m_CategoryChangeCommand;
+
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        public async void ExecuteContinueCommand(object obj)
+        {
+            //transition.Transition = Transition.LeftWithFade;
+            if (questionHelperControl != null) questionHelperControl.LoadControl(null, Controls.Transition.Right);
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            string QuestionSubmitted = await vm.MoveToQuestion(1, Properties.Settings.Default.Password);
+            submitted = false;
+            if (QuestionSubmitted == HRASubmit.Completed.ToString())
+            {
+                submitted = true;
+                Window w = Window.GetWindow(this);
+                ((MainWindow)w).LoadView(Enums.ViewEnum.ResultView, param: true);
+            }
+            if (QuestionSubmitted == HRASubmit.ServiceError.ToString())
+            {
+                submitted = true;
+                MessageBoxResult result = QuealthMessageBox.ShowInformation(
+                   App.SharedValues.LanguageResource.missing_answers, "", showCancel: false, options: MessageBoxOptions.None);
+                if (result == MessageBoxResult.OK)
+                {
+                    App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.DashboardView, param: true);
+                }
+
+            }
+
+
+        }
+
+        #endregion
+        #region Next Button
+        private RelayCommand nextCommand;
+
+        public RelayCommand NextCommand
+        {
+            get
+            {
+                return nextCommand ?? (nextCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        if (
+                        v != null &&
+                        v.CurrentQuestion != null &&
+                        v.CurrentQuestion.HasErrors)
+                        {
+                            v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+                            return false;
+                        }
+                        return true;
+                    }));
+            }
+        }
+
+        #endregion
+        #region Previous Button
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecutePreviousCommand(object obj)
+        {
+            //transition.Transition = Transition.RightWithFade;
+            if (questionHelperControl != null) questionHelperControl.LoadControl(null, Controls.Transition.Right);
+            QuestionNavigatorViewModel vm = obj as QuestionNavigatorViewModel;
+            vm.MoveToQuestionPrevious(-1);
+        }
+        #endregion
+
+
+        #region Category Change
+        public RelayCommand CategoryCahangeCommand
+        {
+            get
+            {
+                return m_CategoryChangeCommand ?? (m_CategoryChangeCommand = new RelayCommand(
+                    vm => ExecuteCategoryChangeCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        private void ExecuteCategoryChangeCommand(object vm)
+        {
+            if (questionHelperControl != null) questionHelperControl.LoadControl(null, Controls.Transition.Right);
+            QuestionNavigatorViewModel oQuestionNavigatorViewModel = this.DataContext as QuestionNavigatorViewModel;
+            oQuestionNavigatorViewModel.LoadCategoryQuestion((string)vm, Properties.Settings.Default.Password);
+            //var a = vm;
+
+        }
+        #endregion
+
+        public RelayCommand ShowQuestionHelperCommand
+        {
+            get
+            {
+                return m_ShowQuestionHelperCommand ?? (m_ShowQuestionHelperCommand = new RelayCommand(
+                    ve => ShowQuestionHelper(ve), (t) => true));
+            }
+        }
+        AnimatedContentControl questionHelperControl;
+        private void ShowQuestionHelper(object ve)
+        {
+            //ic_clear_ev
+
+            questionHelperControl = ve as AnimatedContentControl;
+            QuestionNavigatorViewModel vm = DataContext as QuestionNavigatorViewModel;
+            if (!vm.CurrentQuestion.summary.Contains("<img") && vm.CurrentQuestion.helper_image != string.Empty)
+            {
+                string path = ConfigurationManager.AppSettings["BaseAPiConnection"] + @"uploads/questions_helper/" + vm.CurrentQuestion.helper_image;
+                vm.CurrentQuestion.summary = string.Format("<strong> {2}</strong> <br/> <img height='150' width='360' src ='{0}'/>{1}", path, vm.CurrentQuestion.summary, vm.CurrentQuestion.helper_title);
+            }
+            if (!questionHelperControl.HasContent)
+            {
+                var htmlPanel = new HtmlPanel();
+                htmlPanel.SetBinding(HtmlPanel.TextProperty, new Binding("summary") { Source = vm.CurrentQuestion, Converter = new HtmlConverter() });
+                questionHelperControl.LoadControl(htmlPanel);
+            }
+            else
+            {
+                questionHelperControl.LoadControl(null, Controls.Transition.Right);
+            }
+            if (vm.SourceHelperImage.OriginalString.Equals(@"/RTH.Windows.Views;component/Assets/cross_window_sml.png"))
+            {
+                vm.SourceHelperImage = new Uri(@"/RTH.Windows.Views;component/Assets/info_icon.png", UriKind.Relative);
+            }
+            else {
+                vm.SourceHelperImage = new Uri(@"/RTH.Windows.Views;component/Assets/cross_window_sml.png", UriKind.Relative);
+            }
+            //var question = ve as Question;
+            //if (transition.HasContent == false)
+            //{
+            //    var htmlPanel = new HtmlPanel();
+            //    htmlPanel.SetBinding(HtmlPanel.TextProperty, new Binding("summary") { Source = question, Converter = new HtmlConverter() });
+            //    transition.LoadControl(htmlPanel);
+            //}
+            //else
+            //{
+            //    transition.LoadControl(null, Controls.Transition.Right);
+            //}
+        }
+
+    }
+}

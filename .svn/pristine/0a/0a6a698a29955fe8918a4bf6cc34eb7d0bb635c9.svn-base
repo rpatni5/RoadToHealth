@@ -1,0 +1,87 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using RTH.Windows.ViewModels.Common;
+
+namespace RTH.Windows.ViewModels
+{
+    public class ForgotPasswordViewModel : ViewModelBase
+    {
+        public ForgotPasswordViewModel()
+        {
+            HeaderLabel = AppMessages.signin_help;
+        }
+        
+        public User RequestAnAccessCode()
+        {
+            //App.oUser.email = obj.Email;
+            if (string.IsNullOrEmpty(this.Email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+            var oUserLogin = new RTH.Business.Objects.User
+            {
+                email = Email
+
+            };
+            return RTH.Business.Services.UserService.RequestAnAccessCode(oUserLogin);
+        }
+        public User ChangePassword()
+        {
+            //App.oUser.email = obj.Email;
+            if (string.IsNullOrEmpty(this.Code))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_access_code; return null; }
+            if (string.IsNullOrEmpty(this.Password))
+            { this.ErrorMessage = ViewModelBase.AppMessages.enter_new_password; return null; }
+            if (string.IsNullOrEmpty(this.Confirm))
+            { this.ErrorMessage = ViewModelBase.AppMessages.enter_confirm_new_password; return null; }
+            if (this.Confirm != this.Password)
+            { this.ErrorMessage = ViewModelBase.AppMessages.password_mismatched; return null; }
+            var oUserLogin = new RTH.Business.Objects.User
+            {
+                password= Password,
+                responsecode = Code
+
+            };
+            return RTH.Business.Services.UserService.ForGotPassword(oUserLogin);
+        }
+
+        #region Property 
+        public String Email
+        {
+            get { return GetValue(() => Email); }
+            set
+            {
+                SetValue(() => Email, value);
+            }
+        }
+        public String Password
+        {
+            get { return GetValue(() => Password); }
+            set
+            {
+                SetValue(() => Password, value);
+            }
+        }
+        public String Confirm
+        {
+            get { return GetValue(() => Confirm); }
+            set
+            {
+                SetValue(() => Confirm, value);
+            }
+        }
+        public String Code
+        {
+            get { return GetValue(() => Code); }
+            set
+            {
+                SetValue(() => Code, value);
+            }
+        }
+        #endregion
+    }
+}

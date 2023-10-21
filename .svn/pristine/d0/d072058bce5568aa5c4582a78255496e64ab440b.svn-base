@@ -1,0 +1,71 @@
+﻿<local:ViewBase x:Class="RTH.Windows.Views.UserControls.AboutUsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:RTH.Windows.Views.UserControls"
+             xmlns:conv="clr-namespace:RTH.Windows.Views.Converters"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:Root="clr-namespace:RTH.Windows.Views" 
+             mc:Ignorable="d" 
+             xmlns:Html="clr-namespace:TheArtOfDev.HtmlRenderer.WPF;assembly=HtmlRenderer.WPF"             
+             d:DesignWidth="300" d:DesignHeight="600"
+             >
+    <UserControl.Resources>
+        <conv:IndexToCheckedConverter x:Key="IndexToChecked" />
+    </UserControl.Resources>
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <local:OffHeaderView Grid.Row="0" HeaderData="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.about}" NavigationView="DashboardView" />
+        <UniformGrid Columns="2" Grid.Row="1">
+            <UniformGrid.Resources>
+                <Style TargetType="RadioButton">
+                    <Setter Property="GroupName" Value="AboutUSGroup"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="RadioButton">
+                                <Grid Height="50" Background="#FFD5E3ED" Name="gdAbout">
+                                    <TextBlock Name="text" Text="{TemplateBinding Tag}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Foreground="#FF2080A9"/>
+                                </Grid>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsChecked" Value="true" >
+                                        <Setter TargetName="gdAbout" Property="Background" Value="#FF2080A9"/>
+                                        <Setter TargetName="text" Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </UniformGrid.Resources>
+            <RadioButton Name="rdoAbout"  Tag="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.about}"  IsChecked="{Binding SelectedTabId,Converter={StaticResource IndexToChecked}, ConverterParameter=0}"  />
+            <RadioButton Name="rdoLegal"  Tag="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.legal}" IsChecked="{Binding SelectedTabId,Converter={StaticResource IndexToChecked}, ConverterParameter=1}"/>
+        </UniformGrid>
+        <StackPanel Grid.Row="2" Orientation="Vertical" Visibility="{Binding ElementName=rdoLegal,Path=IsChecked,Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="0,25,0,0">
+                <TextBlock FontSize="18" Foreground="Black"  Style="{StaticResource RegisterText}" Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.disclaimer}"/>
+                <TextBlock FontSize="18" Foreground="Black"  Padding="2,0,0,0" Style="{StaticResource RegisterText}"  Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.terms_long}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
+                <Button Command="{Binding NavigationCommand,RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" CommandParameter="TermsAndConditionsView"  TabIndex="7"  BorderThickness="0" Template="{StaticResource buttonTemplate}" Background="Transparent" >
+                    <Hyperlink >
+                        <TextBlock FontSize="14" Foreground="Black"  Style="{StaticResource RegisterText}" TextDecorations="Underline"  Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.terms_long}" />
+                    </Hyperlink>
+
+                </Button>
+                <Button Command="{Binding NavigationCommand,RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}}" CommandParameter="PolicyView" TabIndex="8" BorderThickness="0"   Margin="10,0" Template="{StaticResource buttonTemplate}" Background="Transparent">
+                    <Hyperlink >
+                        <TextBlock FontSize="14" Foreground="Black" Style="{StaticResource RegisterText}" TextDecorations="Underline"   Text="{Binding Source={x:Static Root:App.SharedValues}, Path=LanguageResource.policy_long}" />
+                    </Hyperlink>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+        <ScrollViewer  Padding="9,5" Background="White" Grid.Row="2" VerticalScrollBarVisibility="Hidden" Visibility="{Binding ElementName=rdoAbout,Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Html:HtmlPanel  FontFamily="pack://application:,,,/Fonts/#Lato" ScrollViewer.VerticalScrollBarVisibility="Hidden" Text="{Binding AboutUsData}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        </ScrollViewer>
+    </Grid>
+</local:ViewBase>

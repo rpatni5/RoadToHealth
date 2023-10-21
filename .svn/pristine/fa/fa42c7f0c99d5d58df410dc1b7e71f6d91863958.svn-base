@@ -1,0 +1,75 @@
+﻿using System;
+using System.Windows.Input;
+
+using RTH.Helpers;
+using RTH.Business.Objects;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public abstract class ViewModelBase : NotifyBase
+    {
+        private ICommand m_backCommand;
+
+        public ICommand BackCommand { get { return m_backCommand ?? (m_backCommand = new RelayCommand((o) => OnBackCommand(o), (o) => CanGoBack(o))); } }
+
+        protected virtual bool CanGoBack(object o)
+        {
+            return true;
+        }
+
+        protected virtual object OnBackCommand(object o)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string LastVisitedDiseaseID
+        {
+            get { return GetValue(() => LastVisitedDiseaseID); }
+            set
+            {
+                SetValue(() => LastVisitedDiseaseID, value);
+            }
+        }
+        public String ErrorMessage
+        {
+            get { return GetValue(() => ErrorMessage); }
+            set
+            {
+                SetValue(() => ErrorMessage, value);
+            }
+        }
+
+        public String ErrorMessage2
+        {
+            get { return GetValue(() => ErrorMessage2); }
+            set
+            {
+                SetValue(() => ErrorMessage2, value);
+            }
+        }
+        public static String Lang
+        {
+            get; set;
+        }
+        public static String Country
+        {
+            get; set;
+        }
+        public static Variable AppMessages {
+            get;set;
+        }
+        public static User UserDetails
+        {
+            get; set;
+        }
+        public String HeaderLabel
+        {
+            get { return GetValue(() => HeaderLabel); }
+            set
+            {
+                SetValue(() => HeaderLabel, value);
+            }
+        }
+
+    }
+}

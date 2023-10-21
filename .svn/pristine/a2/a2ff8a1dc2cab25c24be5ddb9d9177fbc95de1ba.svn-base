@@ -1,0 +1,62 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+
+namespace RTH.Windows.ViewModels
+{
+    public class LoginViewModel : Common.ViewModelBase
+    {
+
+        public LoginViewModel()
+        {
+            HeaderLabel = AppMessages.login;           
+        }
+
+        public User UserLogin()
+        {
+            if (string.IsNullOrEmpty(this.Email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+            if (!ExtensionMethod.ValidateEmail(this.Email))
+            { this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry; return null; }
+            if (string.IsNullOrEmpty(this.Password))
+            { this.ErrorMessage = ViewModelBase.AppMessages.please_enter_password; return null; }
+            var oUserLogin = new RTH.Business.Objects.User
+            {
+                email = Email,
+                password = Password
+            };
+            return RTH.Business.Services.UserService.UserLogin(oUserLogin);
+
+        }
+
+        public User UserLogin(User oUserLogin)
+        {
+            return RTH.Business.Services.UserService.UserLogin(oUserLogin);
+        }
+
+        public String Email
+        {
+            get { return GetValue(() => Email); }
+            set
+            {
+                SetValue(() => Email, value);
+            }
+        }
+        public String Password
+        {
+            get { return GetValue(() => Password); }
+            set
+            {
+                SetValue(() => Password, value);
+            }
+        }
+    }
+}

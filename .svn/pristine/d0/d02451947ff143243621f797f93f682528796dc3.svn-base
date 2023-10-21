@@ -1,0 +1,89 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Twitterizer;
+
+namespace RTH.Business.Objects.JSON
+{
+    public class TwitterCredentials : NotifyBase
+    {
+        /// <summary>
+        /// Key provided by Twitter for your application
+        /// </summary>
+        public string ConsumerKey { get { return ConfigurationManager.AppSettings["consumerKey"]; } }
+
+        /// <summary>
+        /// Secret provided by Twitter for your application
+        /// </summary>
+        public string ConsumerSecret { get { return ConfigurationManager.AppSettings["consumerSecret"]; } }
+
+        /// <summary>
+        /// Token provided by Twitter for making request
+        /// </summary>
+        public OAuthTokenResponse OAuthToken { get { return GetValue(() => OAuthToken); } set { SetValue(() => OAuthToken, value); } }
+
+        /// <summary>
+        /// Token provided by Twitter for making request after getting the "Pin"
+        /// </summary>
+        public OAuthTokenResponse OAuthToken2 { get { return GetValue(() => OAuthToken2); } set { SetValue(() => OAuthToken2, value); } }
+
+        /// <summary>
+        /// Pin obtained after login into the twitter app
+        /// </summary>
+        public string Pin { get { return GetValue(() => Pin); } set { SetValue(() => Pin, value); } }
+
+        private OAuthTokens _authToken;
+        public OAuthTokens Token
+        {
+            get
+            {
+
+                if (_authToken == null)
+                {
+                    _authToken = new OAuthTokens
+                    {
+                        AccessToken = OAuthToken2.Token,
+                        AccessTokenSecret = OAuthToken2.TokenSecret,
+                        ConsumerKey = ConsumerKey,
+                        ConsumerSecret = ConsumerSecret
+                    };
+                }
+                return _authToken;
+            }
+        }
+
+        /// <summary>
+        /// Unique access token for a user
+        /// </summary>
+        public bool HasAllCredentials()
+        {
+            return
+                    !string.IsNullOrWhiteSpace(ConsumerKey) &&
+                    !string.IsNullOrWhiteSpace(ConsumerSecret) &&
+                    OAuthToken != null && !string.IsNullOrWhiteSpace(OAuthToken.Token) &&
+                    OAuthToken2 != null && !string.IsNullOrWhiteSpace(OAuthToken2.Token);
+            //&&
+            //        OAuthToken2 != null && !string.IsNullOrWhiteSpace(OAuthToken2.Token);
+        }
+
+        /// <summary>
+        /// Populates this with credential values from storage
+        /// </summary>
+        public Action LoadAsync { get { return GetValue(() => LoadAsync); } set { SetValue(() => LoadAsync, value); } }
+
+        /// <summary>
+        /// Saves credentials from this to storage
+        /// </summary>
+        public Action<Task> StoreAsync { get { return GetValue(() => StoreAsync); } set { SetValue(() => StoreAsync, value); } }
+
+        /// <summary>
+        /// Removes credentials from storage
+        /// </summary>
+        public Action<Task> ClearAsync { get { return GetValue(() => ClearAsync); } set { SetValue(() => ClearAsync, value); } }
+
+    }
+}

@@ -1,0 +1,33 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthAgendaViewModel : ViewModelBase
+    {
+
+        public HealthAgendaViewModel()
+        {
+            AsyncCall.Invoke(() => {
+                GetHealthArea();
+            });
+        }
+
+        public IEnumerable<HealthArea> HealthAreas
+        {
+            get { return GetValue(() => HealthAreas); }
+            set { SetValue(() => HealthAreas, value); }
+        }
+        private void GetHealthArea()
+        {
+            PHA PHADetails = HealthAreasService.GetPHA(UserDetails._id, GlobalData.Default.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+            HealthAreas = PHADetails.health_areas;
+        }
+    }
+}

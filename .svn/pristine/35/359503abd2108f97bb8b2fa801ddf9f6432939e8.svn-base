@@ -1,0 +1,49 @@
+﻿using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Data;
+using System.Windows.Media;
+
+namespace RTH.Windows.Views.Converters
+{
+    public class ScoreToRAGColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            String colorCode = "#00FFFFFF";
+            if (value != null)
+            {
+                if (value is string)
+                {
+                    colorCode = "#66FFFFFF";
+                    if (!string.IsNullOrEmpty(value.ToString()))
+                    {
+
+                        int score;
+                        int.TryParse(value.ToString(), out score);
+                        if (score > 0 && score <= 20) colorCode = GlobalData.RED;
+                        if (score > 20 && score <= 60) colorCode = GlobalData.AMBER;
+                        if (score > 60) colorCode = GlobalData.GREEN;
+                    }
+                }
+                else
+                {
+                    double score;
+                    double.TryParse(value.ToString(), out score);
+                    if (score > 0 && score <= 20) colorCode = GlobalData.RED;
+                    if (score > 20 && score <= 60) colorCode = GlobalData.AMBER;
+                    if (score > 60) colorCode = GlobalData.GREEN;
+                }
+            }
+            return new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorCode));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

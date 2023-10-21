@@ -1,0 +1,94 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class ScoreHistory
+    {
+        public double total_score { get; set; }
+        public double optimum_score { get; set; }
+        public string date { get; set; }
+        public string _id { get; set; }
+        public List<object> sub_diseases { get; set; }
+        public string questionnaire { get; set; }
+    }
+
+    public class Answer : NotifyBase
+    {
+        public object answer { get { return GetValue(() => answer); } set { SetValue(() => answer, value); } }
+        public string date { get; set; }
+        public string key_string { get; set; }
+        public int element_type { get; set; }
+        public string question { get; set; }
+        public string response2 { get; set; }
+        public object response1 { get; set; }
+        public object response { get; set; }
+    }
+
+    public class Algorithm
+    {
+        public string _id { get; set; }
+        public string questionnaire { get; set; }
+        public string key_string { get; set; }
+        public string units { get; set; }
+        public double value { get; set; }
+        public object response { get; set; }
+        public string risk_factor { get; set; }
+    }
+
+    public class AnsweredQuestionnaireIdsArr
+    {
+        public bool success { get; set; }
+        public string questionnaire { get; set; }
+    }
+
+    public class User : NotifyBase
+    {
+        public int __v { get; set; }
+        public string _id { get; set; }
+        public string email { get; set; }
+        public string modified { get; set; }
+        public string name { get; set; }
+        public string username { get; set; }
+        public bool can_use_for_testing { get; set; }
+        public int timezone_offset { get; set; }
+        public bool deleted { get; set; }
+        public int age { get; set; }
+        public string DOB { get; set; }
+        public List<object> sociallogins { get; set; }
+        public string type { get; set; }
+        public string coach { get; set; }
+        public string ethnicity_real { get; set; }
+        public int ethnicity { get; set; }
+        public int gender { get; set; }
+        public double score { get; set; }
+        public List<string> answered_questionnaire_ids { get; set; }
+        public string last_hra { get; set; }
+        public List<ScoreHistory> score_history { get; set; }
+        public List<Answer> answers { get { return GetValue(() => answers); } set { SetValue(() => answers, value); } }
+        public List<Algorithm> algorithms { get { return GetValue(() => algorithms); } set { SetValue(() => algorithms, value); } }
+        public string country { get; set; }
+        public List<object> product_categories { get { return GetValue(() => product_categories); } set { SetValue(() => product_categories, value); } }
+        public string language { get; set; }
+        public List<object> deactivation_reason { get { return GetValue(() => deactivation_reason); } set { SetValue(() => deactivation_reason, value); } }
+        public int hierarchy { get; set; }
+        public bool validated_email { get; set; }
+        public long created { get; set; }
+        public List<AnsweredQuestionnaireIdsArr> answered_questionnaire_ids_arr { get { return GetValue(() => answered_questionnaire_ids_arr); } set { SetValue(() => answered_questionnaire_ids_arr, value); } }
+        public bool hasHealthObjectives { get; set; }
+
+        #region Custome object
+        public string message { get; set; }
+        public string password { get; set; }
+        public string confirm { get; set; }
+        public AuthToken AuthToken  { get; set; }
+        public string responsecode { get; set; }
+
+        #endregion
+
+    }
+}

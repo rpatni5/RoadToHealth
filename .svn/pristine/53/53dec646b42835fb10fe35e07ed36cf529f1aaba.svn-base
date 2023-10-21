@@ -1,0 +1,65 @@
+﻿using RTH.Windows.Views.Enums;
+using System.Windows;
+using System.Windows.Controls;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for NavigationView.xaml
+    /// </summary>
+    public partial class NavigationView : UserControl
+    {
+        public NavigationView()
+        {
+            InitializeComponent();
+
+        }
+        public ViewEnum CurrentView
+        {
+            get { return (ViewEnum)GetValue(CurrentViewProperty); }
+            set { SetValue(CurrentViewProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CurrentView.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CurrentViewProperty =
+            DependencyProperty.Register("CurrentView", typeof(ViewEnum), typeof(NavigationView), 
+                new PropertyMetadata(ViewEnum.None, CurrentViewPropertyChanged));
+
+        private static void CurrentViewPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var value = (ViewEnum)e.NewValue;
+            var control = (NavigationView)d;
+            control.rdoRight.IsEnabled = true;
+            control.rdoHome.IsEnabled = true;
+            control.rdoLeft.IsEnabled = true;
+            control.rdoMiddle.IsEnabled = true;
+
+            if (value == ViewEnum.InsightsView)
+            {
+                control.rdoRight.IsChecked = true;
+                control.rdoRight.IsEnabled = false;
+            }
+            else if (value == ViewEnum.DashboardView)
+            {
+                control.rdoHome.IsChecked = true;
+                control.rdoHome.IsEnabled = false;
+
+            }
+            else if (value == ViewEnum.ResultView)
+            {
+                control.rdoLeft.IsChecked = true;
+                control.rdoLeft.IsEnabled = false;
+            }
+            else if (value == ViewEnum.HealthAreasView)
+            {
+                control.rdoMiddle.IsChecked = true;
+                control.rdoMiddle.IsEnabled = false;
+            }
+            else if (value == ViewEnum.HealthAreasView)
+            {
+                control.rdoMiddle.IsChecked = true;
+                control.rdoMiddle.IsEnabled = false;
+            }
+        }
+    }
+}

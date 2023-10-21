@@ -1,0 +1,186 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for HRAControl.xaml
+    /// </summary>
+    public partial class HRAControl : UserControl
+    {
+        public HRAControl()
+        {
+            InitializeComponent();
+            this.hraView.DataContext = this;
+            this.Loaded += HRAControl_Loaded;
+        }
+
+        private void HRAControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            StartQAnimation();
+        }
+
+        public double Cancer
+        {
+            get { return (double)GetValue(CancerProperty); }
+            set { SetValue(CancerProperty, value); }
+        }
+        public static readonly DependencyProperty CancerProperty =
+            DependencyProperty.Register("Cancer", typeof(double), typeof(HRAControl), new PropertyMetadata(0.0));
+
+        public double Diabetes
+        {
+            get { return (double)GetValue(DiabetesProperty); }
+            set { SetValue(DiabetesProperty, value); }
+        }
+        public static readonly DependencyProperty DiabetesProperty =
+            DependencyProperty.Register("Diabetes", typeof(double), typeof(HRAControl), new PropertyMetadata(0.0));
+
+        public double Lungs
+        {
+            get { return (double)GetValue(LungsProperty); }
+            set { SetValue(LungsProperty, value); }
+        }
+        public static readonly DependencyProperty LungsProperty =
+            DependencyProperty.Register("Lungs", typeof(double), typeof(HRAControl), new PropertyMetadata(0.0));
+
+        public double Cardio
+        {
+            get { return (double)GetValue(CardioProperty); }
+            set { SetValue(CardioProperty, value); }
+        }
+        public static readonly DependencyProperty CardioProperty =
+            DependencyProperty.Register("Cardio", typeof(double), typeof(HRAControl), new PropertyMetadata(0.0));
+
+        public double Dementia
+        {
+            get { return (double)GetValue(DementiaProperty); }
+            set { SetValue(DementiaProperty, value); }
+        }
+        public static readonly DependencyProperty DementiaProperty =
+            DependencyProperty.Register("Dementia", typeof(double), typeof(HRAControl), new PropertyMetadata(0.0));
+
+        public double TotalScore
+        {
+            get { return (double)GetValue(TotalScoreProperty); }
+            set { SetValue(TotalScoreProperty, value); }
+        }
+        public static readonly DependencyProperty TotalScoreProperty =
+            DependencyProperty.Register("TotalScore", typeof(double), typeof(HRAControl), new PropertyMetadata(0.0));
+
+        public bool IsInverted
+        {
+            get { return (bool)GetValue(IsInvertedProperty); }
+            set { SetValue(IsInvertedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsInverted.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsInvertedProperty =
+            DependencyProperty.Register("IsInverted", typeof(bool), typeof(HRAControl), new PropertyMetadata(false));
+
+        public int TotalHRA
+        {
+            get { return (int)GetValue(TotalHRAProperty); }
+            set { SetValue(TotalHRAProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TotalHRA.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TotalHRAProperty =
+            DependencyProperty.Register("TotalHRA", typeof(int), typeof(HRAControl), new PropertyMetadata(0));
+
+        public int SmallFontSize
+        {
+            get { return (int)GetValue(SmallFontSizeProperty); }
+            set { SetValue(SmallFontSizeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SmallFontSize.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SmallFontSizeProperty =
+            DependencyProperty.Register("SmallFontSize", typeof(int), typeof(HRAControl), new PropertyMetadata(9));
+
+        public double AnimationTime
+        {
+            get { return (double)GetValue(AnimationTimeProperty); }
+            set { SetValue(AnimationTimeProperty, value); }
+        }
+        // Using a DependencyProperty as the backing store for AnimationTime.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty AnimationTimeProperty =
+            DependencyProperty.Register("AnimationTime", typeof(double), typeof(HRAControl), new PropertyMetadata(0.5));
+        public void StartQAnimation()
+        {
+            SetAnimationDefaultValues();
+            Storyboard qStoryboard = new Storyboard();
+            int multiplier = 0;
+            if (Cardio > 0)
+            {
+                var daArcCardio = new DoubleAnimation(0, Cardio, TimeSpan.FromSeconds(AnimationTime));
+                daArcCardio.BeginTime = TimeSpan.FromSeconds(AnimationTime * multiplier++);
+                Storyboard.SetTarget(daArcCardio, cardio);
+                Storyboard.SetTargetProperty(daArcCardio, new PropertyPath("Progress"));
+                qStoryboard.Children.Add(daArcCardio);
+            }
+            if (Cancer > 0)
+            {
+                var daArcCancer = new DoubleAnimation(0, Cancer, TimeSpan.FromSeconds(AnimationTime));
+                daArcCancer.BeginTime = TimeSpan.FromSeconds(AnimationTime * multiplier++);
+                Storyboard.SetTarget(daArcCancer, cancer);
+                Storyboard.SetTargetProperty(daArcCancer, new PropertyPath("Progress"));
+                qStoryboard.Children.Add(daArcCancer);
+            }
+            if (Diabetes > 0)
+            {
+                var daArcDiabetes = new DoubleAnimation(0, Diabetes, TimeSpan.FromSeconds(AnimationTime));
+                daArcDiabetes.BeginTime = TimeSpan.FromSeconds(AnimationTime * multiplier++);
+                Storyboard.SetTarget(daArcDiabetes, diabetes);
+                Storyboard.SetTargetProperty(daArcDiabetes, new PropertyPath("Progress"));
+                qStoryboard.Children.Add(daArcDiabetes);
+            }
+            if (Lungs > 0)
+            {
+                var daArcLungs = new DoubleAnimation(0, Lungs, TimeSpan.FromSeconds(AnimationTime));
+                daArcLungs.BeginTime = TimeSpan.FromSeconds(AnimationTime * multiplier++);
+                Storyboard.SetTarget(daArcLungs, lungs);
+                Storyboard.SetTargetProperty(daArcLungs, new PropertyPath("Progress"));
+                qStoryboard.Children.Add(daArcLungs);
+            }
+            if (Dementia > 0)
+            {
+                var daArcDementia = new DoubleAnimation(0, Dementia, TimeSpan.FromSeconds(AnimationTime));
+                daArcDementia.BeginTime = TimeSpan.FromSeconds(AnimationTime * multiplier++);
+                Storyboard.SetTarget(daArcDementia, dementia);
+                Storyboard.SetTargetProperty(daArcDementia, new PropertyPath("Progress"));
+                qStoryboard.Children.Add(daArcDementia);
+            }
+            if (multiplier > 0)
+                qStoryboard.Begin();
+        }
+
+        private void SetAnimationDefaultValues()
+        {
+            cardio.BeginAnimation(Arc.ProgressProperty, null);
+            cancer.BeginAnimation(Arc.ProgressProperty, null);
+            lungs.BeginAnimation(Arc.ProgressProperty, null);
+            diabetes.BeginAnimation(Arc.ProgressProperty, null);
+            dementia.BeginAnimation(Arc.ProgressProperty, null);
+
+            cardio.SetValue(Arc.ProgressProperty, 0.0);
+            cancer.SetValue(Arc.ProgressProperty, 0.0);
+            diabetes.SetValue(Arc.ProgressProperty, 0.0);
+            lungs.SetValue(Arc.ProgressProperty, 0.0);
+            dementia.SetValue(Arc.ProgressProperty, 0.0);
+        }
+    }
+}

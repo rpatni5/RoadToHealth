@@ -1,0 +1,59 @@
+﻿using RTH.Business.Objects.JSON;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class LifeStyleViewModel : ViewModelBase
+    {
+        public LifeStyleViewModel()
+        {
+            LoadPrimaryData();
+        }
+        public override void Refresh()
+        {
+            LoadPrimaryData();
+            base.Refresh();
+        }
+
+        void SetHeader()
+        {
+            HeaderVisibility = true;
+            KeyString = GlobalData.Default.ClickedHRA.KeyString;
+            HeaderState = false;
+            //HeaderColor = Questionnaire.background_colour;
+            //HeaderTitle = Questionnaire.title;
+        }
+        public List<MotivationQuestionaire> LifestyleAnswers
+        {
+            get { return GetValue(() => LifestyleAnswers); }
+            set { SetValue(() => LifestyleAnswers, value); }
+        }
+
+        public bool LifestyleVisibility
+        {
+            get { return GetValue(() => LifestyleVisibility); }
+            set { SetValue(() => LifestyleVisibility, value); }
+        }
+
+
+        private void LoadPrimaryData()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                var answers = QuestionnaireService.GetQuestionaireAnswers(UserDetails._id, "smoking_lifestyle_assessment");
+
+                LifestyleAnswers = answers.Where(x => (x.answer!=null && x.answer.ToString() != "none")
+                || (x.response!=null && x.response.ToString()!= "none")
+                || (x.response1!=null && x.response1!= "none")
+                || ( x.response2 != null && x.response2 != "none")).ToList();
+                LifestyleVisibility = LifestyleAnswers != null && LifestyleAnswers.Count>0 ? false : true;
+            });
+        }
+    }
+}

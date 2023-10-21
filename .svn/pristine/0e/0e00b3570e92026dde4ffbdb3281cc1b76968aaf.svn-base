@@ -1,0 +1,939 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class QuestionNavigatorViewModel : ViewModelBase
+    {
+        public QuestionNavigatorViewModel()
+        {
+
+            GetQuestionnaire();
+            List<Answer> AllQuestionAnswer = UserDetails.answers;
+
+        }
+        private Hashtable GetDependentHasTable(object Gender = null)
+        {
+            Hashtable HasDependency = new Hashtable();
+            ObservableCollection<Question> questions = AllQuestions;
+            if (Gender == null)
+            {
+                var Dependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question != null select dependentquestion);
+                foreach (var item in Dependency)
+                {
+                    //HasDependency.Add(item.dependency,item)
+                    ArrayList ADependent = new ArrayList();
+                    var DependentQuestion = (from dependentquestion in Dependency where dependentquestion.dependency.dependency_question.Equals(item.dependency.dependency_question) select dependentquestion).ToList();
+                    foreach (var _item in DependentQuestion)
+                    {
+                        ADependent.Add(_item);
+                    }
+                    if (!HasDependency.Contains(item.dependency.dependency_question))
+                    {
+                        HasDependency.Add(item.dependency.dependency_question, ADependent);
+                    }
+                }
+            }
+            else
+            {
+                var Dependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question != null select dependentquestion);
+                foreach (var item in Dependency)
+                {
+                    //HasDependency.Add(item.dependency,item)
+                    ArrayList ADependent = new ArrayList();
+                    Int32 _Gender = Convert.ToInt32(Gender);
+                    var DependentQuestionExceptSex = (from dependentquestion in Dependency where dependentquestion.dependency.dependency_question.Equals(item.dependency.dependency_question) && dependentquestion.gender != _Gender select dependentquestion).ToList();
+                    foreach (var _item in DependentQuestionExceptSex)
+                    {
+                        ADependent.Add(_item);
+                    }
+                    if (!HasDependency.Contains(item.dependency.dependency_question))
+                    {
+                        HasDependency.Add(item.dependency.dependency_question, ADependent);
+                    }
+                }
+            }
+            return HasDependency;
+        }
+
+        private ArrayList GetQuestionWithoutDependency(object Gender = null)
+        {
+            ArrayList AWithoutDependency = new ArrayList();
+            if (Gender == null)
+            {
+
+                ObservableCollection<Question> questions = AllQuestions;
+                var WithoutDependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question == null select dependentquestion);
+                foreach (var item in WithoutDependency)
+                {
+                    AWithoutDependency.Add(item);
+                }
+            }
+            else
+            {
+                Int32 _Gender = Convert.ToInt32(Gender);
+                ObservableCollection<Question> questions = AllQuestions;
+                var WithoutDependency = (from dependentquestion in questions where dependentquestion.dependency.dependency_question == null && dependentquestion.gender != _Gender select dependentquestion);
+                foreach (var item in WithoutDependency)
+                {
+                    AWithoutDependency.Add(item);
+                }
+                AWithoutDependency.RemoveRange(0, 2);
+            }
+            return AWithoutDependency;
+        }
+
+        public String Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+
+        private RelayCommand m_ShowQuestionHelperCommand;
+
+        public RelayCommand ShowQuestionHelperCommand
+        {
+            get
+            {
+                return m_ShowQuestionHelperCommand ?? (m_ShowQuestionHelperCommand = new RelayCommand(
+                    ve => ShowQuestionHelper(ve), (t) => true));
+            }
+        }
+
+        private void ShowQuestionHelper(object ve)
+        {
+            var a = ve as Question;
+            Summary = a.summary;
+            //var template = ContentTemplate.Template;
+            //var myControl = (DatePickerControl)template.FindName("DatePickerControl", ContentTemplate);
+            //var element = FindElementByName<ContentControl>(ContentQuestionTemplate, "answersControl").ContentTemplate.FindName("DatePickerControl",);
+
+        }
+
+        void SetHeader()
+        {
+            GlobalData.Default.HeaderVisibility = Visibility.Visible;
+            GlobalData.Default.KeyString = GlobalData.Default.ClickedHRA.KeyString;
+            GlobalData.Default.HeaderState = true;
+            GlobalData.Default.HeaderColor = Questionnaire.background_colour;
+            GlobalData.Default.HeaderTitle = Questionnaire.title;
+        }
+        private void GetQuestionnaire()
+        {
+            //if (UserDetails.score_history != null && UserDetails.score_history.Count > 0)
+            AsyncCall.Invoke(() =>
+            {
+                Questionnaire = QuestionnaireService.GetQuestionnaire(UserDetails._id, GlobalData.Default.ClickedHRA.ID, UserDetails.AuthToken.access_token);
+                AllQuestions = Questionnaire.GetQuestions(UserDetails);
+                SetQuestionPossitions();
+                CurrentCategory = Questionnaire.questions.FirstOrDefault().category;
+                CurrentSubCategory = Questionnaire.questions.FirstOrDefault().subcategories.FirstOrDefault();
+                CurrentQuestion = Questionnaire.questions.FirstOrDefault(q => q.category == CurrentCategory).questions.FirstOrDefault();
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+                //CurrentQuestion.Category = CurrentCategory;
+                QuestionWithoutDependency = GetQuestionWithoutDependency();
+                DependentQuestion = GetDependentHasTable();
+                SetHeader();
+            });
+        }
+
+        private void SetQuestionPossitions()
+        {
+            foreach (var item in AllQuestions)
+            {
+                var CategoryCount = (from Q in AllQuestions where Q.Category.name.Equals(item.Category.name) select Q).Count();
+                var CurrentQuestionIndex = (from Q in AllQuestions where Q.Category.name.Equals(item.Category.name) select Q).ToList().IndexOf(item);
+                item.QuestionPosition = CategoryCount - CurrentQuestionIndex;
+            }
+        }
+
+        public Question CurrentQuestion
+        {
+            get { return GetValue(() => CurrentQuestion); }
+            set { SetValue(() => CurrentQuestion, value); }
+        }
+        public Int32 CurrentCategoryCount
+        {
+            get { return GetValue(() => CurrentCategoryCount); }
+            set { SetValue(() => CurrentCategoryCount, value); }
+        }
+
+        public ArrayList QuestionWithoutDependency
+        {
+            get { return GetValue(() => QuestionWithoutDependency); }
+            set { SetValue(() => QuestionWithoutDependency, value); }
+        }
+        public Hashtable DependentQuestion
+        {
+            get { return GetValue(() => DependentQuestion); }
+            set { SetValue(() => DependentQuestion, value); }
+        }
+
+        public Category CurrentCategory
+        {
+            get { return GetValue(() => CurrentCategory); }
+            set { SetValue(() => CurrentCategory, value); }
+        }
+        public Subcategory CurrentSubCategory
+        {
+            get { return GetValue(() => CurrentSubCategory); }
+            set { SetValue(() => CurrentSubCategory, value); }
+        }
+        public HRA Questionnaire
+        {
+            get { return GetValue(() => Questionnaire); }
+            set
+            {
+                SetValue(() => Questionnaire, value);
+                HeaderLabel = Questionnaire.title;
+            }
+        }
+
+        public ObservableCollection<Question> AllQuestions
+        {
+            get { return GetValue(() => AllQuestions); }
+            set { SetValue(() => AllQuestions, value); }
+        }
+
+        public async Task<bool> MoveToQuestion(int moveIndex, string Password)
+        {
+            bool _IsSubmitted = false;
+            ObservableCollection<Question> questions = AllQuestions;
+            CurrentQuestion.ErrorMessage = "";
+            if (moveIndex == 1 && !ValidateAnswer()) return false;
+
+            /*Check for Gender*/
+            if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "53876df906836d0800c4aff7")
+            {
+                ArrayList AlMaleQuestion = GetQuestionWithoutDependency(2);
+                QuestionWithoutDependency.RemoveRange(2, QuestionWithoutDependency.Count - 2);
+                QuestionWithoutDependency.InsertRange(2, AlMaleQuestion);
+                DependentQuestion = GetDependentHasTable(2);
+
+            }
+            else if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "53876df906836d0800c4affa")
+            {
+                ArrayList AlFemaleQuestion = GetQuestionWithoutDependency(1);
+                QuestionWithoutDependency.RemoveRange(2, QuestionWithoutDependency.Count - 2);
+                QuestionWithoutDependency.InsertRange(2, AlFemaleQuestion);
+                DependentQuestion = GetDependentHasTable(1);
+            }
+            ArrayList SelectedAnswer = new ArrayList();
+            foreach (var item in CurrentQuestion.SelectedAnswers)
+            {
+                SelectedAnswer.Add(Convert.ToString(item.answer));
+            }
+            //Cheack having dependent Question 
+            ArrayList _questionId = CheckForDependentQuestion(CurrentQuestion, SelectedAnswer);
+            if (_questionId != null && _questionId.Count > 0)
+            {
+                ArrayList GetExistingDependentRecord = CheckForDependentQuestion(CurrentQuestion);
+                foreach (var item in GetExistingDependentRecord)
+                {
+                    QuestionWithoutDependency.Remove(item);
+                }
+                for (int i = 0; i < _questionId.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        if (QuestionWithoutDependency.Contains((Question)_questionId[i - 1]))
+                        {
+                            QuestionWithoutDependency.Insert(QuestionWithoutDependency.IndexOf((Question)_questionId[i - 1]) + 1, _questionId[i]);
+                        }
+                    }
+                    else
+                    {
+                        QuestionWithoutDependency.Insert(QuestionWithoutDependency.IndexOf(CurrentQuestion) + 1, (Question)_questionId[i]);
+                    }
+
+                }
+            }
+            else {
+                ArrayList GetExistingDependentRecord = CheckForDependentQuestion(CurrentQuestion);
+                foreach (var item in GetExistingDependentRecord)
+                {
+                    QuestionWithoutDependency.Remove(item);
+                }
+            }
+
+
+            if (CurrentQuestion == (Question)QuestionWithoutDependency[QuestionWithoutDependency.Count - 1])
+            {
+                _IsSubmitted = await SubmitQuestionnaire(Password);
+            }
+            else
+            {
+                _IsSubmitted = false;
+                CurrentQuestion = (Question)QuestionWithoutDependency[QuestionWithoutDependency.IndexOf(CurrentQuestion) + 1];
+                CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+
+            }
+            return _IsSubmitted;
+
+        }
+
+        private ArrayList CheckForDependentQuestion(Question currentQuestion)
+        {
+            var query = from Question num in QuestionWithoutDependency
+                        where num.dependency.dependency_question == currentQuestion._id
+                        select num;
+
+            ArrayList Al = new ArrayList();
+            foreach (var item in query)
+            {
+                Al.Add(item);
+            }
+            return Al;
+        }
+
+        private ArrayList GetAllDependentQuestion(Question currentQuestion)
+        {
+            var DependentQuestionList = (ArrayList)DependentQuestion[currentQuestion._id];
+            var query = from Question num in DependentQuestionList
+                        where num.dependency.dependency_answer == currentQuestion.dependency.dependency_answer
+                        select num;
+
+            ArrayList Al = new ArrayList();
+            foreach (var item in query)
+            {
+                Al.Add(item);
+            }
+
+            return Al;
+        }
+
+        private ArrayList CheckForDependentQuestion(Question currentQuestion, ArrayList selectedAnswer)
+        {
+            ArrayList _QuestionId = null;
+            if (DependentQuestion.Contains(currentQuestion._id))
+            {
+                ArrayList AllDependentQuestion = (ArrayList)DependentQuestion[currentQuestion._id];
+                List<Question> Dependent_Question = new List<Business.Objects.Question>();
+                for (int i = 0; i < AllDependentQuestion.Count; i++)
+                {
+                    Dependent_Question.Add((Question)AllDependentQuestion[i]);
+                }
+                _QuestionId = GetDependentQuestionIdHavingAnswer(selectedAnswer, Dependent_Question);
+            }
+            return _QuestionId;
+        }
+
+        public void MoveToQuestionPrevious(int v)
+        {
+            CurrentQuestion = (Question)QuestionWithoutDependency[QuestionWithoutDependency.IndexOf(CurrentQuestion) - 1];
+            CurrentQuestion.HelperImagePath = string.Concat(ConfigurationManagers.ImagePath, CurrentQuestion.helper_image);
+        }
+
+        private ArrayList GetDependentQuestionIdHavingAnswer(ArrayList selectedAnswer, List<Question> getAllDependentQuestion)
+        {
+            var _questionId = (from a in getAllDependentQuestion select a);
+            ArrayList SelectedQuestion = new ArrayList();
+
+            string _QuestionID = null;
+            foreach (var item in _questionId)
+            {
+                var MatchedAnswer = item.dependency.dependency_answer.ToArray().Intersect(selectedAnswer.ToArray()).Any();
+                //!item.dependency.dependency_answer.ToArray().Except(selectedAnswer.ToArray()).Any()
+                //        && !selectedAnswer.ToArray().Except(item.dependency.dependency_answer.ToArray()).Any();
+                if (MatchedAnswer)
+                {
+                    _QuestionID = item._id;
+                    SelectedQuestion.Add(item);
+                    // break;
+                }
+            }
+            return SelectedQuestion;
+        }
+
+        private bool ValidateAnswer()
+        {
+            //if (CurrentQuestion.SelectedAnswers == null ||
+            //    CurrentQuestion.SelectedAnswers.Count <= 0 ||
+            //    CurrentQuestion.SelectedAnswers[0].answer == null || 
+            //    string.IsNullOrEmpty(CurrentQuestion.SelectedAnswers[0].answer.ToString()))
+            //{
+            //    if (CurrentQuestion.element_type == 2 ||
+            //        CurrentQuestion.element_type == 3 ||
+            //        CurrentQuestion.element_type == 4 ||
+            //        CurrentQuestion.element_type == 5 ||
+            //        CurrentQuestion.element_type == 6)
+            //        CurrentQuestion.ErrorMessage = AppMessages.missing_answer;// Display Error Message
+            //    else CurrentQuestion.ErrorMessage = AppMessages.missing_option;// Display Error Message
+            //    return false;
+            //}
+            #region Simple Text Validation
+            if (
+                CurrentQuestion.key_string.Equals("cigarettes_count") ||
+                CurrentQuestion.key_string.Equals("mod_literal") ||
+                CurrentQuestion.key_string.Equals("vig_literal") ||
+                CurrentQuestion.key_string.Equals("alcopop_m") ||
+                CurrentQuestion.key_string.Equals("fortified_m") ||
+                CurrentQuestion.key_string.Equals("liqueur_m") ||
+                CurrentQuestion.key_string.Equals("spirit_m") ||
+                CurrentQuestion.key_string.Equals("wine_m") ||
+                CurrentQuestion.key_string.Equals("beer_m") ||
+                CurrentQuestion.key_string.Equals("alcopop_w") ||
+                CurrentQuestion.key_string.Equals("fortified_w") ||
+                CurrentQuestion.key_string.Equals("liqueur_w") ||
+                CurrentQuestion.key_string.Equals("spirit_w") ||
+                CurrentQuestion.key_string.Equals("wine_w") ||
+                CurrentQuestion.key_string.Equals("beer_w") ||
+                CurrentQuestion.key_string.Equals("night_shift_total_years") ||
+                CurrentQuestion.key_string.Equals("menarchy_age") ||
+                CurrentQuestion.key_string.Equals("given_birth_total") ||
+                CurrentQuestion.key_string.Equals("menopause_age")
+                )
+            {
+                if (string.IsNullOrEmpty(Convert.ToString(CurrentQuestion.SelectedAnswers[0].response)) || Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].response) == 0)
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.missing_answer;
+                    return false;
+                }
+            }
+
+            #region Single Select Validation
+            if (CurrentQuestion.element_type == 0)
+            {
+                if (string.IsNullOrEmpty(Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer)) || Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "none")
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.missing_option;
+                    return false;
+                }
+            }
+            #endregion
+            #region MultiSelect Select Validation
+            if (CurrentQuestion.element_type == 7)
+            {
+                if (CurrentQuestion.SelectedAnswers.Count() == 0)
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.missing_option;
+                    return false;
+                }
+            }
+            #endregion
+            #endregion
+
+            #region Height Validations 
+            if (CurrentQuestion.key_string.Equals("height"))
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseCM) == string.Empty || Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseCM) == "0")
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                    return false;
+                }
+                else
+                {
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "cm")
+                    {
+                        var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("cm")).SingleOrDefault();
+                        if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseCM) < Range.min)
+                        {
+                            CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                            return false;
+                        }
+                        if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseCM) > Range.max)
+                        {
+                            CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                            return false;
+                        }
+                    }
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "m")
+                    {
+                        var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("m")).SingleOrDefault();
+                        Double _maxrange = ((Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseM) * 100) + Convert.ToDouble(CurrentQuestion.SelectedAnswers[0]._responseMCM)) / 100;
+                        if (_maxrange > Range.max)
+                        {
+                            CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                            return false;
+                        }
+                        if (_maxrange < Range.min)
+                        {
+                            CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                            return false;
+                        }
+                    }
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "feet")
+                    {
+                        var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("feet")).SingleOrDefault();
+                        if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseFT) < Range.min)
+                        {
+                            CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                            return false;
+                        }
+                        if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseFT) > Range.max)
+                        {
+                            CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                            return false;
+                        }
+                    }
+                }
+            }
+            #endregion
+            #region WeightValidation
+            if (CurrentQuestion.key_string.Equals("weight"))
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseKG) == string.Empty || Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseKG) == "0")
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                    return false;
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "kg")
+                {
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("kg")).SingleOrDefault();
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseKG) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseKG) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "st")
+                {
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("st")).SingleOrDefault();
+
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseST) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseST) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "lb")
+                {
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("lb")).SingleOrDefault();
+
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseLB) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseLB) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+            }
+            #endregion
+            #region WaistGirthValidation
+            if (CurrentQuestion.key_string.Equals("waist_girth"))
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseWaistGirthCM) == string.Empty || Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseWaistGirthCM) == "0")
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                    return false;
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "cm")
+                {
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("cm")).SingleOrDefault();
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseWaistGirthCM) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseWaistGirthCM) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "inches_word")
+                {
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("inches_word")).SingleOrDefault();
+
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseWaistGirthINCH) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseWaistGirthINCH) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+
+            }
+            #endregion
+            #region Blood Glucose
+            if (CurrentQuestion.key_string.Equals("blood_glucose_level"))
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "mmol")
+                {
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemmol_l) == string.Empty || Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemmol_l) == "0")
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmol")).SingleOrDefault();
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemmol_l) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemmol_l) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "mg")
+                {
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemg_dl) == string.Empty || Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemg_dl) == "0")
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+
+                    var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mg")).SingleOrDefault();
+
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_dl) < Range.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_dl) > Range.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                        return false;
+                    }
+                }
+
+            }
+            if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "g")
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemg_g_l) == string.Empty || Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemg_g_l) == "0")
+                {
+                    CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                    return false;
+                }
+                var Range = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("g")).SingleOrDefault();
+
+                if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_g_l) < Range.min)
+                {
+                    CurrentQuestion.ErrorMessage = "Minimum value should be " + Convert.ToString(Range.min);
+                    return false;
+                }
+                if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_g_l) > Range.max)
+                {
+                    CurrentQuestion.ErrorMessage = "Maximum value should be " + Convert.ToString(Range.max);
+                    return false;
+                }
+            }
+            #endregion
+            #region BP Validation
+            if (CurrentQuestion.key_string.Equals("blood_pressure"))
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "mmhg")
+                {
+                    var RangeSystolic = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmhg")).Where(x => x.special.Equals("systolic")).SingleOrDefault();
+                    var RangeDiastolic = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmhg")).Where(x => x.special.Equals("diastolic")).SingleOrDefault();
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseBPSystolicMMHG) == string.Empty)
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPSystolicMMHG) < RangeSystolic.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Systolic minimum value should be " + Convert.ToString(RangeSystolic.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPDiastolicMMHG) < RangeDiastolic.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Diastolic minimum value should be " + Convert.ToString(RangeDiastolic.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPSystolicMMHG) > RangeSystolic.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Systolic maximum value should be " + Convert.ToString(RangeSystolic.max);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPDiastolicMMHG) > RangeDiastolic.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Diastolic maximum value should be " + Convert.ToString(RangeDiastolic.max);
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "mmhg10")
+                {
+                    var RangeSystolic = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmhg")).Where(x => x.special.Equals("systolic")).SingleOrDefault();
+                    var RangeDiastolic = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmhg")).Where(x => x.special.Equals("diastolic")).SingleOrDefault();
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responseBPSystolicMMHG10) == string.Empty)
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPSystolicMMHG10) < RangeSystolic.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Systolic minimum value should be " + Convert.ToString(RangeSystolic.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPDiastolicMMHG10) < RangeDiastolic.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Diastolic minimum value should be " + Convert.ToString(RangeDiastolic.min);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPSystolicMMHG10) > RangeSystolic.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Systolic minimum value should be " + Convert.ToString(RangeSystolic.max);
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responseBPDiastolicMMHG10) > RangeDiastolic.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Diastolic minimum value should be " + Convert.ToString(RangeDiastolic.max);
+                        return false;
+                    }
+                }
+            }
+            #endregion
+            #region CholesterolLevel Validation
+            if (CurrentQuestion.key_string.Equals("cholesterol"))
+            {
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "mmol")
+                {
+                    var tcl = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmol")).Where(x => x.special.Equals("tcl")).SingleOrDefault();
+                    var hdl = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mmol")).Where(x => x.special.Equals("hdl")).SingleOrDefault();
+
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemmol_lTotalCholesterol) == string.Empty)
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemmol_lTotalCholesterol) < tcl.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Total cholesterol minimum value should be " + tcl.min.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemmol_lTotalCholesterol) > tcl.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Total cholesterol maximum value should be " + tcl.max.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemmol_lHDL) < hdl.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "HDL minimum value should be " + hdl.min.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemmol_lHDL) > hdl.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "HDL maximum value should be " + hdl.max.ToString();
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "mg")
+                {
+                    var tcl = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mg")).Where(x => x.special.Equals("tcl")).SingleOrDefault();
+                    var hdl = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("mg")).Where(x => x.special.Equals("hdl")).SingleOrDefault();
+
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemg_dlTotalCholesterol) == string.Empty)
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_dlTotalCholesterol) < tcl.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Total cholesterol minimum value should be " + tcl.min.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_dlTotalCholesterol) > tcl.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Total cholesterol maximum value should be " + tcl.max.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_dlHDL) < hdl.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "HDL minimum value should be " + hdl.min.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_dlHDL) > hdl.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "HDL maximum value should be " + hdl.max.ToString();
+                        return false;
+                    }
+                }
+                if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].answer) == "g")
+                {
+                    var tcl = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("g")).Where(x => x.special.Equals("tcl")).SingleOrDefault();
+                    var hdl = (Range)CurrentQuestion.ranges.Where(x => x.unit.Equals("g")).Where(x => x.special.Equals("hdl")).SingleOrDefault();
+
+                    if (Convert.ToString(CurrentQuestion.SelectedAnswers[0].responsemg_g_lTotalCholesterol) == string.Empty)
+                    {
+                        CurrentQuestion.ErrorMessage = AppMessages.please_enter_value;
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_g_lTotalCholesterol) < tcl.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "Total cholesterol minimum value should be " + tcl.min.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_g_lTotalCholesterol) > tcl.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "Total cholesterol maximum value should be " + tcl.max.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_g_lHDL) < hdl.min)
+                    {
+                        CurrentQuestion.ErrorMessage = "HDL minimum value should be " + hdl.min.ToString();
+                        return false;
+                    }
+                    if (Convert.ToDouble(CurrentQuestion.SelectedAnswers[0].responsemg_g_lHDL) > hdl.max)
+                    {
+                        CurrentQuestion.ErrorMessage = "HDL maximum value should be " + hdl.max.ToString();
+                        return false;
+                    }
+                }
+            }
+            #endregion
+
+            return true;
+        }
+
+        public async Task<bool> SubmitQuestionnaire(string Password)
+        {
+            var QuestionResponse = await AsyncSubmitQuestionnaire(Password);
+            if (QuestionResponse.status == 0)
+            {
+                return true;
+            }
+            else return false;
+        }
+
+        private async Task<QuestionnairesResponse> AsyncSubmitQuestionnaire(String Password)
+        {
+            return await AsyncCall.Invoke(() =>
+             {
+                 ObservableCollection<Question> questions = AllQuestions;
+                 List<Answer> AllQuestionAnswer = UserDetails.answers.ToList();
+                 List<Answer> RemoveAnswer = new List<Answer>();
+                 List<Answer> NewAnswer = new List<Answer>();
+                 List<AnswerRequest> oAnswerRequest = new List<AnswerRequest>();
+                 foreach (var item in AllQuestions)
+                 {
+                     List<Answer> ListAnswer = GetQuestionnaireAnswer(item);
+                     if (ListAnswer.Count() > 0)
+                     {
+                         foreach (var SelectedAnswer in ListAnswer)
+                         {
+                             var ass = (from q in AllQuestionAnswer where q.question.Equals(SelectedAnswer.question) select q).ToList();
+                             RemoveAnswer.InsertRange(RemoveAnswer.Count, ass);
+                         }
+                         NewAnswer.InsertRange(NewAnswer.Count(), ListAnswer);
+                         //AllQuestionAnswer.InsertRange(AllQuestionAnswer.Count(), ListAnswer);
+
+                     }
+                 }
+                 foreach (var item in RemoveAnswer)
+                 {
+                     AllQuestionAnswer.Remove(item);
+                 }
+                 AllQuestionAnswer.InsertRange(AllQuestionAnswer.Count(), NewAnswer);
+
+                 foreach (var item in AllQuestionAnswer)
+                 {
+                     oAnswerRequest.Add(new AnswerRequest
+                     {
+                         answer = item.answer == null ? "none" : item.answer,
+                         date = Convert.ToString(DateTime.Now.Ticks),
+                         key_string = item.key_string,
+                         element_type = item.element_type,
+                         question = item.question,
+                         response2 = Convert.ToString(item.response2) == "" ? "none" : item.response2,
+                         response1 = Convert.ToString(item.response1) == "" ? "none" : item.response1,
+                         response = Convert.ToString(item.response) == "" ? "none" : item.response
+                     });
+                 }
+
+                 QuestionnairesResponse oQuestionnairesResponse = QuestionnaireService.PutQuestionnaire(UserDetails._id, GlobalData.Default.ClickedHRA.ID, UserDetails.AuthToken.access_token, oAnswerRequest);
+                 LoginData(Password);
+                 GlobalData.Default.LastVisitedDiseaseID = GlobalData.Default.ClickedHRA.ID;
+                 return oQuestionnairesResponse;
+             });
+        }
+
+        private List<Answer> GetQuestionnaireAnswer(Question item)
+        {
+            List<Answer> SelectedAnswer = new List<Answer>();
+            var _item = item;
+            //if(QuestionWithoutDependency.Contains()
+            if ((from Question s in QuestionWithoutDependency where s._id.Equals(item._id) select s).Any())
+            {
+                var _Answer = (from Question s in QuestionWithoutDependency where s._id.Equals(item._id) select s.SelectedAnswers).FirstOrDefault();
+                if (_Answer.Count == 1)
+                {
+                    if (item.element_type == 7)
+                    {
+                        Answer AnsMultiSelect = _Answer[0];
+                        AnsMultiSelect.answer = _Answer[0].answer == null ? "none" : _Answer[0].answer;
+                        ArrayList MutliSelect = new ArrayList();
+                        MutliSelect.Add(_Answer[0].answer);
+                        AnsMultiSelect.answer = MutliSelect;
+                        SelectedAnswer.Add(AnsMultiSelect);
+                    }
+                    else
+                    {
+                        _Answer[0].response = _Answer[0].response == null ? "none" : _Answer[0].response;
+                        _Answer[0].response1 = _Answer[0].response1 == null ? "none" : _Answer[0].response1;
+                        _Answer[0].response2 = _Answer[0].response2 == null ? "none" : _Answer[0].response2;
+                        SelectedAnswer.Add(_Answer[0]);
+                    }
+                }
+                else
+                {
+                    Answer AnsMultiSelect = _Answer[0];
+                    ArrayList MutliSelect = new ArrayList();
+                    AnsMultiSelect.answer = null;
+                    foreach (var MutliSelectAnswer in _Answer)
+                    {
+                        if (Convert.ToString(MutliSelectAnswer.answer) != "none")
+                        { if (MutliSelectAnswer.answer != null) { MutliSelect.Add(MutliSelectAnswer.answer); } }
+
+                    }
+                    AnsMultiSelect.answer = MutliSelect;
+                    SelectedAnswer.Add(AnsMultiSelect);
+                }
+                return SelectedAnswer;
+            }
+            else
+            {
+                item.SelectedAnswers = new ObservableCollection<Answer>();
+                Answer a = new Answer();
+                a.date = Convert.ToString(DateTime.Now.Ticks);
+                a.key_string = item.key_string;
+                a.element_type = item.element_type;
+                a.question = item._id;
+                a.answer = "none";
+                a.response = a.response == null ? "none" : a.response;
+                a.response1 = a.response1 == null ? "none" : a.response1;
+                a.response2 = a.response2 == null ? "none" : a.response2;
+                item.SelectedAnswers.Add(a);
+                var _UnFilledQuestion = item.SelectedAnswers.FirstOrDefault();
+                SelectedAnswer.Add(_UnFilledQuestion);
+                return SelectedAnswer;
+            }
+        }
+        private void LoginData(string Password)
+        {
+            ViewModelBase.UserDetails = RTH.Business.Services.UserService.UserLogin(new User() { email = ViewModelBase.UserDetails.email, password = Password });
+        }
+    }
+}

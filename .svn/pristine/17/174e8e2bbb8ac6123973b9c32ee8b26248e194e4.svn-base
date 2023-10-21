@@ -1,0 +1,206 @@
+﻿using RTH.Business.Objects;
+using RTH.Helpers;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+
+namespace RTH.Windows.ViewModels
+{
+    public class UserRegistrationViewModel : Common.ViewModelBase
+    {
+
+        public IEnumerable<Language> LanguageList
+        {
+            get { return GetValue(() => LanguageList); }
+            set
+            {
+                SetValue(() => LanguageList, value);
+            }
+        }       
+        public IEnumerable<Country> CountryList
+        {
+            get { return GetValue(() => CountryList); }
+            set
+            {
+                SetValue(() => CountryList, value);
+            }
+        }
+
+        public UserRegistrationViewModel()
+        {
+            ExecuteRegistrationLoad();
+            EmailColor = "#FF000000";
+        }
+
+        private async void ExecuteRegistrationLoad()
+        {
+            GlobalData.Default.LoaderVisibility = true;
+            User oUser = await ExecuteRegistration();
+            GlobalData.Default.LoaderVisibility = false;
+        }
+
+        private async Task<User> ExecuteRegistration()
+        {
+            var user = await AsyncCall.Invoke(() =>
+            {
+                LoadPrimaryData();
+                string email = null;//Properties.Settings.Default.Email;
+                string password = null; //Properties.Settings.Default.Password;
+                if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
+                {
+                    ViewModels.LoginViewModel login = new ViewModels.LoginViewModel();
+                    return login.UserLogin(new Business.Objects.User() { email = email, password = password });
+                }
+                return null;
+            });
+            return user;
+        }
+
+        private void LoadPrimaryData()
+        {
+            LanguageList = RTH.Business.Services.AppService.GetLanguage().Data;
+            Language =Lang?? "en";            
+            CountryList = RTH.Business.Services.AppService.GetCountry().Data;           
+            country = "53eb36f79b982320b4009f7e";
+            HeaderLabel = AppMessages.login;
+        }
+
+        public async Task<User> UserRegistration()
+        {
+            return await AsyncCall.Invoke(() =>
+            {
+                EmailColor = "#FF000000";
+                NameColor = "#FF000000";
+                if (string.IsNullOrEmpty(this.name))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_name;
+                    return null;
+                }
+                if (!ExtensionMethod.ValidateName(this.name))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_valid_name;
+                    NameColor = "#FFE51400"; return null;
+                }
+                if (string.IsNullOrEmpty(this.email))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.missing_email;
+                    return null;
+                }
+                if (!ExtensionMethod.ValidateEmail(this.email))
+                {
+                    EmailColor = "#FFE51400";
+                    this.ErrorMessage = ViewModelBase.AppMessages.invalid_email_entry;
+                    return null;
+                }
+                if (string.IsNullOrEmpty(this.password))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_password;
+                    return null;
+                }
+                if (string.IsNullOrEmpty(this.confirm))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.please_enter_confirm_password;
+                    return null;
+                }
+                if (this.confirm != this.password)
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.password_mismatched;
+                    return null;
+                }
+                if (!System.Text.RegularExpressions.Regex.IsMatch(this.password, @"^(?=.*[a-z])(?=(.*[^a-zA-Z\d])|(?=.*\d){1,}).{6,}$"))
+                {
+                    this.ErrorMessage = ViewModelBase.AppMessages.password_must_contain_numbers_and_special_char;
+                    return null;
+                }
+
+                var User = new User
+                {
+                    name = name,
+                    email = email,
+                    password = password,
+                    confirm = confirm,
+                    username = email,
+                    language = Language,
+                    country = country
+                };
+
+                return RTH.Business.Services.UserService.RegisterUser(User);
+            });
+        }
+
+        #region ViewModel Property  
+        public String EmailColor
+        {
+            get { return GetValue(() => EmailColor); }
+            set
+            {
+                SetValue(() => EmailColor, value);
+            }
+        }
+        public String NameColor
+        {
+            get { return GetValue(() => NameColor); }
+            set
+            {
+                SetValue(() => NameColor, value);
+            }
+        }
+        public String name
+        {
+            get { return GetValue(() => name); }
+            set { SetValue(() => name, value); }
+        }
+
+        public String email
+        {
+            get { return GetValue(() => email); }
+            set
+            {
+                SetValue(() => email, value);
+            }
+        }
+        public String password
+        {
+            get { return GetValue(() => password); }
+            set
+            {
+                SetValue(() => password, value);
+            }
+        }
+        public String confirm
+        {
+            get { return GetValue(() => confirm); }
+            set
+            {
+                SetValue(() => confirm, value);
+            }
+        }
+        public String Language
+        {
+            get { return GetValue(() => Language); }
+            set
+            {
+                SetValue(() => Language, value);
+            }
+        }
+        public String country
+        {
+            get { return GetValue(() => country); }
+            set
+            {
+                SetValue(() => country, value);
+            }
+        }
+
+
+        #endregion
+
+    }
+}

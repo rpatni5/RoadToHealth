@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <configSections>
+        <sectionGroup name="userSettings" type="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" >
+            <section name="RTH.Windows.Views.Properties.Settings" type="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" allowExeDefinition="MachineToLocalUser" requirePermission="false" />
+        </sectionGroup>
+    </configSections>
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
+    </startup>
+  
+  <appSettings>
+   
+    <!--<add key="BaseAPiConnection" value="http://172.24.1.114:3000/" />-->
+    <add key="BaseAPiConnection" value="https://ng-admin-live.roadtohealth.co.uk/" />
+    <!--<add key="BaseAPiConnection" value="https://ng-admin-dev.roadtohealth.co.uk/" />-->
+    <!--<add key="BaseAPiConnection" value="http://192.155.246.146:30001/" />-->
+
+    <add key="ImageUrl" value="uploads/hra/" />
+    <add key="grant_type" value="password" />
+    <add key="client_id" value="5416abeb5f0f21080024fe71" />
+    <add key="client_secret" value="0101b05c-119536e6" />
+
+    <add key="back-green" value="back-green" />
+    <add key="back-green-value" value="#76b72a" />
+    <add key="back-amber" value="back-amber" />
+    <add key="back-amber-value" value="#f29100" />
+    <add key="back-red" value="back-red" />
+    <add key="back-red-value" value="#e5332a" />
+
+    <add key="static_code_g" value="g" />
+    <add key="static_code_a" value="a" />
+    <add key="static_code_r" value="r" />
+
+    <add key="happy_smily" value="/RTH.Windows.Views;component/Assets/drawable/exited_insight.png" />
+    <add key="thinking_smily" value="/RTH.Windows.Views;component/Assets/drawable/smily_insight.png" />
+    <add key="sad_smily" value="/RTH.Windows.Views;component/Assets/drawable/sad_insight.png" />
+    
+  </appSettings>
+  <userSettings>
+    <RTH.Windows.Views.Properties.Settings>
+      <setting name="Email" serializeAs="String">
+        <value>puneersr@smartdatainc.net</value>
+      </setting>
+      <setting name="Password" serializeAs="String">
+        <value>123456a</value>
+      </setting>
+      <setting name="LastTheme" serializeAs="String">
+        <value>0</value>
+      </setting>
+    </RTH.Windows.Views.Properties.Settings>
+  </userSettings>
+</configuration>

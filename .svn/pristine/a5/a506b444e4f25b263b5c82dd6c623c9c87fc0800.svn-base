@@ -1,0 +1,116 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for ResultView.xaml
+    /// </summary>
+    public partial class ResultView : ViewBase
+    {
+        public ResultView()
+        {
+            InitializeComponent();
+            BindItemsSourceChangedHandler();
+        }
+
+
+        public void BindItemsSourceChangedHandler()
+        {
+            DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ViewBase)).AddValueChanged(scoreSummaries, OnItemsSourceChanged);
+        }
+
+        private void OnItemsSourceChanged(object o, EventArgs e)
+        {
+            DependencyPropertyDescriptor.FromProperty(ItemsControl.ItemsSourceProperty, typeof(ViewBase)).RemoveValueChanged(scoreSummaries, OnItemsSourceChanged);
+            //if ((bool)this.GetValue(AnimateControlsProperty))
+            //{
+            RunAnimation();
+            //}
+            //else
+            //{
+            //    ResetLayout();
+            //}
+        }
+
+        private void RunAnimation()
+        {
+            var heightAnim = new DoubleAnimation();
+            heightAnim.From = 0;
+            heightAnim.To = gridColorColumn.ActualHeight;
+            heightAnim.Duration = new Duration(TimeSpan.FromSeconds(1));
+
+            Storyboard storyboard = new Storyboard();
+
+            storyboard.Children.Add(heightAnim);
+            Storyboard.SetTarget(heightAnim, scoreSummaries);
+            Storyboard.SetTargetProperty(heightAnim, new PropertyPath(ItemsControl.HeightProperty));
+            storyboard.Begin();
+            RectangleSlideLeftToRight();
+        }
+
+        public void RectangleSlideLeftToRight()
+        {
+            ThicknessAnimation rectAnimation = new ThicknessAnimation();
+            //rectAnimation.From = new Thickness(390, 0, 0, 0);
+            rectAnimation.To = new Thickness(0);
+            rectAnimation.BeginTime = TimeSpan.FromSeconds(1);
+            rectAnimation.Duration = new Duration(TimeSpan.FromSeconds(1));
+
+            Storyboard storyboard = new Storyboard();
+
+            storyboard.Children.Add(rectAnimation);
+            Storyboard.SetTarget(rectAnimation, ragContainer);
+            Storyboard.SetTargetProperty(rectAnimation, new PropertyPath(Grid.MarginProperty));
+            storyboard.Begin();
+        }
+
+
+
+        public bool AnimateControls
+        {
+            get { return (bool)GetValue(AnimateControlsProperty); }
+            set { SetValue(AnimateControlsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for AnimateControls.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty AnimateControlsProperty =
+            DependencyProperty.RegisterAttached("AnimateControls", typeof(bool), typeof(ViewBase), new PropertyMetadata(false, OnAnimateControlsPropertyChanged));
+
+        private static void OnAnimateControlsPropertyChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
+        {
+            var resultView = o as ResultView;
+            if ((bool)resultView.GetValue(AnimateControlsProperty))
+            {
+                resultView.BindItemsSourceChangedHandler();
+            }
+            else
+            {
+                resultView.ResetLayout();
+            }
+        }
+
+        private void ResetLayout()
+        {
+            scoreSummaries.Height = gridColorColumn.ActualHeight;
+            ragContainer.Margin = new Thickness(0);
+        }
+    }
+}
+

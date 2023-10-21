@@ -1,0 +1,36 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Windows.ViewModels
+{
+    public class HealthPlanViewModel : ViewModelBase
+    {
+        public HealthPlanViewModel()
+        {
+            LoadHealthPlanData();
+        }
+
+        public List<HealthPlanObjective> HealthPlanObj
+        {
+            get { return GetValue(() => this.HealthPlanObj); }
+            set { SetValue(() => HealthPlanObj, value); }
+        }
+        public override void Refresh()
+        {
+
+        }
+        public void LoadHealthPlanData()
+        {
+            AsyncCall.Invoke(() =>
+            {
+                HealthPlanObj= HealthPlanServices.GetHealthPlan(UserDetails._id, UserDetails.AuthToken.access_token);
+            });
+        }
+    }
+}

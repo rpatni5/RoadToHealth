@@ -1,0 +1,21 @@
+﻿using RTH.Business.Objects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Services
+{
+    public static class QuestionnaireService
+    {
+        public static HRA GetQuestionnaire(string id, string questionnaireId, string accessToken)
+        {
+            return Http.ExecuteGET<Response<HRA>>(string.Format("apis/get_user_questionnaire/{0}/{1}", id, questionnaireId), null, accessToken).data;
+        }
+        public static void PutQuestionnaire(string id, string questionnaireId, string accessToken, List<Answer> oListAnaswer)
+        {
+            Http.ExecutePOST(string.Format("apis/put_user_data/{0}/{1}", id, questionnaireId), oListAnaswer, accessToken);
+        }
+    }
+}

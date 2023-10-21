@@ -1,0 +1,506 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RTH.Business.Objects
+{
+    public class ScoreHistory
+    {
+        public double total_score { get; set; }
+        public double optimum_score { get; set; }
+        public string date { get; set; }
+        public string _id { get; set; }
+        public List<object> sub_diseases { get; set; }
+        public string questionnaire { get; set; }
+    }
+
+    public class Answer : NotifyBase
+    {
+        private const decimal stlbToKg = 6.350293M;
+        private const decimal lbToKg = 0.453125M;
+        private const decimal cmToFt = 0.032808M;
+        private const decimal FtToMtr = 0.3048M;
+        private const decimal CmToInch = 0.393701M;
+
+
+        public object answer { get { return GetValue(() => answer); } set { SetValue(() => answer, value); } }
+        public string date { get { return GetValue(() => date); } set { SetValue(() => date, value); } }
+        public string key_string { get { return GetValue(() => key_string); } set { SetValue(() => key_string, value); } }
+        public int element_type { get { return GetValue(() => element_type); } set { SetValue(() => element_type, value); } }
+        public string question { get { return GetValue(() => question); } set { SetValue(() => question, value); } }
+        public bool decimals { get { return GetValue(() => decimals); } set { SetValue(() => decimals, value); } }
+        public int decimal_places { get { return GetValue(() => decimal_places); } set { SetValue(() => decimal_places, value); } }
+        public object response2 { get { return GetValue(() => response2); } set { SetValue(() => response2, value); } }
+
+        public void ClearResponses()
+        {
+            response = response1 = response2 = null;
+        }
+
+        public object response1 { get { return GetValue(() => response1); } set { SetValue(() => response1, value); } }
+        public object response { get { return GetValue(() => response); } set { SetValue(() => response, value); } }
+
+        #region Weight
+        public decimal _responseKG;
+        public decimal _responseST;
+        public decimal _responseSTLB;
+        public decimal _responseLB;
+        public decimal responseKG
+        {
+            get { return _responseKG; }
+            set
+            {
+                _responseKG = value;
+                _responseST = decimal.Truncate(responseKG / stlbToKg);
+                _responseSTLB = decimal.Round(responseKG % stlbToKg, 2);
+                _responseLB = decimal.Round(responseKG / lbToKg, 2);
+                NotifyPropertyChanged("responseKG");
+                NotifyPropertyChanged("responseST");
+                NotifyPropertyChanged("responseSTLB");
+                NotifyPropertyChanged("responseLB");
+            }
+        }
+        public decimal responseST
+        {
+            get { return _responseST; }
+            set
+            {
+                _responseST = value;
+                _responseKG = decimal.Round((_responseST + _responseSTLB) * stlbToKg, 2);
+                _responseLB = decimal.Round(_responseKG / lbToKg, 2);
+                NotifyPropertyChanged("responseKG");
+                NotifyPropertyChanged("responseST");
+                NotifyPropertyChanged("responseSTLB");
+                NotifyPropertyChanged("responseLB");
+            }
+        }
+        public decimal responseSTLB
+        {
+            get { return _responseSTLB; }
+            set
+            {
+                _responseSTLB = value;
+                _responseKG = decimal.Round((_responseST + _responseSTLB) * stlbToKg, 2);
+                _responseLB = decimal.Round(_responseKG / lbToKg, 2);
+                NotifyPropertyChanged("responseKG");
+                NotifyPropertyChanged("responseST");
+                NotifyPropertyChanged("responseSTLB");
+                NotifyPropertyChanged("responseLB");
+            }
+        }
+        public decimal responseLB
+        {
+            get { return _responseLB; }
+            set
+            {
+                _responseLB = value;
+                _responseKG = decimal.Round(_responseLB * lbToKg, 2);
+                _responseST = decimal.Truncate(_responseKG / stlbToKg);
+                _responseSTLB = _responseKG % stlbToKg;
+                NotifyPropertyChanged("responseKG");
+                NotifyPropertyChanged("responseST");
+                NotifyPropertyChanged("responseSTLB");
+                NotifyPropertyChanged("responseLB");
+            }
+        }
+        #endregion
+        #region Length
+        public decimal _responseCM;
+        public decimal _responseM;
+        public decimal _responseMCM;
+        public decimal _responseFT;
+        public decimal _responseINCH;
+
+        public decimal responseCM
+        {
+            get { return _responseCM; }
+            set
+            {
+                _responseCM = value;
+                _responseM = decimal.Truncate(_responseCM / 100);
+                _responseMCM = decimal.Truncate(_responseCM % 100);
+                _responseFT = decimal.Truncate(_responseCM * cmToFt);
+                _responseINCH = decimal.Truncate(((_responseCM * cmToFt) % 1) * 12);
+                NotifyPropertyChanged("responseCM");
+                NotifyPropertyChanged("responseM");
+                NotifyPropertyChanged("responseFT");
+                NotifyPropertyChanged("responseMCM");
+                NotifyPropertyChanged("responseINCH");
+            }
+        }
+        public decimal responseM
+        {
+            get { return _responseM; }
+            set
+            {
+                _responseM = value;
+                _responseCM = decimal.Round(_responseM * 100);
+                _responseMCM = 0;
+                _responseFT = decimal.Truncate(_responseCM * cmToFt);
+                _responseINCH = decimal.Truncate(((_responseCM * cmToFt) % 1) * 12);
+                NotifyPropertyChanged("responseCM");
+                NotifyPropertyChanged("responseM");
+                NotifyPropertyChanged("responseFT");
+                NotifyPropertyChanged("responseMCM");
+                NotifyPropertyChanged("responseINCH");
+
+            }
+        }
+        public decimal responseMCM
+        {
+            get { return _responseMCM; }
+            set
+            {
+                _responseMCM = value;
+                _responseCM = decimal.Round(_responseM * 100) + _responseMCM;
+                _responseM = decimal.Truncate(_responseCM / 100);
+                _responseFT = decimal.Truncate(_responseCM * cmToFt);
+                _responseINCH = decimal.Truncate(((_responseCM * cmToFt) % 1) * 12);
+                NotifyPropertyChanged("responseCM");
+                NotifyPropertyChanged("responseM");
+                NotifyPropertyChanged("responseFT");
+                NotifyPropertyChanged("responseMCM");
+                NotifyPropertyChanged("responseINCH");
+            }
+        }
+        public decimal responseFT
+        {
+            get { return _responseFT; }
+            set
+            {
+                _responseFT = value;
+                _responseCM = decimal.Round(_responseFT * 30.48M);
+                _responseM = decimal.Truncate(_responseCM / 100);
+                _responseMCM = decimal.Truncate(_responseCM % 100);
+                _responseINCH = decimal.Truncate(((_responseCM * cmToFt) % 1) * 12);
+                NotifyPropertyChanged("responseCM");
+                NotifyPropertyChanged("responseM");
+                NotifyPropertyChanged("responseFT");
+                NotifyPropertyChanged("responseMCM");
+                NotifyPropertyChanged("responseINCH");
+
+            }
+        }
+        public decimal responseINCH
+        {
+            get { return _responseINCH; }
+            set
+            {
+
+                //in *0.083333
+                _responseINCH = value;
+                _responseFT = decimal.Round(_responseFT + (_responseINCH * 0.083333M));
+                _responseCM = decimal.Round(_responseFT * 30.48M);
+                _responseM = decimal.Truncate(_responseCM / 100);
+                _responseMCM = decimal.Truncate(_responseCM % 100);
+                NotifyPropertyChanged("responseCM");
+                NotifyPropertyChanged("responseM");
+                NotifyPropertyChanged("responseFT");
+                NotifyPropertyChanged("responseMCM");
+                NotifyPropertyChanged("responseINCH");
+
+            }
+        }
+        #endregion
+
+        #region Girth Control
+        public decimal _responseWaistGirthCM;
+        public decimal _responseWaistGirthINCH;
+        public decimal responseWaistGirthCM
+        {
+            get { return _responseWaistGirthCM; }
+            set
+            {
+                _responseWaistGirthCM = value;
+                _responseWaistGirthINCH = decimal.Truncate(_responseWaistGirthCM * CmToInch);
+                NotifyPropertyChanged("responseWaistGirthCM");
+                NotifyPropertyChanged("responseWaistGirthINCH");
+
+            }
+        }
+        public decimal responseWaistGirthINCH
+        {
+            get { return _responseWaistGirthINCH; }
+            set
+            {
+                _responseWaistGirthINCH = value;
+                _responseWaistGirthCM = decimal.Truncate(_responseWaistGirthINCH / CmToInch);
+                NotifyPropertyChanged("responseWaistGirthCM");
+                NotifyPropertyChanged("responseWaistGirthINCH");
+
+            }
+        }
+        #endregion
+
+        #region BloodGlucose
+        public decimal _responsemmol_l;
+
+        public decimal responsemmol_l
+        {
+            get { return _responsemmol_l; }
+            set
+            {
+                _responsemmol_l = value;
+                _responsemg_dl = decimal.Round(_responsemmol_l * 18M);
+                _responsemg_g_l = _responsemmol_l * 0.4M;
+                NotifyPropertyChanged("responsemmol_l");
+                NotifyPropertyChanged("responsemg_dl");
+                NotifyPropertyChanged("responsemg_g_l");
+            }
+        }
+
+        private decimal _responsemg_dl;
+
+        public decimal responsemg_dl
+        {
+            get { return _responsemg_dl; }
+            set
+            {
+                _responsemg_dl = value;
+                _responsemmol_l = decimal.Round(_responsemg_dl / 18M);
+                _responsemg_g_l = _responsemmol_l * 0.4M;
+                NotifyPropertyChanged("responsemmol_l");
+                NotifyPropertyChanged("responsemg_dl");
+                NotifyPropertyChanged("responsemg_g_l");
+            }
+        }
+        private decimal _responsemg_g_l;
+
+        public decimal responsemg_g_l
+        {
+            get { return _responsemg_g_l; }
+            set
+            {
+                _responsemg_g_l = value;
+                _responsemg_dl = decimal.Round(_responsemg_g_l * 100M);
+                _responsemmol_l = decimal.Round(_responsemg_dl / 18M);
+                NotifyPropertyChanged("responsemmol_l");
+                NotifyPropertyChanged("responsemg_dl");
+                NotifyPropertyChanged("responsemg_g_l");
+            }
+        }
+
+        #endregion
+
+        #region BPReading
+        private decimal _responseBPSystolicMMHG;
+
+        public decimal responseBPSystolicMMHG
+        {
+            get { return _responseBPSystolicMMHG; }
+            set
+            {
+                _responseBPSystolicMMHG = value;
+                _responseBPSystolicMMHG10 = Decimal.Truncate(_responseBPSystolicMMHG / 10);
+                NotifyPropertyChanged("responseBPSystolicMMHG");
+                NotifyPropertyChanged("responseBPSystolicMMHG10");
+
+            }
+        }
+        private decimal _responseBPDiastolicMMHG;
+
+        public decimal responseBPDiastolicMMHG
+        {
+            get { return _responseBPDiastolicMMHG; }
+            set
+            {
+                _responseBPDiastolicMMHG = value;
+                _responseBPDiastolicMMHG10 = Decimal.Truncate(_responseBPDiastolicMMHG / 10);
+                NotifyPropertyChanged("responseBPDiastolicMMHG");
+                NotifyPropertyChanged("responseBPDiastolicMMHG10");
+            }
+        }
+
+        private decimal _responseBPSystolicMMHG10;
+
+        public decimal responseBPSystolicMMHG10
+        {
+            get { return _responseBPSystolicMMHG10; }
+            set
+            {
+                _responseBPSystolicMMHG10 = value;
+                _responseBPSystolicMMHG = Decimal.Truncate(_responseBPSystolicMMHG10 * 10);
+                NotifyPropertyChanged("responseBPSystolicMMHG");
+                NotifyPropertyChanged("responseBPSystolicMMHG10");
+            }
+        }
+        private decimal _responseBPDiastolicMMHG10;
+
+        public decimal responseBPDiastolicMMHG10
+        {
+            get { return _responseBPDiastolicMMHG10; }
+            set
+            {
+                _responseBPDiastolicMMHG10 = value;
+                _responseBPDiastolicMMHG = Decimal.Truncate(_responseBPDiastolicMMHG10 * 10);
+                NotifyPropertyChanged("responseBPDiastolicMMHG");
+                NotifyPropertyChanged("responseBPDiastolicMMHG10");
+
+            }
+        }
+        #endregion
+
+        #region Cholesterol level
+
+        private decimal _responsemmol_lTotalCholesterol;
+
+        public decimal responsemmol_lTotalCholesterol
+        {
+            get { return _responsemmol_lTotalCholesterol; }
+            set
+            {
+
+                _responsemmol_lTotalCholesterol = value;
+                _responsemg_dlTotalCholesterol = decimal.Truncate(_responsemmol_lTotalCholesterol * 39);
+                _responsemg_g_lTotalCholesterol = _responsemmol_lTotalCholesterol * 0.4M;
+                NotifyPropertyChanged("responsemmol_lTotalCholesterol");
+                NotifyPropertyChanged("responsemg_dlTotalCholesterol");
+                NotifyPropertyChanged("responsemg_g_lTotalCholesterol");
+            }
+        }
+        private decimal _responsemmol_lHDL;
+
+        public decimal responsemmol_lHDL
+        {
+            get { return _responsemmol_lHDL; }
+            set
+            {
+                _responsemmol_lHDL = value;
+                _responsemg_dlHDL = decimal.Round(_responsemmol_lHDL * 38M);
+                _responsemg_g_lHDL = Math.Round((_responsemmol_lHDL * 0.4M), 2);
+                NotifyPropertyChanged("responsemmol_lHDL");
+                NotifyPropertyChanged("responsemg_dlHDL");
+                NotifyPropertyChanged("responsemg_g_lHDL");
+            }
+        }
+        private decimal _responsemg_dlTotalCholesterol;
+
+        public decimal responsemg_dlTotalCholesterol
+        {
+            get { return _responsemg_dlTotalCholesterol; }
+            set
+            {
+                _responsemg_dlTotalCholesterol = value;
+                _responsemmol_lTotalCholesterol = decimal.Round(_responsemg_dlTotalCholesterol / 39);
+                _responsemg_g_lTotalCholesterol = _responsemmol_lTotalCholesterol * 0.4M;
+                NotifyPropertyChanged("responsemmol_lTotalCholesterol");
+                NotifyPropertyChanged("responsemg_dlTotalCholesterol");
+                NotifyPropertyChanged("responsemg_g_lTotalCholesterol");
+
+            }
+        }
+        private decimal _responsemg_dlHDL;
+
+        public decimal responsemg_dlHDL
+        {
+            get { return _responsemg_dlHDL; }
+            set {
+                _responsemg_dlHDL = value;
+                _responsemmol_lHDL = decimal.Round(_responsemg_dlHDL / 38M);
+                _responsemg_g_lHDL = Math.Round((_responsemmol_lHDL * 0.4M), 2);
+                NotifyPropertyChanged("responsemmol_lHDL");
+                NotifyPropertyChanged("responsemg_dlHDL");
+                NotifyPropertyChanged("responsemg_g_lHDL");
+            }
+        }
+
+        private decimal _responsemg_g_lTotalCholesterol;
+
+        public decimal responsemg_g_lTotalCholesterol
+        {
+            get { return _responsemg_g_lTotalCholesterol; }
+            set
+            {
+                _responsemg_g_lTotalCholesterol = value;
+                _responsemg_dlTotalCholesterol = decimal.Truncate(_responsemg_g_lTotalCholesterol * 100M);
+                _responsemmol_lTotalCholesterol = Math.Round(Convert.ToDecimal(_responsemg_dlTotalCholesterol / 39), 2);
+                NotifyPropertyChanged("responsemmol_lTotalCholesterol");
+                NotifyPropertyChanged("responsemg_dlTotalCholesterol");
+                NotifyPropertyChanged("responsemg_g_lTotalCholesterol");
+            }
+        }
+        private decimal _responsemg_g_lHDL;
+
+        public decimal responsemg_g_lHDL
+        {
+            get { return _responsemg_g_lHDL; }
+            set {
+                _responsemg_g_lHDL = value;
+                _responsemg_dlHDL = decimal.Truncate(_responsemg_g_lHDL * 100M);
+                _responsemmol_lHDL = Math.Round(Convert.ToDecimal(_responsemg_dlHDL / 39), 2);
+                NotifyPropertyChanged("responsemmol_lHDL");
+                NotifyPropertyChanged("responsemg_dlHDL");
+                NotifyPropertyChanged("responsemg_g_lHDL");
+            }
+        }
+
+        #endregion
+    }
+
+    public class Algorithm
+    {
+        public string _id { get; set; }
+        public string questionnaire { get; set; }
+        public string key_string { get; set; }
+        public string units { get; set; }
+        public double value { get; set; }
+        public object response { get; set; }
+        public string risk_factor { get; set; }
+    }
+
+    public class AnsweredQuestionnaireIdsArr
+    {
+        public bool success { get; set; }
+        public string questionnaire { get; set; }
+    }
+
+    public class User : NotifyBase
+    {
+        public int __v { get; set; }
+        public string _id { get; set; }
+        public string email { get; set; }
+        public string modified { get; set; }
+        public string name { get; set; }
+        public string username { get; set; }
+        public bool can_use_for_testing { get; set; }
+        public int timezone_offset { get; set; }
+        public bool deleted { get; set; }
+        public int age { get; set; }
+        public string DOB { get; set; }
+        public List<object> sociallogins { get; set; }
+        public string type { get; set; }
+        public string coach { get; set; }
+        public string ethnicity_real { get; set; }
+        public int ethnicity { get; set; }
+        public int gender { get; set; }
+        public double score { get; set; }
+        public List<string> answered_questionnaire_ids { get; set; }
+        public string last_hra { get; set; }
+        public List<ScoreHistory> score_history { get; set; }
+        public List<Answer> answers { get { return GetValue(() => answers); } set { SetValue(() => answers, value); } }
+        public List<Algorithm> algorithms { get { return GetValue(() => algorithms); } set { SetValue(() => algorithms, value); } }
+        public string country { get; set; }
+        public List<object> product_categories { get { return GetValue(() => product_categories); } set { SetValue(() => product_categories, value); } }
+        public string language { get; set; }
+        public List<object> deactivation_reason { get { return GetValue(() => deactivation_reason); } set { SetValue(() => deactivation_reason, value); } }
+        public int hierarchy { get; set; }
+        public bool validated_email { get; set; }
+        public long created { get; set; }
+        public List<AnsweredQuestionnaireIdsArr> answered_questionnaire_ids_arr { get { return GetValue(() => answered_questionnaire_ids_arr); } set { SetValue(() => answered_questionnaire_ids_arr, value); } }
+        public bool hasHealthObjectives { get; set; }
+
+        #region Custome object
+        public string message { get; set; }
+        public string password { get; set; }
+        public string confirm { get; set; }
+        public AuthToken AuthToken { get; set; }
+        public string responsecode { get; set; }
+        public bool LastHra { get; set; }
+
+        #endregion
+
+    }
+}

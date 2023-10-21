@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <LinearGradientBrush x:Key="DashboardStartColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#8a4d89" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="DashboardBGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#8a4d89" Offset="0.5" />
+        <GradientStop Color="#b75789" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="InsightBGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#008d5e" Offset="0.5" />
+        <GradientStop Color="#00d873" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ResultBGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#ee875a" Offset="0.5" />
+        <GradientStop Color="#e86346" Offset="1.0" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="PHABGColor" StartPoint="1,0" EndPoint="1,1">
+        <GradientStop Color="#8a4d89" Offset="0.5" />
+        <GradientStop Color="#b75789" Offset="1.0" />
+    </LinearGradientBrush>
+</ResourceDictionary>

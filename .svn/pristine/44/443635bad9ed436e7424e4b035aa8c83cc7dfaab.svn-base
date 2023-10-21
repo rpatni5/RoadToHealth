@@ -1,0 +1,87 @@
+﻿
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+
+namespace RTH.Windows.Views.Controls
+{
+    public class ChatBox : Label
+    {
+        public ChatBox(string text, bool isResponse)
+        {
+            ControlTemplate template = new ControlTemplate(typeof(ChatBox));
+
+            var outerPanel = new FrameworkElementFactory(typeof(StackPanel));
+            outerPanel.SetValue(StackPanel.OrientationProperty, Orientation.Vertical);
+
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetValue(MarginProperty, new Thickness(8, 10, 20, 0));
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(15));
+
+            var txt = new FrameworkElementFactory(typeof(TextBlock));
+            txt.SetValue(FontSizeProperty, 14.0);
+            txt.SetValue(MarginProperty, new Thickness(15));
+            txt.SetValue(TextBlock.TextProperty, text);
+            txt.SetValue(TextBlock.TextWrappingProperty, TextWrapping.Wrap);
+
+            if (isResponse)
+            {
+                border.SetValue(BackgroundProperty, new BrushConverter().ConvertFrom("#FF31AAE1"));
+                txt.SetValue(ForegroundProperty, Brushes.White);
+                border.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Right);
+                border.AppendChild(txt);
+
+                outerPanel.AppendChild(border);
+
+                var chatImage = new FrameworkElementFactory(typeof(Image));
+                chatImage.SetValue(Image.StretchProperty, Stretch.None);
+                chatImage.SetValue(Image.SourceProperty, new BitmapImage(new Uri(@"C:\Users\ravip\Desktop\RTH\images 30616\chat_arw_white.png", UriKind.Absolute)));
+                chatImage.SetValue(Image.HorizontalAlignmentProperty, HorizontalAlignment.Right);
+                chatImage.SetValue(MarginProperty, new Thickness(0, -11, 0, 0));
+
+                outerPanel.AppendChild(chatImage);
+                outerPanel.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Right);
+            }
+            else
+            {
+                var insidePanel = new FrameworkElementFactory(typeof(StackPanel));
+                insidePanel.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+
+                var image = new FrameworkElementFactory(typeof(Image));
+                image.SetValue(Image.StretchProperty, Stretch.None);
+                image.SetValue(MarginProperty, new Thickness(15, 15, 0, 15));
+                image.SetValue(Image.SourceProperty, new BitmapImage(new Uri(@"C:\Users\ravip\Desktop\RTH\images 30616\chat_q.png",UriKind.Absolute)));
+                image.SetValue(Image.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+
+                insidePanel.AppendChild(image);
+
+                txt.SetValue(ForegroundProperty, Brushes.Black);
+                insidePanel.AppendChild(txt);
+
+                border.SetValue(Border.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+                border.SetValue(BackgroundProperty, Brushes.White);
+                border.AppendChild(insidePanel);
+                
+                outerPanel.AppendChild(border);
+
+                var chatImage = new FrameworkElementFactory(typeof(Image));
+                chatImage.SetValue(Image.StretchProperty, Stretch.None);                
+                chatImage.SetValue(Image.SourceProperty, new BitmapImage(new Uri(@"C:\Users\ravip\Desktop\RTH\images 30616\chat_arw_white.png", UriKind.Absolute)));
+                chatImage.SetValue(Image.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+                chatImage.SetValue(MarginProperty, new Thickness(0, -11, 0, 0));
+
+                outerPanel.AppendChild(chatImage);
+                outerPanel.SetValue(StackPanel.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+
+            }
+
+
+
+            template.VisualTree = outerPanel;
+            this.SetValue(TemplateProperty, template);
+            this.SetValue(HorizontalContentAlignmentProperty, HorizontalAlignment.Left);
+        }
+    }
+}

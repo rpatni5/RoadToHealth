@@ -1,0 +1,40 @@
+﻿using RTH.Business.Objects;
+using RTH.Business.Services;
+using RTH.Windows.ViewModels.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels
+{
+    public class ResultViewModel : ViewModels.Common.ViewModelBase
+    {
+        public ResultViewModel()
+        {
+            Summary = ResultService.GetSummaries(UserDetails._id, ConfigurationManagers.CardioId, UserDetails.AuthToken.access_token).data;
+            PHADetails = ResultService.GetPHA(UserDetails._id, ConfigurationManagers.CardioId, UserDetails.AuthToken.access_token);
+            LatestScoreSummary = ResultService.GetScoreSummaryDetails(UserDetails._id, ConfigurationManagers.CardioId, UserDetails.AuthToken.access_token)[0];
+            
+        }
+        public ObservableCollection<QSummaries> Summary
+        {
+            get { return GetValue(() => Summary); }
+            set { SetValue(() => Summary, value); }
+        }
+
+        public PHA PHADetails
+        {
+            get { return GetValue(() => PHADetails); }
+            set { SetValue(() => PHADetails, value); }
+        }
+        public ScoreSummary LatestScoreSummary
+        {
+            get { return GetValue(() => LatestScoreSummary); }
+            set { SetValue(() => LatestScoreSummary, value); }
+        }
+    }
+}

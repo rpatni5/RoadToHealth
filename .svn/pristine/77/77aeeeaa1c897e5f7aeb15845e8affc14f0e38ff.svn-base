@@ -1,0 +1,117 @@
+﻿using RTH.Helpers.Messaging;
+using RTH.Windows.ViewModels;
+using RTH.Windows.ViewModels.Common;
+using RTH.Windows.Views.Controls;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for MotivationView.xaml
+    /// </summary>
+    public partial class MotivationView : ViewBase
+    {
+        public MotivationView()
+        {
+            InitializeComponent();
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.GetNew<MotivationViewModel>();
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+        public override void OnMessage(Message e)
+        {
+            if (e.Type == MessageType.HealthQuestionaire)
+            {
+                submitted = true;
+                this.ContinueCommand.Execute(this.DataContext);
+            }
+        }
+        private bool submitted = false;
+
+        #region Continue button
+        private RelayCommand continueCommand;
+        public RelayCommand ContinueCommand
+        {
+            get
+            {
+                return continueCommand ?? (continueCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        return true;
+                    }));
+            }
+        }
+
+        public async void ExecuteContinueCommand(object obj)
+        {
+            Dispatcher.Invoke(() => { transition.Transition = Transition.LeftWithFade; });
+            MotivationViewModel vm = obj as MotivationViewModel;
+            HRASubmit a = await vm.MoveToQuestion(1).ConfigureAwait(false);
+            Dispatcher.Invoke(() =>
+            {
+                transition.Transition = Transition.Fade;
+            });
+            if (a == HRASubmit.Completed)
+            {
+                submitted = true;
+                Dispatcher.Invoke(() => { App.SharedValues.WindowMain.LoadView(Enums.ViewEnum.HomeView); });
+            }
+        }
+
+
+
+        #endregion
+        #region Next Button
+        private RelayCommand nextCommand;
+
+        public RelayCommand NextCommand
+        {
+            get
+            {
+                return nextCommand ?? (nextCommand = new RelayCommand(
+                    vm => ExecuteContinueCommand(vm), (vm) =>
+                    {
+                        QuestionNavigatorViewModel v = vm as QuestionNavigatorViewModel;
+                        if (
+                        v != null &&
+                        v.CurrentQuestion != null &&
+                        v.CurrentQuestion.HasErrors)
+                        {
+                            v.CurrentQuestion.ErrorMessage = ViewModelBase.AppMessages.missing_answer;
+                            return false;
+                        }
+                        return true;
+                    }));
+            }
+        }
+
+        #endregion
+        #region Previous Button
+        private RelayCommand previousCommand;
+
+        public RelayCommand PreviousCommand
+        {
+            get
+            {
+                return previousCommand ?? (previousCommand = new RelayCommand(
+                    vm => ExecutePreviousCommand(vm), (vm) => true));
+            }
+        }
+
+        private void ExecutePreviousCommand(object obj)
+        {
+            transition.Transition = Transition.RightWithFade;
+            MotivationViewModel vm = obj as MotivationViewModel;
+            int QuestionIndex = vm.MoveToQuestionPrevious(-1);
+            if (QuestionIndex == 0)
+            {
+                submitted = true;
+                App.SharedValues.WindowMain.BackCommand.Execute(null);
+            }
+            transition.Transition = Transition.Fade;
+        }
+        #endregion
+    }
+}

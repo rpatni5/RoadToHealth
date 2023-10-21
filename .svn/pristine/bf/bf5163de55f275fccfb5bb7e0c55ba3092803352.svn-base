@@ -1,0 +1,200 @@
+﻿using System.Windows;
+using System.Windows.Controls;
+using RTH.Windows.ViewModels.Common;
+using RTH.Helpers.Messaging;
+using RTH.Business.Objects;
+using System.Windows.Media.Animation;
+using System.Windows.Input;
+using RTH.Windows.ViewModels;
+using RTH.Windows.Views.Helpers;
+
+namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for SettingsView.xaml
+    /// </summary>
+    public partial class SettingsView : ViewBase
+    {
+        User objUser = null;
+        public SettingsView()
+        {
+            InitializeComponent();
+
+            objUser = (User)ViewModelBase.UserDetails;
+        }
+        public override void LoadViewModel()
+        {
+            this.ViewModel = ViewModelLocator.Get<SettingsViewModel>(refreshRequired: true);
+            this.RefreshOnLoad = true;
+            base.LoadViewModel();
+        }
+        private void btnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.Email = string.Empty;
+            Properties.Settings.Default.Password = string.Empty;
+            Properties.Settings.Default.Save();
+        }
+        private void password_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            PasswordBox objSender = sender as PasswordBox;
+            int count = objSender.SecurePassword.Length;
+
+            if (objSender.Name == txtPassword.Name)
+                btnPasswordClear.Visibility = count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            if (objSender.Name == txtPassword.Name)
+                btnPasswordClear.Visibility = count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            else if (objSender.Name == txtNewPassword.Name)
+                btnNewPasswordClear.Visibility = count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            else if (objSender.Name == txtConfirmPassword.Name)
+                btnConfirmPasswordClear.Visibility = count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            else if (objSender.Name == txtPopupPassword.Name)
+                btnPopupPasswordClear.Visibility = count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+        }
+
+        private RelayCommand<object[]> m_ControlClearCommand;
+        public RelayCommand<object[]> ControlClearCommand
+        {
+            get
+            {
+                return m_ControlClearCommand ?? (m_ControlClearCommand = new RelayCommand<object[]>(
+                    ve => ControlClear(ve), (t) => (t) != null));
+            }
+        }
+        private void ControlClear(object[] ve)
+        {
+            if (ve[0] is PasswordBox)
+            {
+                PasswordBox control = ve[0] as PasswordBox;
+                control.Clear();
+                if (ve[1] is Button)
+                {
+                    Button btn = ve[1] as Button;
+                    btn.Visibility = Visibility.Hidden;
+                }
+            }
+            else if (ve[0] is TextBox)
+            {
+                TextBox control = ve[0] as TextBox;
+                control.Clear();
+            }
+
+        }
+        private void rdbinactive_Checked(object sender, RoutedEventArgs e)
+        {
+
+            RadioButton obj = sender as RadioButton;
+
+            if (obj.Tag.ToString() == "ON")
+            {
+                TutorialHelper.SetTutorialSettings();
+            }
+            else
+            {
+                Properties.Settings.Default.Tutorials = false;
+            }           
+            Properties.Settings.Default.Save();
+
+        }
+
+        public override void OnMessage(Message e)
+        {
+
+            if (e.Type == MessageType.UpdatedEmail)
+                this.tbtnEmail.IsChecked = false;
+            else if (e.Type == MessageType.UpdatedPassword)
+                this.tbtnPassword.IsChecked = false;
+            else if (e.Type == MessageType.UpdatedFullName)
+                this.tbtnFullName.IsChecked = false;
+
+        }
+
+        private void popupCtrl_Opened(object sender, System.EventArgs e)
+        {
+            txtPopupPassword.Password = "";
+        }
+
+        private void tbtnEmail_Checked(object sender, RoutedEventArgs e)
+        {
+            AnimateEmail(0, 125);
+        }
+
+        private void tbtnEmail_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AnimateEmail(125, 0);
+        }
+
+
+        private void AnimateEmail(double from, double to)
+        {
+            Storyboard qStoryboard = null;
+            if (objUser.type == Configurations.NORMAL_USER_TYPE)
+            {
+                qStoryboard = new Storyboard();
+                var da1 = new DoubleAnimation(from, to, System.TimeSpan.FromSeconds(0.3));
+                Storyboard.SetTarget(da1, stackEmail);
+                Storyboard.SetTargetProperty(da1, new PropertyPath("(StackPanel.Height)"));
+                qStoryboard.Children.Add(da1);
+                qStoryboard.Begin();
+            }
+            else
+            {
+                Controls.QuealthMessageBox.ShowInformation(App.SharedValues.LanguageResource.email_cant_change);
+            }
+        }
+        private void HandlePreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is PasswordBox && !e.Handled)
+            {
+                e.Handled = true;
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+                eventArg.Source = sender;
+                var parent = ((Control)sender).Parent as UIElement;
+                parent.RaiseEvent(eventArg);
+            }
+        }
+
+        private void tbtnFullName_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ErrorMessage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+                scrMain.ScrollToTop();
+        }
+
+        private void tbtnPassword_Checked(object sender, RoutedEventArgs e)
+        {
+            AnimatePassword(0, 270);
+        }
+
+        private void tbtnPassword_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AnimatePassword(270, 0);
+        }
+        private void AnimatePassword(double from, double to)
+        {
+            Storyboard qStoryboard = null;
+            if (objUser.type == Configurations.NORMAL_USER_TYPE)
+            {
+                qStoryboard = new Storyboard();
+                var da1 = new DoubleAnimation(from, to, System.TimeSpan.FromSeconds(0.3));
+                Storyboard.SetTarget(da1, stackPassword);
+                Storyboard.SetTargetProperty(da1, new PropertyPath("(StackPanel.Height)"));
+                qStoryboard.Children.Add(da1);
+                qStoryboard.Begin();
+            }
+            else
+            {
+                Controls.QuealthMessageBox.ShowInformation(App.SharedValues.LanguageResource.email_cant_change);
+            }
+        }
+    }
+}

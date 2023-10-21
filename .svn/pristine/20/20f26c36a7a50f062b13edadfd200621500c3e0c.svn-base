@@ -1,0 +1,990 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0C107774-DA08-4721-9CA9-7BB85A2654E6}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RTH.Windows.Views</RootNamespace>
+    <AssemblyName>RTH.Windows.Views</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>D:\DayUsers\Ravi\Build\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>3</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>6D7E817FCA6C27E00A4A1EB97D5F5506E07136CF</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>RTH.Windows.Views_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>RTH.Windows.Views.App</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HtmlRenderer">
+      <HintPath>..\Libraries\HtmlRenderer.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlRenderer.WPF">
+      <HintPath>..\Libraries\HtmlRenderer.WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="Controls\CardFlip.xaml.cs">
+      <DependentUpon>CardFlip.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ExtendedRadioButton.cs" />
+    <Compile Include="Controls\LabelTextBox.cs" />
+    <Compile Include="Controls\LineofMen.xaml.cs">
+      <DependentUpon>LineofMen.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Transitions\AnimatingContentControl.cs" />
+    <Compile Include="Converters\BooleanToVisibilityReverseConverter.cs" />
+    <Compile Include="Converters\CategoryCountConverter.cs" />
+    <Compile Include="Converters\CategorySubCategoryColorConverter.cs" />
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColumnHeightConverter .cs" />
+    <Compile Include="Converters\DashboardOverLayConverter.cs" />
+    <Compile Include="Converters\DiseaseIconConverter.cs" />
+    <Compile Include="Converters\EllipseColorConverter.cs" />
+    <Compile Include="Converters\ErrorMessageColorConverter.cs" />
+    <Compile Include="Converters\FlagIdToImageConverter.cs" />
+    <Compile Include="Converters\GroupNameToSeperatorBackgroundConverter.cs" />
+    <Compile Include="Converters\HeaderColorConverter.cs" />
+    <Compile Include="Converters\HealthlineGroupingConverter.cs" />
+    <Compile Include="Converters\HtmlConverter.cs" />
+    <Compile Include="Converters\ImagePathConverter.cs" />
+    <Compile Include="Converters\IndexToCheckedConverter.cs" />
+    <Compile Include="Converters\LengthToVisibilityConverter.cs" />
+    <Compile Include="Converters\LineCoordinateConverter.cs" />
+    <Compile Include="Converters\NegativeConverter.cs" />
+    <Compile Include="Converters\NotValueConverter.cs" />
+    <Compile Include="Converters\NullStringToVisibilityConverter.cs" />
+    <Compile Include="Converters\ObjectToEnableConverter.cs" />
+    <Compile Include="Converters\ObjectToVisibilityConverter.cs" />
+    <Compile Include="Converters\ParameterConvertor.cs" />
+    <Compile Include="Converters\PasswordStrengthConverter.cs" />
+    <Compile Include="Converters\ProductDiseasesConverter.cs" />
+    <Compile Include="Converters\ProductIndexConverter.cs" />
+    <Compile Include="Converters\QuestionnaireButtonsVisibilityConverter.cs" />
+    <Compile Include="Converters\QuestionnaireTabVisibilityConverter.cs" />
+    <Compile Include="Converters\ScoreToMarginConverter.cs" />
+    <Compile Include="Converters\ScoreToRAGColorConverter.cs" />
+    <Compile Include="Converters\StringToColorConverter.cs" />
+    <Compile Include="Converters\StringToAlignmentConverter.cs" />
+    <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Converters\StringToUriConverter.cs" />
+    <Compile Include="Converters\SubCategoryVisibilityConverter.cs" />
+    <Compile Include="Converters\TimelineGroupingConverter.cs" />
+    <Compile Include="Converters\TitleCaseConverter.cs" />
+    <Compile Include="Converters\UnitToAnswerConverter.cs" />
+    <Compile Include="Converters\VariableConverter.cs" />
+    <Compile Include="Converters\BoolToOpacityConverter.cs" />
+    <Compile Include="Enums\ViewEnum.cs" />
+    <Compile Include="Helpers\AnimatedGIF.cs" />
+    <Compile Include="Helpers\BrowserBehavior.cs" />
+    <Compile Include="Helpers\DecimalTextHelper.cs" />
+    <Compile Include="Helpers\MouseDownHelper.cs" />
+    <Compile Include="Helpers\PlaceholderTextBox.cs" />
+    <Compile Include="Helpers\SingleInstanceHelper.cs" />
+    <Compile Include="Helpers\TextBlockHelper.cs" />
+    <Compile Include="Helpers\UIExtensions.cs" />
+    <Compile Include="Helpers\WindowsBehaviors.cs" />
+    <Compile Include="Objects\QuealthMenuItem.cs" />
+    <Compile Include="Partial\MainWindow.FOQ.cs" />
+    <Compile Include="Partial\MainWindow.Settings.cs" />
+    <Compile Include="Partial\MainWindow.User.cs" />
+    <Compile Include="SocialIntegration\FaceBookAuthenticationView.xaml.cs">
+      <DependentUpon>FaceBookAuthenticationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SocialIntegration\FaceBookSharingToWall.xaml.cs">
+      <DependentUpon>FaceBookSharingToWall.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SocialIntegration\TwitterAuthenticationView.xaml.cs">
+      <DependentUpon>TwitterAuthenticationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SplashWindow.xaml.cs">
+      <DependentUpon>SplashWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\AboutUsView.xaml.cs">
+      <DependentUpon>AboutUsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\AllQScoreView.xaml.cs">
+      <DependentUpon>AllQScoreView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\Base\AnswerBase.cs" />
+    <Compile Include="UserControls\DashboardHeaderView.xaml.cs">
+      <DependentUpon>DashboardHeaderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\DashboardMenu.xaml.cs">
+      <DependentUpon>DashboardMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\Arc.cs" />
+    <Compile Include="UserControls\DeactivateView.xaml.cs">
+      <DependentUpon>DeactivateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\DevicesServicesView.xaml.cs">
+      <DependentUpon>DevicesServicesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\FBUserRegistrationView.xaml.cs">
+      <DependentUpon>FBUserRegistrationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\FriendsOfQView.xaml.cs">
+      <DependentUpon>FriendsOfQView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\HealthAreasView.xaml.cs">
+      <DependentUpon>HealthAreasView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\HRAControl.xaml.cs">
+      <DependentUpon>HRAControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ImageSlider.xaml.cs">
+      <DependentUpon>ImageSlider.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\BloodGlucoseResultControl.xaml.cs">
+      <DependentUpon>BloodGlucoseResultControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\CholesterolLevelControl.xaml.cs">
+      <DependentUpon>CholesterolLevelControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\DatePickerControl.xaml.cs">
+      <DependentUpon>DatePickerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\HeightUserControl.xaml.cs">
+      <DependentUpon>HeightUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\LatestBPReadingControl.xaml.cs">
+      <DependentUpon>LatestBPReadingControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\MultiSelectUserControl.xaml.cs">
+      <DependentUpon>MultiSelectUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\SimpleTextUserControl.xaml.cs">
+      <DependentUpon>SimpleTextUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\SingleSelectQuestionView.xaml.cs">
+      <DependentUpon>SingleSelectQuestionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\WaistGirthControl.xaml.cs">
+      <DependentUpon>WaistGirthControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InnerUserControls\WeightUserControl.xaml.cs">
+      <DependentUpon>WeightUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\MWHealthierView.xaml.cs">
+      <DependentUpon>MWHealthierView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\NavigationView.xaml.cs">
+      <DependentUpon>NavigationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\OffHeaderView.xaml.cs">
+      <DependentUpon>OffHeaderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\PolicyView.xaml.cs">
+      <DependentUpon>PolicyView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ProductCategoriesView.xaml.cs">
+      <DependentUpon>ProductCategoriesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\QuestionNavigatorView.xaml.cs">
+      <DependentUpon>QuestionNavigatorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ResultView.xaml.cs">
+      <DependentUpon>ResultView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ForgotPasswordView.xaml.cs">
+      <DependentUpon>ForgotPasswordView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\HomeView.xaml.cs">
+      <DependentUpon>HomeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\InsightsView.xaml.cs">
+      <DependentUpon>InsightsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\LoginView.xaml.cs">
+      <DependentUpon>LoginView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\TermsAndConditionsView.xaml.cs">
+      <DependentUpon>TermsAndConditionsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\UserRegistrationView.xaml.cs">
+      <DependentUpon>UserRegistrationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\DashboardView.xaml.cs">
+      <DependentUpon>DashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\Base\ViewBase.cs" />
+    <Page Include="Controls\CardFlip.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\LabelTextBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\LineofMen.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\InputQuestionTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Themes\Theme1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Themes\Theme2.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Themes\Theme3.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Themes\Theme4.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Themes\Theme5.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\User.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\ViewTemplates.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SocialIntegration\FaceBookAuthenticationView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SocialIntegration\FaceBookSharingToWall.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SocialIntegration\TwitterAuthenticationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SplashWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\AboutUsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\AllQScoreView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\DashboardHeaderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\DashboardMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\DeactivateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\DevicesServicesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\FBUserRegistrationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\FriendsOfQView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\HealthAreasView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\HRAControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\ImageSlider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\BloodGlucoseResultControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\CholesterolLevelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\DatePickerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\HeightUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\LatestBPReadingControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\MultiSelectUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\SimpleTextUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\WaistGirthControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\WeightUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\MWHealthierView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\NavigationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\OffHeaderView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\PolicyView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\ProductCategoriesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\QuestionNavigatorView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\SettingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\InnerUserControls\SingleSelectQuestionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\ResultView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="UserControls\ForgotPasswordView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\HomeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\InsightsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\LoginView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\TermsAndConditionsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\UserRegistrationView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\DashboardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Partial\MainWindow.QuestionNavigator.cs" />
+    <Resource Include="Assets\1.png" />
+    <Resource Include="Assets\11.png" />
+    <Resource Include="Assets\2.png" />
+    <Resource Include="Assets\21.png" />
+    <Resource Include="Assets\3-person.png" />
+    <Resource Include="Assets\3.png" />
+    <Resource Include="Assets\31.png" />
+    <Resource Include="Assets\4.png" />
+    <Resource Include="Assets\41.png" />
+    <Resource Include="Assets\5.png" />
+    <Resource Include="Assets\51.png" />
+    <Resource Include="Assets\arrow_left.png" />
+    <Resource Include="Assets\arrow_right.png" />
+    <Resource Include="Assets\background-1.jpg" />
+    <Resource Include="Assets\background.jpg" />
+    <Resource Include="Assets\background.png" />
+    <Resource Include="Assets\big_circle.png" />
+    <Resource Include="Assets\big_circle1.png" />
+    <Resource Include="Assets\big_circle2.png" />
+    <Resource Include="Assets\Breast.png" />
+    <Resource Include="Assets\btn.png" />
+    <Resource Include="Assets\check-blue-sml.png" />
+    <Resource Include="Assets\check-red.png" />
+    <Resource Include="Assets\clear.png" />
+    <Resource Include="Assets\Colon.png" />
+    <Resource Include="Assets\countries\0_logo.png" />
+    <Resource Include="Assets\countries\100_logo.png" />
+    <Resource Include="Assets\countries\101_logo.png" />
+    <Resource Include="Assets\countries\102_logo.png" />
+    <Resource Include="Assets\countries\103_logo.png" />
+    <Resource Include="Assets\countries\104_logo.png" />
+    <Resource Include="Assets\countries\105_logo.png" />
+    <Resource Include="Assets\countries\106_logo.png" />
+    <Resource Include="Assets\countries\107_logo.png" />
+    <Resource Include="Assets\countries\108_logo.png" />
+    <Resource Include="Assets\countries\109_logo.png" />
+    <Resource Include="Assets\countries\10_logo.png" />
+    <Resource Include="Assets\countries\110_logo.png" />
+    <Resource Include="Assets\countries\111_logo.png" />
+    <Resource Include="Assets\countries\112_logo.png" />
+    <Resource Include="Assets\countries\113_logo.png" />
+    <Resource Include="Assets\countries\114_logo.png" />
+    <Resource Include="Assets\countries\115_logo.png" />
+    <Resource Include="Assets\countries\116_logo.png" />
+    <Resource Include="Assets\countries\117_logo.png" />
+    <Resource Include="Assets\countries\118_logo.png" />
+    <Resource Include="Assets\countries\119_logo.png" />
+    <Resource Include="Assets\countries\11_logo.png" />
+    <Resource Include="Assets\countries\120_logo.png" />
+    <Resource Include="Assets\countries\121_logo.png" />
+    <Resource Include="Assets\countries\122_logo.png" />
+    <Resource Include="Assets\countries\123_logo.png" />
+    <Resource Include="Assets\countries\124_logo.png" />
+    <Resource Include="Assets\countries\125_logo.png" />
+    <Resource Include="Assets\countries\126_logo.png" />
+    <Resource Include="Assets\countries\127_logo.png" />
+    <Resource Include="Assets\countries\128_logo.png" />
+    <Resource Include="Assets\countries\129_logo.png" />
+    <Resource Include="Assets\countries\12_logo.png" />
+    <Resource Include="Assets\countries\130_logo.png" />
+    <Resource Include="Assets\countries\131_logo.png" />
+    <Resource Include="Assets\countries\132_logo.png" />
+    <Resource Include="Assets\countries\133_logo.png" />
+    <Resource Include="Assets\countries\134_logo.png" />
+    <Resource Include="Assets\countries\135_logo.png" />
+    <Resource Include="Assets\countries\136_logo.png" />
+    <Resource Include="Assets\countries\137_logo.png" />
+    <Resource Include="Assets\countries\138_logo.png" />
+    <Resource Include="Assets\countries\139_logo.png" />
+    <Resource Include="Assets\countries\13_logo.png" />
+    <Resource Include="Assets\countries\140_logo.png" />
+    <Resource Include="Assets\countries\141_logo.png" />
+    <Resource Include="Assets\countries\142_logo.png" />
+    <Resource Include="Assets\countries\143_logo.png" />
+    <Resource Include="Assets\countries\144_logo.png" />
+    <Resource Include="Assets\countries\145_logo.png" />
+    <Resource Include="Assets\countries\146_logo.png" />
+    <Resource Include="Assets\countries\147_logo.png" />
+    <Resource Include="Assets\countries\148_logo.png" />
+    <Resource Include="Assets\countries\149_logo.png" />
+    <Resource Include="Assets\countries\14_logo.png" />
+    <Resource Include="Assets\countries\150_logo.png" />
+    <Resource Include="Assets\countries\151_logo.png" />
+    <Resource Include="Assets\countries\152_logo.png" />
+    <Resource Include="Assets\countries\153_logo.png" />
+    <Resource Include="Assets\countries\154_logo.png" />
+    <Resource Include="Assets\countries\155_logo.png" />
+    <Resource Include="Assets\countries\156_logo.png" />
+    <Resource Include="Assets\countries\157_logo.png" />
+    <Resource Include="Assets\countries\158_logo.png" />
+    <Resource Include="Assets\countries\159_logo.png" />
+    <Resource Include="Assets\countries\15_logo.png" />
+    <Resource Include="Assets\countries\160_logo.png" />
+    <Resource Include="Assets\countries\161_logo.png" />
+    <Resource Include="Assets\countries\162_logo.png" />
+    <Resource Include="Assets\countries\163_logo.png" />
+    <Resource Include="Assets\countries\164_logo.png" />
+    <Resource Include="Assets\countries\165_logo.png" />
+    <Resource Include="Assets\countries\166_logo.png" />
+    <Resource Include="Assets\countries\167_logo.png" />
+    <Resource Include="Assets\countries\168_logo.png" />
+    <Resource Include="Assets\countries\169_logo.png" />
+    <Resource Include="Assets\countries\16_logo.png" />
+    <Resource Include="Assets\countries\170_logo.png" />
+    <Resource Include="Assets\countries\171_logo.png" />
+    <Resource Include="Assets\countries\172_logo.png" />
+    <Resource Include="Assets\countries\173_logo.png" />
+    <Resource Include="Assets\countries\174_logo.png" />
+    <Resource Include="Assets\countries\175_logo.png" />
+    <Resource Include="Assets\countries\176_logo.png" />
+    <Resource Include="Assets\countries\177_logo.png" />
+    <Resource Include="Assets\countries\178_logo.png" />
+    <Resource Include="Assets\countries\179_logo.png" />
+    <Resource Include="Assets\countries\17_logo.png" />
+    <Resource Include="Assets\countries\180_logo.png" />
+    <Resource Include="Assets\countries\181_logo.png" />
+    <Resource Include="Assets\countries\182_logo.png" />
+    <Resource Include="Assets\countries\183_logo.png" />
+    <Resource Include="Assets\countries\184_logo.png" />
+    <Resource Include="Assets\countries\185_logo.png" />
+    <Resource Include="Assets\countries\186_logo.png" />
+    <Resource Include="Assets\countries\18_logo.png" />
+    <Resource Include="Assets\countries\19_logo.png" />
+    <Resource Include="Assets\countries\1_logo.png" />
+    <Resource Include="Assets\countries\20_logo.png" />
+    <Resource Include="Assets\countries\21_logo.png" />
+    <Resource Include="Assets\countries\22_logo.png" />
+    <Resource Include="Assets\countries\23_logo.png" />
+    <Resource Include="Assets\countries\24_logo.png" />
+    <Resource Include="Assets\countries\25_logo.png" />
+    <Resource Include="Assets\countries\26_logo.png" />
+    <Resource Include="Assets\countries\27_logo.png" />
+    <Resource Include="Assets\countries\28_logo.png" />
+    <Resource Include="Assets\countries\29_logo.png" />
+    <Resource Include="Assets\countries\2_logo.png" />
+    <Resource Include="Assets\countries\30_logo.png" />
+    <Resource Include="Assets\countries\31_logo.png" />
+    <Resource Include="Assets\countries\32_logo.png" />
+    <Resource Include="Assets\countries\33_logo.png" />
+    <Resource Include="Assets\countries\34_logo.png" />
+    <Resource Include="Assets\countries\35_logo.png" />
+    <Resource Include="Assets\countries\36_logo.png" />
+    <Resource Include="Assets\countries\37_logo.png" />
+    <Resource Include="Assets\countries\38_logo.png" />
+    <Resource Include="Assets\countries\39_logo.png" />
+    <Resource Include="Assets\countries\3_logo.png" />
+    <Resource Include="Assets\countries\40_logo.png" />
+    <Resource Include="Assets\countries\41_logo.png" />
+    <Resource Include="Assets\countries\42_logo.png" />
+    <Resource Include="Assets\countries\43_logo.png" />
+    <Resource Include="Assets\countries\44_logo.png" />
+    <Resource Include="Assets\countries\45_logo.png" />
+    <Resource Include="Assets\countries\46_logo.png" />
+    <Resource Include="Assets\countries\47_logo.png" />
+    <Resource Include="Assets\countries\48_logo.png" />
+    <Resource Include="Assets\countries\49_logo.png" />
+    <Resource Include="Assets\countries\4_logo.png" />
+    <Resource Include="Assets\countries\50_logo.png" />
+    <Resource Include="Assets\countries\51_logo.png" />
+    <Resource Include="Assets\countries\52_logo.png" />
+    <Resource Include="Assets\countries\53_logo.png" />
+    <Resource Include="Assets\countries\54_logo.png" />
+    <Resource Include="Assets\countries\55_logo.png" />
+    <Resource Include="Assets\countries\56_logo.png" />
+    <Resource Include="Assets\countries\57_logo.png" />
+    <Resource Include="Assets\countries\58_logo.png" />
+    <Resource Include="Assets\countries\59_logo.png" />
+    <Resource Include="Assets\countries\5_logo.png" />
+    <Resource Include="Assets\countries\60_logo.png" />
+    <Resource Include="Assets\countries\61_logo.png" />
+    <Resource Include="Assets\countries\62_logo.png" />
+    <Resource Include="Assets\countries\63_logo.png" />
+    <Resource Include="Assets\countries\64_logo.png" />
+    <Resource Include="Assets\countries\65_logo.png" />
+    <Resource Include="Assets\countries\66_logo.png" />
+    <Resource Include="Assets\countries\67_logo.png" />
+    <Resource Include="Assets\countries\68_logo.png" />
+    <Resource Include="Assets\countries\69_logo.png" />
+    <Resource Include="Assets\countries\6_logo.png" />
+    <Resource Include="Assets\countries\70_logo.png" />
+    <Resource Include="Assets\countries\71_logo.png" />
+    <Resource Include="Assets\countries\72_logo.png" />
+    <Resource Include="Assets\countries\73_logo.png" />
+    <Resource Include="Assets\countries\74_logo.png" />
+    <Resource Include="Assets\countries\75_logo.png" />
+    <Resource Include="Assets\countries\76_logo.png" />
+    <Resource Include="Assets\countries\77_logo.png" />
+    <Resource Include="Assets\countries\78_logo.png" />
+    <Resource Include="Assets\countries\79_logo.png" />
+    <Resource Include="Assets\countries\7_logo.png" />
+    <Resource Include="Assets\countries\80_logo.png" />
+    <Resource Include="Assets\countries\81_logo.png" />
+    <Resource Include="Assets\countries\82_logo.png" />
+    <Resource Include="Assets\countries\83_logo.png" />
+    <Resource Include="Assets\countries\84_logo.png" />
+    <Resource Include="Assets\countries\85_logo.png" />
+    <Resource Include="Assets\countries\86_logo.png" />
+    <Resource Include="Assets\countries\87_logo.png" />
+    <Resource Include="Assets\countries\88_logo.png" />
+    <Resource Include="Assets\countries\89_logo.png" />
+    <Resource Include="Assets\countries\8_logo.png" />
+    <Resource Include="Assets\countries\90_logo.png" />
+    <Resource Include="Assets\countries\91_logo.png" />
+    <Resource Include="Assets\countries\92_logo.png" />
+    <Resource Include="Assets\countries\93_logo.png" />
+    <Resource Include="Assets\countries\94_logo.png" />
+    <Resource Include="Assets\countries\95_logo.png" />
+    <Resource Include="Assets\countries\96_logo.png" />
+    <Resource Include="Assets\countries\97_logo.png" />
+    <Resource Include="Assets\countries\98_logo.png" />
+    <Resource Include="Assets\countries\99_logo.png" />
+    <Resource Include="Assets\countries\9_logo.png" />
+    <Resource Include="Assets\cross_window_sml.png" />
+    <Resource Include="Assets\down_arrow.png" />
+    <Resource Include="Assets\drawable\exited_insight.png" />
+    <Resource Include="Assets\drawable\ic_fb_icon.png" />
+    <Resource Include="Assets\drawable\ic_twitter_icon.png" />
+    <Resource Include="Assets\drawable\ic_twitter_share.png" />
+    <Resource Include="Assets\drawable\sad_insight.png" />
+    <Resource Include="Assets\drawable\smily_insight.png" />
+    <Resource Include="Assets\favicon.ico" />
+    <Resource Include="Assets\fb_btn_bg.png" />
+    <Resource Include="Assets\fold.png" />
+    <Resource Include="Assets\guider.png" />
+    <Resource Include="Assets\ic_back old.png" />
+    <Resource Include="Assets\ic_back.png" />
+    <Resource Include="Assets\ic_cancer_gray.png" />
+    <Resource Include="Assets\ic_cardio_gray.png" />
+    <Resource Include="Assets\ic_clear_ev.png" />
+    <Resource Include="Assets\ic_coach_arrow.png" />
+    <Resource Include="Assets\ic_coach_arrow_next.png" />
+    <Resource Include="Assets\ic_collapse_content.png" />
+    <Resource Include="Assets\ic_create_health_plan.png" />
+    <Resource Include="Assets\ic_dementia_gray.png" />
+    <Resource Include="Assets\ic_diabetes_gray.png" />
+    <Resource Include="Assets\ic_down_white_blue.png" />
+    <Resource Include="Assets\ic_expand_content.png" />
+    <Resource Include="Assets\ic_fb_icon.png" />
+    <Resource Include="Assets\ic_health_cross.png" />
+    <Resource Include="Assets\ic_health_edit.png" />
+    <Resource Include="Assets\ic_intro_bg--.png" />
+    <Resource Include="Assets\ic_intro_bg.jpg" />
+    <Resource Include="Assets\ic_intro_logo.png" />
+    <Resource Include="Assets\ic_item_selected.png" />
+    <Resource Include="Assets\ic_logo.png" />
+    <Resource Include="Assets\ic_lung_gray.png" />
+    <Resource Include="Assets\ic_menu_about.png" />
+    <Resource Include="Assets\ic_menu_about_blue.png" />
+    <Resource Include="Assets\ic_menu_about_selected.png" />
+    <Resource Include="Assets\ic_menu_dash.png" />
+    <Resource Include="Assets\ic_menu_dash_blue.png" />
+    <Resource Include="Assets\ic_menu_dash_selected.png" />
+    <Resource Include="Assets\ic_menu_devices.png" />
+    <Resource Include="Assets\ic_menu_devices_blue.png" />
+    <Resource Include="Assets\ic_menu_device_selected.png" />
+    <Resource Include="Assets\ic_menu_feedback.png" />
+    <Resource Include="Assets\ic_menu_feedback_blue.png" />
+    <Resource Include="Assets\ic_menu_feedback_selected.png" />
+    <Resource Include="Assets\ic_menu_foq.png" />
+    <Resource Include="Assets\ic_menu_foq_blue.png" />
+    <Resource Include="Assets\ic_menu_foq_selected.png" />
+    <Resource Include="Assets\ic_menu_settings.png" />
+    <Resource Include="Assets\ic_menu_settings_blue.png" />
+    <Resource Include="Assets\ic_menu_settings_selected.png" />
+    <Resource Include="Assets\ic_menu_world.png" />
+    <Resource Include="Assets\ic_menu_world_blue.png" />
+    <Resource Include="Assets\ic_menu_world_selected.png" />
+    <Resource Include="Assets\ic_next.png" />
+    <Resource Include="Assets\ic_off_page_header.png" />
+    <Resource Include="Assets\ic_product_cart.png" />
+    <Resource Include="Assets\ic_product_cat.png" />
+    <Resource Include="Assets\ic_purchase_btn.png" />
+    <Resource Include="Assets\ic_splash_text.png" />
+    <Resource Include="Assets\ic_twitter_icon.png" />
+    <Resource Include="Assets\info_icon.png" />
+    <Resource Include="Assets\language.png" />
+    <Resource Include="Assets\line-bg-grey.png" />
+    <Resource Include="Assets\line-bg-white.png" />
+    <Resource Include="Assets\loader.gif" />
+    <Resource Include="Assets\login_btn_bg.png" />
+    <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\logo2.png" />
+    <Resource Include="Assets\lung.png" />
+    <Resource Include="Assets\mainimages\cancer_st.png" />
+    <Resource Include="Assets\mainimages\cancer_st_flipped.png" />
+    <Resource Include="Assets\mainimages\gray.png" />
+    <Resource Include="Assets\mainimages\ic_cancer_default.png" />
+    <Resource Include="Assets\mainimages\ic_cancer_selected.png" />
+    <Resource Include="Assets\mainimages\ic_cardio_default - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_cardio_default.png" />
+    <Resource Include="Assets\mainimages\ic_cardio_selected - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_cardio_selected.png" />
+    <Resource Include="Assets\mainimages\ic_copd_default - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_copd_default.png" />
+    <Resource Include="Assets\mainimages\ic_copd_selected - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_copd_selected.png" />
+    <Resource Include="Assets\mainimages\ic_dementia_default - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_dementia_default.png" />
+    <Resource Include="Assets\mainimages\ic_dementia_selected - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_dementia_selected.png" />
+    <Resource Include="Assets\mainimages\ic_diabetes_default - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_diabetes_default.png" />
+    <Resource Include="Assets\mainimages\ic_diabetes_selected - Copy.png" />
+    <Resource Include="Assets\mainimages\ic_diabetes_selected.png" />
+    <Resource Include="Assets\mainimages\ic_hra_outer_circle.png" />
+    <Resource Include="Assets\mainimages\ic_hra_outer_circle_amber.png" />
+    <Resource Include="Assets\mainimages\ic_hra_outer_circle_green.png" />
+    <Resource Include="Assets\mainimages\ic_hra_outer_circle_red.png" />
+    <Resource Include="Assets\mainimages\logo.png" />
+    <Resource Include="Assets\mainimages\score-overlayer.png" />
+    <Resource Include="Assets\menu_opener.png" />
+    <Resource Include="Assets\menu_opener_right.png" />
+    <Resource Include="Assets\more_btn.png" />
+    <Resource Include="Assets\next_arrow.png" />
+    <Resource Include="Assets\next_arrow2.png" />
+    <Resource Include="Assets\plug-in.png" />
+    <Resource Include="Assets\plug-out.png" />
+    <Resource Include="Assets\plus-icon-white.png" />
+    <Resource Include="Assets\plus-icon.png" />
+    <Resource Include="Assets\plus.png" />
+    <Resource Include="Assets\previous_arrow.png" />
+    <Resource Include="Assets\Prostate.png" />
+    <Resource Include="Assets\q.png" />
+    <Resource Include="Assets\question_mark.png" />
+    <Resource Include="Assets\radio-pic.png" />
+    <Resource Include="Assets\radio-pic2.png" />
+    <Resource Include="Assets\RedoPopup\menu.png" />
+    <Resource Include="Assets\RedoPopup\redo.png" />
+    <Resource Include="Assets\RedoPopup\result.png" />
+    <Resource Include="Assets\search_icon.png" />
+    <Resource Include="Assets\sign_up_btn_bg.png" />
+    <Resource Include="Assets\skin.png" />
+    <Resource Include="Assets\sml_circle.png" />
+    <Resource Include="Assets\sound.png" />
+    <Resource Include="Assets\start_btn.png" />
+    <Resource Include="Assets\Stomack.png" />
+    <Resource Include="Assets\Themes\Screen Shot 2015-12-22 at 10.01.58 AM.png" />
+    <Resource Include="Assets\Themes\Screen Shot 2015-12-22 at 10.02.06 AM.png" />
+    <Resource Include="Assets\Themes\Screen Shot 2015-12-22 at 10.02.14 AM.png" />
+    <Resource Include="Assets\Themes\Screen Shot 2015-12-22 at 10.02.22 AM.png" />
+    <Resource Include="Assets\Themes\Screen Shot 2015-12-22 at 10.02.28 AM.png" />
+    <Resource Include="Assets\timeline_bg.png" />
+    <Resource Include="Assets\twitter.png" />
+    <Resource Include="Assets\up_arrow.png" />
+    <Resource Include="Fonts\Lato-Bold.ttf" />
+    <Resource Include="Fonts\Lato-Italic.ttf" />
+    <Resource Include="Fonts\Lato-Regular.ttf" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RTH.Business.Objects\RTH.Business.Objects.csproj">
+      <Project>{608312EE-8D50-4F11-B2FF-78D6F000180E}</Project>
+      <Name>RTH.Business.Objects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RTH.Helpers\RTH.Helpers.csproj">
+      <Project>{0b9560b5-9979-4dcd-93d1-82943d9f4945}</Project>
+      <Name>RTH.Helpers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RTH.Windows.ViewModels\RTH.Windows.ViewModels.csproj">
+      <Project>{82673263-75dc-43fd-8a6d-e7f2ac8bf65b}</Project>
+      <Name>RTH.Windows.ViewModels</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\loader.gif" />
+    <Resource Include="Assets\top_q_logo.png" />
+    <Resource Include="favicon.ico" />
+    <Resource Include="Assets\DashboardMenu\aboutusico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\aboutusico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\aboutusico_wht.png" />
+    <Resource Include="Assets\DashboardMenu\dashboardico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\dashboardico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\dashboardico_wht.png" />
+    <Resource Include="Assets\DashboardMenu\devicesico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\devicesico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\devicesico_wht.png" />
+    <Resource Include="Assets\DashboardMenu\friendsqico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\friendsqico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\friendsqico_wht.png" />
+    <Resource Include="Assets\DashboardMenu\settingsico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\settingsico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\settingsico_wht.png" />
+    <Resource Include="Assets\DashboardMenu\supportico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\supportico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\supportico_wht.png" />
+    <Resource Include="Assets\DashboardMenu\worldhthico_blk.png" />
+    <Resource Include="Assets\DashboardMenu\worldhthico_blu.png" />
+    <Resource Include="Assets\DashboardMenu\worldhthico_wht.png" />
+    <Content Include="Assets\diabetes_icon.svg" />
+    <Resource Include="Assets\DiseaseGrayIcons\ic_cancer_gray.png" />
+    <Resource Include="Assets\DiseaseGrayIcons\ic_cardio_gray.png" />
+    <Resource Include="Assets\DiseaseGrayIcons\ic_dementia_gray.png" />
+    <Resource Include="Assets\DiseaseGrayIcons\ic_diabetes_gray.png" />
+    <Resource Include="Assets\DiseaseGrayIcons\ic_lung_gray.png" />
+    <Content Include="Assets\excited_imotic.svg" />
+    <Content Include="Assets\happy_imotic.svg" />
+    <Resource Include="Assets\home.png" />
+    <Content Include="Assets\menu-active.svg" />
+    <Resource Include="Assets\off.png" />
+    <Resource Include="Assets\on.png" />
+    <Content Include="Assets\people-icon.svg" />
+    <Resource Include="Assets\person.png" />
+    <Resource Include="Assets\q_logo.png" />
+    <Content Include="Assets\Q_Logo_64x64.svg" />
+    <Content Include="Assets\Q_Logo_withblacktext.svg" />
+    <Content Include="Assets\sad_imotic.svg" />
+    <Content Include="Assets\sign_logo_with_text.svg" />
+    <Resource Include="GettingStarted.txt" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

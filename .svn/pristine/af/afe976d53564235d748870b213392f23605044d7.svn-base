@@ -1,0 +1,13 @@
+﻿namespace RTH.Windows.Views.UserControls
+{
+    /// <summary>
+    /// Interaction logic for AllQScoreView.xaml
+    /// </summary>
+    public partial class AllQScoreView : ViewBase
+    {
+        public AllQScoreView()
+        {
+            InitializeComponent();
+        }
+    }
+}

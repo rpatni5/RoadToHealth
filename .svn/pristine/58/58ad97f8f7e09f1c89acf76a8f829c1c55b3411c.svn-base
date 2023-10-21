@@ -1,0 +1,57 @@
+﻿using RTH.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+
+namespace RTH.Windows.ViewModels.Common
+{
+    public class GlobalData: NotifyBase
+    {
+        private GlobalData()
+        {
+
+        }
+        private static GlobalData m_Instance;
+        public static GlobalData Default
+        {
+            get
+            {
+                return m_Instance ?? (m_Instance = new GlobalData());
+            }            
+        }
+        public string HeaderTitle
+        {
+            get { return GetValue(() => this.HeaderTitle); }
+            set { SetValue(() => HeaderTitle, value); }
+        }
+        public string HeaderColor
+        {
+            get { return GetValue(() => this.HeaderColor); }
+            set { SetValue(() => HeaderColor, value); }
+        }
+        public string HeaderIcon
+        {
+            get { return GetValue(() => this.HeaderIcon); }
+            set { SetValue(() => HeaderIcon, value); }
+        }
+        public Visibility HeaderVisibility
+        {
+            get { return GetValue(() => this.HeaderVisibility); }
+            set { SetValue(() => HeaderVisibility, value); }
+        }
+        public bool HeaderState
+        {
+            get { return GetValue(() => this.HeaderState); }
+            set { SetValue(() => HeaderState, value); }
+        }
+
+        public bool LoaderVisibility
+        {
+            get { return GetValue(() => this.LoaderVisibility); }
+            set { SetValue(() => LoaderVisibility, value); }
+        }        
+    }
+}

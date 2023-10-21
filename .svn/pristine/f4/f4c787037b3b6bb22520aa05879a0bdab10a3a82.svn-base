@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System.Reflection;
+
+namespace RTH.Helpers
+{
+    public static class ExtensionMethod
+    {
+        public static string ToPascal(this string parm)
+        {
+            return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(parm.ToLowerInvariant());
+        }
+        public static T ToChangeType<T>(this object variable) where T : IConvertible
+        {
+            try
+            {
+                return variable != null ? (T)Convert.ChangeType(variable, typeof(T)) : default(T);
+            }
+            catch (InvalidCastException)
+            {
+                return default(T);
+            }
+            catch (FormatException)
+            {
+                return default(T);
+            }
+        }
+        public static T GetPropValue<T>(this Object obj, String name)
+        {
+            Object retval = obj.GetPropValue(name);
+            if (retval == null) { return default(T); }
+
+            // throws InvalidCastException if types are incompatible
+            return (T)retval;
+        }
+        public static object GetPropValue(this object obj, string property)
+        {
+            try
+            {
+                return obj.GetType().GetProperty(property).GetValue(obj, null);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static bool ValidateEmail(string email)
+        {
+            string expresion = "\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.[a-z A-Z]+([-.][a-z A-Z]+)*";
+           
+            if (Regex.IsMatch(email, expresion,RegexOptions.IgnoreCase))
+            {
+                return (Regex.Replace(email, expresion, string.Empty).Length == 0);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static bool ValidateName(string Name)
+        {
+            string expresion;
+            expresion = "^[a-z  A-Z]*$";
+            if (Regex.IsMatch(Name, expresion))
+            {
+                return (Regex.Replace(Name, expresion, string.Empty).Length == 0);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static List<T> Clone<T>(this List<T> list)
+        {
+            if (list == null) return null;
+            List<T> clonedList = new List<T>();
+            T inst = default(T);
+            PropertyInfo[] properties = null;
+            foreach (T item in list)
+            {
+                properties = item.GetType().GetProperties();
+                inst = (T)Activator.CreateInstance(typeof(T));
+                foreach (var p in properties)
+                {
+                    if (p.CanWrite) p.SetValue(inst, p.GetValue(item));
+                }
+                clonedList.Add(inst);
+            }
+            return clonedList;
+        }
+
+    }
+}
